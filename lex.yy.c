@@ -556,6 +556,8 @@ char *yytext;
 #include <stdlib.h>
 #include <string.h>
     
+#define CHAR_DEL     0x7f
+    
 #define TOKENS_TABLE    \
     X(STARTSTRUCT),     \
     X(ENDSTRUCT),       \
@@ -603,7 +605,7 @@ typedef enum {
     
 void showToken(Token);
 
-#line 607 "lex.yy.c"
+#line 609 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -785,10 +787,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 81 "hw1.lex"
+#line 83 "hw1.lex"
 
 
-#line 792 "lex.yy.c"
+#line 794 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -883,127 +885,127 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 83 "hw1.lex"
+#line 85 "hw1.lex"
 showToken(STARTSTRUCT);
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 84 "hw1.lex"
+#line 86 "hw1.lex"
 showToken(ENDSTRUCT);
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 85 "hw1.lex"
+#line 87 "hw1.lex"
 showToken(LLIST);
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 86 "hw1.lex"
+#line 88 "hw1.lex"
 showToken(RLIST);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 87 "hw1.lex"
+#line 89 "hw1.lex"
 showToken(LDICT);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 88 "hw1.lex"
+#line 90 "hw1.lex"
 showToken(RDICT);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 89 "hw1.lex"
+#line 91 "hw1.lex"
 showToken(KEY);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 90 "hw1.lex"
+#line 92 "hw1.lex"
 showToken(COMPLEXKEY);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 91 "hw1.lex"
+#line 93 "hw1.lex"
 showToken(ITEM);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 92 "hw1.lex"
+#line 94 "hw1.lex"
 showToken(COMA);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 93 "hw1.lex"
+#line 95 "hw1.lex"
 showToken(TYPE);
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 94 "hw1.lex"
+#line 96 "hw1.lex"
 showToken(COMMENT);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 95 "hw1.lex"
+#line 97 "hw1.lex"
 showToken(TRUE);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 96 "hw1.lex"
+#line 98 "hw1.lex"
 showToken(FALSE);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 97 "hw1.lex"
+#line 99 "hw1.lex"
 showToken(INTEGER);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 98 "hw1.lex"
+#line 100 "hw1.lex"
 showToken(REAL);
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
 YY_RULE_SETUP
-#line 99 "hw1.lex"
+#line 101 "hw1.lex"
 showToken(STRING);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 100 "hw1.lex"
+#line 102 "hw1.lex"
 showToken(VAL);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 101 "hw1.lex"
+#line 103 "hw1.lex"
 showToken(DECLARATION);
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 102 "hw1.lex"
+#line 104 "hw1.lex"
 showToken(DEREFERENCE);
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 103 "hw1.lex"
+#line 105 "hw1.lex"
 { printf("1\n"); yyterminate(); }
 	YY_BREAK
 case 21:
 /* rule 21 can match eol */
 YY_RULE_SETUP
-#line 104 "hw1.lex"
+#line 106 "hw1.lex"
 ;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 105 "hw1.lex"
-printf("Lex doesn't know what that is!\n");
+#line 107 "hw1.lex"
+showToken(ERROR);
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 107 "hw1.lex"
+#line 109 "hw1.lex"
 ECHO;
 	YY_BREAK
-#line 1007 "lex.yy.c"
+#line 1009 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2010,7 +2012,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 107 "hw1.lex"
+#line 109 "hw1.lex"
 
 
 
@@ -2037,13 +2039,13 @@ void showToken(Token t)
     char *pChar;
     switch(t)
     {
-    case ERROR:
+    case ERROR: // TODO: should handle errors here - might need different enum values for different errors. Can all errors be detected at this level?
         printf("Error %s\n", yytext);
         exit(0);
-        break;
         
     case COMMENT:
         /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
+        // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
         yytext[yyleng-1] = '\0';
         break;
         
@@ -2073,7 +2075,7 @@ void showToken(Token t)
                 { // handle escape sequences
 #define X(s, ss)   \
 case s: \
-pChar[0] = 0x7f; \
+pChar[0] = CHAR_DEL; \
 pChar[1] = ss; \
 break;
 
@@ -2081,18 +2083,18 @@ break;
                 
 #undef X
                 case '\\':
-                    pChar[0] = 0x7f;
+                    pChar[0] = CHAR_DEL;
                     break;
                 case 'x':
                     pChar[1] = pChar[2];
                     pChar[2] = pChar[3];
                     pChar[3] = '$'; //any char that is not a digit - to terminate strtol after 2 chars
                     pChar[0] = strtol(pChar+1, NULL, 16);
-                    pChar[1] = 0x7f;
-                    pChar[2] = 0x7f;
-                    pChar[3] = 0x7f;
+                    pChar[1] = CHAR_DEL;
+                    pChar[2] = CHAR_DEL;
+                    pChar[3] = CHAR_DEL;
                     break;
-                default: break; //TODO: handle error
+                default: break; //TODO: handle error (unknown sequence)
                 }
                 pChar = strchr(pChar+1,'\\');
             }

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
     
+#define CHAR_DEL     0x7f
+    
 #define TOKENS_TABLE    \
     X(STARTSTRUCT),     \
     X(ENDSTRUCT),       \
@@ -102,7 +104,7 @@ false                           showToken(FALSE);
 \*{letters}                     showToken(DEREFERENCE);
 <<EOF>>                         { printf("1\n"); yyterminate(); }
 {whitespace}                    ;
-.                               printf("Lex doesn't know what that is!\n");
+.                               showToken(ERROR);
 
 %%
 
@@ -129,13 +131,13 @@ void showToken(Token t)
     char *pChar;
     switch(t)
     {
-    case ERROR:
+    case ERROR: // TODO: should handle errors here - might need different enum values for different errors. Can all errors be detected at this level?
         printf("Error %s\n", yytext);
         exit(0);
-        break;
         
     case COMMENT:
         /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
+        // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
         yytext[yyleng-1] = '\0';
         break;
         
@@ -165,7 +167,7 @@ void showToken(Token t)
                 { // handle escape sequences
 #define X(s, ss)   \
 case s: \
-pChar[0] = 0x7f; \
+pChar[0] = CHAR_DEL; \
 pChar[1] = ss; \
 break;
 
@@ -173,18 +175,18 @@ break;
                 
 #undef X
                 case '\\':
-                    pChar[0] = 0x7f;
+                    pChar[0] = CHAR_DEL;
                     break;
                 case 'x':
                     pChar[1] = pChar[2];
                     pChar[2] = pChar[3];
                     pChar[3] = '$'; //any char that is not a digit - to terminate strtol after 2 chars
                     pChar[0] = strtol(pChar+1, NULL, 16);
-                    pChar[1] = 0x7f;
-                    pChar[2] = 0x7f;
-                    pChar[3] = 0x7f;
+                    pChar[1] = CHAR_DEL;
+                    pChar[2] = CHAR_DEL;
+                    pChar[3] = CHAR_DEL;
                     break;
-                default: break; //TODO: handle error
+                default: break; //TODO: handle error (unknown sequence)
                 }
                 pChar = strchr(pChar+1,'\\');
             }
