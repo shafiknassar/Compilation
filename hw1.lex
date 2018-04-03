@@ -59,7 +59,7 @@ hexa            (0x){hexadigits}
 real            {sign}?({digits}\.{digits}?|{digits}?\.{digits})
 exp             {real}e{sign}{digits}
 sstring         \'([^\'])*\'
-escapeSeqs      (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigits}{hexadigits}))
+escapeSeqs      (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
 dstring         \"(([^\"\\])|{escapeSeqs})*\"
 
 %%
