@@ -35,6 +35,20 @@ typedef enum {
 } Token;
 #undef X
     
+#define ESCAPED_SEQS_TABLE  \
+    X('a','\a')            \
+    X('b','\b')            \
+    X('e','\e')            \
+    X('n','\n')            \
+    X('f','\f')            \
+    X('r','\r')            \
+    X('t','\t')             \
+    X('v','\v')             \
+    X('0','\0')             \
+    X('"','\"')             \
+
+//    X('\','\\')             \
+    
     
 void showToken(Token);
 
@@ -52,8 +66,10 @@ newLine         ([\n\r])|(\r\n)
 wildcard        .*
 sign            ([\+\-])
 decimal         {sign}?{digits}
-octadigits      ([0-7])+
-hexadigits      ([0-9a-f])+
+octadigit       ([0-7])
+hexadigit       ([0-9a-f])
+octadigits      {octadigit}+
+hexadigits      {hexadigit}+
 octa            (0o){octadigits}
 hexa            (0x){hexadigits}
 real            {sign}?({digits}\.{digits}?|{digits}?\.{digits})
@@ -110,6 +126,7 @@ void showToken(Token t)
 {
     const char *name = tokenStrings[t];
     int num;
+    char *pChar;
     switch(t)
     {
     case ERROR:
@@ -123,7 +140,7 @@ void showToken(Token t)
         break;
         
     case INTEGER:
-        num = (int)strtol(yytext, NULL, 0);
+        num = (int)strtol(yytext, NULL, 0); //takes care of bases 10 and 16
         if ('o' == yytext[1])
         {
             num = (int)strtol(yytext+2, NULL, 8);
@@ -133,9 +150,46 @@ void showToken(Token t)
         
     case STRING:
         yytext[yyleng-1] = '\0';
-        yytext++;
+        
+        /*maybe the next 2 lines need to be done only for dstring*/
         yytext = replace_char(yytext, '\n', ' ');
         yytext = replace_char(yytext, '\r', ' ');
+            
+        if ('"' == yytext[0]) // is double-quote string
+        {
+            pChar = strchr(yytext,'\\');
+            while (pChar)
+            {
+                //assert (pChar - yytext < yyleng - 1);
+                switch (*(pChar+1))
+                { // handle escape sequences
+#define X(s, ss)   \
+case s: \
+pChar[0] = 0x7f; \
+pChar[1] = ss; \
+break;
+
+                ESCAPED_SEQS_TABLE
+                
+#undef X
+                case '\\':
+                    pChar[0] = 0x7f;
+                    break;
+                case 'x':
+                    pChar[1] = pChar[2];
+                    pChar[2] = pChar[3];
+                    pChar[3] = '$'; //any char that is not a digit - to terminate strtol after 2 chars
+                    pChar[0] = strtol(pChar+1, NULL, 16);
+                    pChar[1] = 0x7f;
+                    pChar[2] = 0x7f;
+                    pChar[3] = 0x7f;
+                    break;
+                default: break; //TODO: handle error
+                }
+                pChar = strchr(pChar+1,'\\');
+            }
+        }
+        yytext++;
         break;
     default: ;
         
