@@ -57,6 +57,7 @@ char buff[MAX_FILE_SIZE+1];
 char *buff_ptr;
 
 void showToken(Token);
+void handleEscSeq(char*,char*);
 
 
 %}
