@@ -51,7 +51,7 @@ typedef enum {
     X('0','\0')             \
     X('"','\"')             \
 
-//    X('\','\\')             \
+//    X('\\','\\')             \
 
 
 char buff[MAX_FILE_SIZE+1];
@@ -83,7 +83,7 @@ hexa            (0x){hexadigits}
 real            {sign}?({digits}\.{digits}?|{digits}?\.{digits})
 exp             {real}e{sign}{digits}
 sstring         \'([^\'])*\'
-escapeSeq      (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
+escapeSeq       (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
 dstring         (([^\"\\])|{escapeSeqs})*
 
 %x double_string
@@ -139,7 +139,7 @@ void showToken(Token t)
 {
     const char *name = tokenStrings[t];
     int num;
-    char *pChar;
+    char *toPrint = yytext;
     switch(t)
     {
     case ERROR: // TODO: should handle errors here - might need different enum values for different errors. Can all errors be detected at this level?
@@ -154,69 +154,23 @@ void showToken(Token t)
         
     case INTEGER:
         num = (int)strtol(yytext, NULL, 0); //takes care of bases 10 and 16
-        if ('o' == yytext[1])
+        if (yyleng >= 2 && 'o' == yytext[1])
         {
             num = (int)strtol(yytext+2, NULL, 8);
         }
         printf("%d %s %d\n", yylineno, name, num);
         return;
 
-    case SSTRING:
-
-
     case DSTRING:
-        yytext[yyleng-1] = '\0';
-        
-        /*maybe the next 2 lines need to be done only for dstring*/
-        yytext = replace_char(yytext, '\n', ' ');
-        yytext = replace_char(yytext, '\r', ' ');
-            
-        if ('"' == yytext[0]) // is double-quote string
-        {
-            pChar = strchr(yytext,'\\');
-            while (pChar)
-            {
-                // assert (pChar - yytext < yyleng - 1);
-                // handle the special case of CRLF - should be 1 newline
-                if (pChar[1] == 'r' && pChar+3 < yytext+yyleng
-                    && pChar[2] == '\\' && pChar[3] == 'n')
-                {
-                    pChar[2] = CHAR_DEL;
-                    pChar[3] = CHAR_DEL;
-                }
-                switch (*(pChar+1))
-                { // handle escape sequences
-#define X(s, ss)   \
-case s: \
-pChar[0] = CHAR_DEL; \
-pChar[1] = ss; \
-break;
-
-                ESCAPED_SEQS_TABLE
-                
-#undef X
-                case '\\':
-                    pChar[0] = CHAR_DEL;
-                    break;
-                case 'x':
-                    pChar[1] = pChar[2];
-                    pChar[2] = pChar[3];
-                    pChar[3] = '$'; //any char that is not a digit - to terminate strtol after 2 chars
-                    pChar[0] = strtol(pChar+1, NULL, 16);
-                    pChar[1] = CHAR_DEL;
-                    pChar[2] = CHAR_DEL;
-                    pChar[3] = CHAR_DEL;
-                    break;
-                default: break; //TODO: handle error (unknown sequence)
-                }
-                pChar = strchr(pChar+1,'\\');
-            }
-        }
-        yytext++; //Increment to avoid printing the first quote.
+        toPrint = &buff;
+        break;
+                 
+    case SSTRING:
+        toPrint = &buff;
         break;
     default: ;
         
     };
-    printf("%d %s %s\n", yylineno, name, yytext);
+    printf("%d %s %s\n", yylineno, name, toPrint);
 }
 
