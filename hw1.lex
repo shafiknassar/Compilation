@@ -89,7 +89,7 @@ dstring         (([^\"\\])|{escapeSeqs})*
 %x double_string
 %%
 
-\"                              { buff_ptr = &buff; BEGIN(double_string); }
+\"                              { buff_ptr = buff; BEGIN(double_string); }
 ---                             showToken(STARTSTRUCT);
 \.\.\.                          showToken(ENDSTRUCT);
 \[                              showToken(LLIST);
@@ -107,9 +107,9 @@ false                           showToken(FALSE);
 {decimal}|{octa}|{hexa}         showToken(INTEGER);
 {real}|{exp}|\.inf|\.NaN        showToken(REAL);
 <double_string>([^\"\\])*       strcpy(buff_ptr, yytext); buff_ptr += yyleng;
-<double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr);
+<double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>\"               { showToken(DSTRING); BEGIN(INITIAL); }
-{sstring}                       showToken(STRING);
+{sstring}                       showToken(SSTRING);
 ({digits}|{letters})+           showToken(VAL);
 \&{letters}                     showToken(DECLARATION);
 \*{letters}                     showToken(DEREFERENCE);
@@ -123,13 +123,13 @@ void handleEscSeq(char* text, char* buff_p) {
     char esc_seq = text[1];
 #define X(s, ss) \
 case s: \
-    *buff_p++ = ss; \
+    *buff_p = ss; \
     break;
 switch(esc_seq)
 {
 ESCAPED_SEQS_TABLE
 case 'x':
-   *buff_p++ = strtol(text+2, NULL, 16);
+   *buff_p = strtol(text+2, NULL, 16);
    break;
 }
 #undef X
@@ -177,11 +177,11 @@ void showToken(Token t)
         return;
 
     case DSTRING:
-        toPrint = &buff;
+        toPrint = buff;
         break;
                  
     case SSTRING:
-        toPrint = &buff;
+        toPrint = buff;
         break;
     default: ;
         
