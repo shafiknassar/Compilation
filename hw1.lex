@@ -50,8 +50,7 @@ typedef enum {
     X('v','\v')             \
     X('0','\0')             \
     X('"','\"')             \
-
-//    X('\','\\')             \
+    X('\\','\\')
 
 
 char buff[MAX_FILE_SIZE+1];
@@ -119,6 +118,21 @@ false                           showToken(FALSE);
 
 %%
 
+void handleEscSeq(char* text, char* buff_p) {
+    char esc_seq = text[1];
+#define X(s, ss) \
+case s: \
+    *buff_p++ = ss; \
+    break;
+switch(esc_seq)
+{
+ESCAPED_SEQS_TABLE
+case 'x':
+   *buff_p++ = strtol(text+2, NULL, 16);
+   break;
+}
+#undef X
+}
                      
 #define X(s)  #s
 const char *tokenStrings[32] = {
