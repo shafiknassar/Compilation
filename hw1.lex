@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
     
-#define CHAR_DEL     0x7f
+#define CHAR_DEL        0x7f
+#define MAX_FILE_SIZE   1024
     
 #define TOKENS_TABLE    \
     X(STARTSTRUCT),     \
@@ -24,7 +25,8 @@
     X(FALSE),           \
     X(INTEGER),         \
     X(REAL),            \
-    X(STRING),          \
+    X(DSTRING),         \
+    X(SSTRING),         \
     X(VAL),             \
     X(DECLARATION),     \
     X(DEREFERENCE),     \
@@ -50,9 +52,13 @@ typedef enum {
     X('"','\"')             \
 
 //    X('\','\\')             \
-    
-    
+
+
+char buff[MAX_FILE_SIZE+1];
+char *buff_ptr;
+
 void showToken(Token);
+
 
 %}
 
@@ -69,7 +75,7 @@ wildcard        .*
 sign            ([\+\-])
 decimal         {sign}?{digits}
 octadigit       ([0-7])
-hexadigit       ([0-9a-f])
+hexadigit       ([0-9a-fA-F])
 octadigits      {octadigit}+
 hexadigits      {hexadigit}+
 octa            (0o){octadigits}
@@ -77,11 +83,13 @@ hexa            (0x){hexadigits}
 real            {sign}?({digits}\.{digits}?|{digits}?\.{digits})
 exp             {real}e{sign}{digits}
 sstring         \'([^\'])*\'
-escapeSeqs      (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
-dstring         \"(([^\"\\])|{escapeSeqs})*\"
+escapeSeq      (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
+dstring         (([^\"\\])|{escapeSeqs})*
 
+%x double_string
 %%
 
+\"                              { buff_ptr = &buff; BEGIN(double_string); }
 ---                             showToken(STARTSTRUCT);
 \.\.\.                          showToken(ENDSTRUCT);
 \[                              showToken(LLIST);
@@ -98,7 +106,10 @@ true                            showToken(TRUE);
 false                           showToken(FALSE);
 {decimal}|{octa}|{hexa}         showToken(INTEGER);
 {real}|{exp}|\.inf|\.NaN        showToken(REAL);
-{sstring}|{dstring}             showToken(STRING);
+<double_string>([^\"\\])*       strcpy(buff_ptr, yytext); buff_ptr += yyleng;
+<double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr);
+<double_string>\"               { showToken(DSTRING); BEGIN(INITIAL); }
+{sstring}                       showToken(STRING);
 ({digits}|{letters})+           showToken(VAL);
 \&{letters}                     showToken(DECLARATION);
 \*{letters}                     showToken(DEREFERENCE);
@@ -149,8 +160,11 @@ void showToken(Token t)
         }
         printf("%d %s %d\n", yylineno, name, num);
         return;
-        
-    case STRING:
+
+    case SSTRING:
+
+
+    case DSTRING:
         yytext[yyleng-1] = '\0';
         
         /*maybe the next 2 lines need to be done only for dstring*/
@@ -162,7 +176,14 @@ void showToken(Token t)
             pChar = strchr(yytext,'\\');
             while (pChar)
             {
-                //assert (pChar - yytext < yyleng - 1);
+                // assert (pChar - yytext < yyleng - 1);
+                // handle the special case of CRLF - should be 1 newline
+                if (pChar[1] == 'r' && pChar+3 < yytext+yyleng
+                    && pChar[2] == '\\' && pChar[3] == 'n')
+                {
+                    pChar[2] = CHAR_DEL;
+                    pChar[3] = CHAR_DEL;
+                }
                 switch (*(pChar+1))
                 { // handle escape sequences
 #define X(s, ss)   \
@@ -191,7 +212,7 @@ break;
                 pChar = strchr(pChar+1,'\\');
             }
         }
-        yytext++;
+        yytext++; //Increment to avoid printing the first quote.
         break;
     default: ;
         
