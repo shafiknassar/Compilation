@@ -87,9 +87,13 @@ escapeSeq       (\\)(\\|\"|a|b|e|f|n|r|t|v|0|(x{hexadigit}{hexadigit}))
 dstring         (([^\"\\])|{escapeSeqs})*
 
 %x double_string
+%x single_string
+%x comment
 %%
 
 \"                              { buff_ptr = buff; BEGIN(double_string); }
+\'                              { buff_ptr = buff; BEGIN(single_string); }
+#                               { buff_ptr = buff; BEGIN(comment);       }
 ---                             showToken(STARTSTRUCT);
 \.\.\.                          showToken(ENDSTRUCT);
 \[                              showToken(LLIST);
@@ -101,19 +105,25 @@ dstring         (([^\"\\])|{escapeSeqs})*
 \-                              showToken(ITEM);
 ,                               showToken(COMA);
 \!\!{letters}                   showToken(TYPE);
-\#{wildcard}({newLine}|EOF)     showToken(COMMENT);
 true                            showToken(TRUE);
 false                           showToken(FALSE);
 {decimal}|{octa}|{hexa}         showToken(INTEGER);
 {real}|{exp}|\.inf|\.NaN        showToken(REAL);
-<double_string>([^\"\\])*       strcpy(buff_ptr, yytext); buff_ptr += yyleng;
+<double_string>([^\"\\\n])*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
+<double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
 <double_string>\"               { showToken(DSTRING); BEGIN(INITIAL); }
-{sstring}                       showToken(SSTRING);
+<double_string>"\\"+.           printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
+<single_string>[^\']*           showToken(SSTRING);
+<single_string>\'               BEGIN(INITIAL);
+<single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
+<comment>([^\n\r])*             showToken(COMMENT);
+<comment><<EOF>>                BEGIN(INITIAL);
+<comment>{newLine}              BEGIN(INITIAL);
 ({digits}|{letters})+           showToken(VAL);
 \&{letters}                     showToken(DECLARATION);
 \*{letters}                     showToken(DEREFERENCE);
-<<EOF>>                         { printf("1\n"); yyterminate(); }
+<<EOF>>                         printf("%d EOF ", yylineno); yyterminate();
 {whitespace}                    ;
 .                               showToken(ERROR);
 
@@ -164,7 +174,6 @@ void showToken(Token t)
     case COMMENT:
         /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
         // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
-        yytext[yyleng-1] = '\0';
         break;
         
     case INTEGER:
@@ -181,7 +190,6 @@ void showToken(Token t)
         break;
                  
     case SSTRING:
-        toPrint = buff;
         break;
     default: ;
         
