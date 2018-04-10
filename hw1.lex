@@ -18,7 +18,7 @@
     X(KEY),             \
     X(COMPLEXKEY),      \
     X(ITEM),            \
-    X(COMA),            \
+    X(COMMA),           \
     X(TYPE),            \
     X(COMMENT),         \
     X(TRUE),            \
@@ -30,7 +30,7 @@
     X(VAL),             \
     X(DECLARATION),     \
     X(DEREFERENCE),     \
-    X(ERROR),           \
+    X(STRING),          \
 
     
 #define X(s)  s
@@ -68,7 +68,7 @@ printables      ([ -\~])+
 digit   		([0-9])
 digits          {digit}+
 letter  		([a-zA-Z])
-whitespace		([\t\n ])
+whitespace		([\t\n\r ])
 letters         {letter}+
 newLine         ([\n\r])|(\r\n)
 wildcard        .*
@@ -103,7 +103,7 @@ dstring         (([^\"\\])|{escapeSeqs})*
 :                               showToken(KEY);
 \?                              showToken(COMPLEXKEY);
 \-                              showToken(ITEM);
-,                               showToken(COMA);
+,                               showToken(COMMA);
 \!\!{letters}                   showToken(TYPE);
 true                            showToken(TRUE);
 false                           showToken(FALSE);
@@ -113,19 +113,19 @@ false                           showToken(FALSE);
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
 <double_string>\"               { showToken(DSTRING); BEGIN(INITIAL); }
-<double_string>"\\"+.           printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
+<double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
 <single_string>[^\']*           showToken(SSTRING);
 <single_string>\'               BEGIN(INITIAL);
 <single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
 <comment>([^\n\r])*             showToken(COMMENT);
 <comment><<EOF>>                BEGIN(INITIAL);
 <comment>{newLine}              BEGIN(INITIAL);
-({digits}|{letters})+           showToken(VAL);
+{letters}({digits}|{letters})*  showToken(VAL);
 \&{letters}                     showToken(DECLARATION);
 \*{letters}                     showToken(DEREFERENCE);
-<<EOF>>                         printf("%d EOF ", yylineno); yyterminate();
+<<EOF>>                         printf("%d EOF \n", yylineno); yyterminate();
 {whitespace}                    ;
-.                               showToken(ERROR);
+.                               printf("Error %s\n", yytext); exit(0);
 
 %%
 
@@ -135,12 +135,12 @@ void handleEscSeq(char* text, char* buff_p) {
 case s: \
     *buff_p = ss; \
     break;
-switch(esc_seq)
-{
-ESCAPED_SEQS_TABLE
-case 'x':
-   *buff_p = strtol(text+2, NULL, 16);
-   break;
+    switch(esc_seq)
+    {
+        ESCAPED_SEQS_TABLE
+    case 'x':
+        *buff_p = strtol(text+2, NULL, 16);
+        break;
 }
 #undef X
 }
@@ -167,14 +167,11 @@ void showToken(Token t)
     char *toPrint = yytext;
     switch(t)
     {
-    case ERROR: // TODO: should handle errors here - might need different enum values for different errors. Can all errors be detected at this level?
-        printf("Error %s\n", yytext);
-        exit(0);
-        
     case COMMENT:
         /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
         // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
-        break;
+        printf("%d %s #%s\n", yylineno, name, toPrint);
+        return;
         
     case INTEGER:
         num = (int)strtol(yytext, NULL, 0); //takes care of bases 10 and 16
@@ -187,10 +184,10 @@ void showToken(Token t)
 
     case DSTRING:
         toPrint = buff;
-        break;
-                 
     case SSTRING:
+        name = tokenStrings[STRING];
         break;
+
     default: ;
         
     };
