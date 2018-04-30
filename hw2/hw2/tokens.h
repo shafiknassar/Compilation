@@ -26,5 +26,4 @@ enum tokens {
 };
 
 
-
 #endif //__TOKENS__
