@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tokens.h"
     
     
 #define CHAR_DEL        0x7f
@@ -33,20 +34,23 @@
     X(DEREFERENCE),     \
     X(STRING),          \
 
-    
+/*
 #define X(s)  s
 typedef enum {
     TOKENS_TABLE
-} Token;
+} Token_priv;
 #undef X
+ */
+    
+typedef enum tokens tokens;
     
 #define ESCAPED_SEQS_TABLE  \
-    X('a','\a')            \
-    X('b','\b')            \
-    X('e','\e')            \
-    X('n','\n')            \
-    X('f','\f')            \
-    X('r','\r')            \
+    X('a','\a')             \
+    X('b','\b')             \
+    X('e','\e')             \
+    X('n','\n')             \
+    X('f','\f')             \
+    X('r','\r')             \
     X('t','\t')             \
     X('v','\v')             \
     X('0','\0')             \
@@ -57,7 +61,7 @@ typedef enum {
 char buff[MAX_FILE_SIZE+1];
 char *buff_ptr;
 
-void showToken(Token);
+tokens showToken(tokens t);
 void handleEscSeq(char*,char*);
 
 
@@ -113,12 +117,12 @@ false                           showToken(FALSE);
 <double_string>([^\"\\\n])*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
-<double_string>\"               { showToken(DSTRING); BEGIN(INITIAL); }
+<double_string>\"               { showToken(STRING); BEGIN(INITIAL); }
 <double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
-<single_string>[^\']*           showToken(SSTRING);
+<single_string>[^\']*           { buff_ptr = buff; strcpy(buff_ptr, yytext); showToken(STRING); }
 <single_string>\'               BEGIN(INITIAL);
 <single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
-<comment>([^\n\r])*             showToken(COMMENT);
+<comment>([^\n\r])*             /*showToken(COMMENT)*/;
 <comment><<EOF>>                BEGIN(INITIAL);
 <comment>{newLine}              BEGIN(INITIAL);
 {letters}({digits}|{letters})*  showToken(VAL);
@@ -129,6 +133,7 @@ false                           showToken(FALSE);
 .                               printf("Error %s\n", yytext); exit(0);
 
 %%
+
 
 void handleEscSeq(char* text, char* buff_p) {
     char esc_seq = text[1];
@@ -152,19 +157,19 @@ const char *tokenStrings[32] = {
 };
 #undef X
          
+  
                 
-void showToken(Token t)
+tokens showToken(tokens t)
 {
     const char *name = tokenStrings[t];
     int num;
     char *toPrint = yytext;
     switch(t)
     {
-    case COMMENT:
-        /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
-        // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
+    /*case COMMENT:
         printf("%d %s #%s\n", yylineno, name, toPrint);
-        return;
+        return t;
+     */
         
     case INTEGER:
         num = (int)strtol(yytext, NULL, 0); //takes care of bases 10 and 16
@@ -172,18 +177,18 @@ void showToken(Token t)
         {
             num = (int)strtol(yytext+2, NULL, 8);
         }
-        printf("%d %s %d\n", yylineno, name, num);
-        return;
+        //printf("%d %s %d\n", yylineno, name, num);
+        return t;
 
-    case DSTRING:
+    case STRING:
         toPrint = buff;
-    case SSTRING:
         name = tokenStrings[STRING];
         break;
 
     default: ;
         
     };
-    printf("%d %s %s\n", yylineno, name, toPrint);
+    //printf("%d %s %s\n", yylineno, name, toPrint);
+    return t;
 }
 

@@ -28,7 +28,7 @@ struct grammar_rule {
 extern std::vector<grammar_rule> grammar;
 
 /**
- * @param vec vector of booleans, i-th element is true if i-th nonterminal (see nonterminal enum) is nullable, i.e. can produce empty word
+ * @param nullables vector of booleans, i-th element is true if i-th nonterminal (see nonterminal enum) is nullable, i.e. can produce empty word
  */
 void print_nullable(const std::vector<bool>& nullables);
 /**
@@ -43,5 +43,8 @@ void print_follow(const std::vector<std::set<tokens> >& vec);
  * @param vec vector of ordered sets of tokens (see tokens enum in tokens.h), i-th element corresponds to i-th grammar rule (see grammar global variable)
  */
 void print_select(const std::vector<std::set<tokens> >& vec);
+
+/** TODO: remove!!! **/
+std::vector <grammar_rule> make_grammar();
 
 #endif //__GRAMMAR__
