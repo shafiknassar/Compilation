@@ -138,19 +138,18 @@ vector<set<tokens> > firsts = first_algorithm();
 static set<tokens> first(vector<int> &word)
 {
     set<tokens> res;
-    if (0 == word.size()) return res;
-    if (IS_TERMINAL(word[0])) {
-        res.insert(TO_TOKEN(word[0]));
-        return res;
-    } else { /* word[0] is nonterminal */
-        mergeSets(res, firsts[word[0]]);
-    }
     int i = 0;
-    while (IS_NULLABLE(word[i]) && i+1 < word.size()) {
-        mergeSets(res, firsts[word[i+1]]);
-        ++i;
-    }
     
+    while (i < word.size()) {
+        if (IS_TERMINAL(word[i])) {
+            res.insert(TO_TOKEN(word[i]));
+            break;
+        } else { /* word[0] is nonterminal */
+            mergeSets(res, firsts[word[i]]);
+            if (!IS_NULLABLE(word[i])) break;
+        }
+        i++;
+    }
     
     return res;
 }
