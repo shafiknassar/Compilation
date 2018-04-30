@@ -150,7 +150,7 @@ static set<tokens> first(vector<int> &word)
         }
         i++;
     }
-    
+    //
     return res;
 }
 
