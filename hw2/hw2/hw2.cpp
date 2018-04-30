@@ -29,7 +29,7 @@ using std::vector;
 using std::set;
 
 /*****************************************************/
-/* Set manipulation functions */
+/* Data structure manipulation functions */
 /*****************************************************/
 /*
  * merge the 2 input sets into the dst.
@@ -47,6 +47,17 @@ bool mergeSets(set<T> &dst, set<T> &src) {
         }
     }
     return res;
+}
+
+template<typename T>
+vector<T> vectorFromRange(vector<T> &v, int start, int end)
+{
+    vector<T> toReturn;
+    if (end == -1) end = v.size()-1;
+    for (int i = start; i <= end; i++) {
+        toReturn.push_back(v[i]);
+    }
+    return toReturn;
 }
 
 /*****************************************************/
@@ -113,7 +124,7 @@ static vector<set<tokens> > first_algorithm()
         isStable = true;
         for (int i = 0; i < grammar.size(); ++i) {
             grammar_rule rule = grammar[i];
-            vector<int> rhs = rule.rhs;
+            vector<int> &rhs = rule.rhs;
             for (int j = 0; j < rhs.size(); ++j) {
                 if (IS_TERMINAL(rhs[j])) {
                     if (!contains(firsts[rule.lhs], TO_TOKEN(rhs[j]))) {
@@ -139,7 +150,6 @@ static set<tokens> first(vector<int> &word)
 {
     set<tokens> res;
     int i = 0;
-    
     while (i < word.size()) {
         if (IS_TERMINAL(word[i])) {
             res.insert(TO_TOKEN(word[i]));
@@ -153,6 +163,67 @@ static set<tokens> first(vector<int> &word)
     //
     return res;
 }
+
+static bool isNullable(vector<int> &v)
+{
+    for (int i = 0; i < v.size(); ++i) {
+        if (IS_TERMINAL(v[i]) || !IS_NULLABLE(TO_NT(v[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static vector<set<tokens> > follow_algorithm()
+{
+    vector<set<tokens> > res;
+    for (int i = 0; i < NONTERMINAL_ENUM_SIZE; ++i) {
+        set<tokens> set; /*empty set*/
+        res.push_back(set);
+    }
+    res[S].insert(EF);
+    
+    bool isStable;
+    do {
+        isStable = true;
+        for (int i = 0; i < grammar.size(); ++i) {
+            grammar_rule rule = grammar[i];
+            vector<int> &rhs = rule.rhs;
+            for (int j = 0; j < rhs.size(); ++j) {
+                if (IS_TERMINAL(rhs[j])) continue;
+                vector<int> after = vectorFromRange(rhs, j+1, -1);
+                set<tokens> s = first(after);
+                if (mergeSets(res[rhs[j]], s)) isStable = false;
+                if (isNullable(after)) {
+                    if (mergeSets(res[rhs[j]], res[rule.lhs])) isStable = false;
+                }
+            }
+        }
+    } while (!isStable);
+    return res;
+}
+
+vector<set<tokens> > follows = follow_algorithm();
+
+set<tokens> select(grammar_rule r)
+{
+    set<tokens> res = first(r.rhs);
+    if (isNullable(r.rhs)) {
+        mergeSets(res, follows[r.lhs]);
+    }
+    return res;
+}
+
+static vector<set<tokens> > compute_select_internal()
+{
+    vector<set<tokens> > res;
+    for (int i = 0; i < grammar.size(); ++i) {
+        res.push_back(select(grammar[i]));
+    }
+    return res;
+}
+
+vector<set<tokens> > selects = compute_select_internal();
 
 /*****************************************************/
 /*****************************************************/
@@ -178,7 +249,7 @@ void compute_first(){
  * calls print_follow when finished
  */
 void compute_follow(){
-    
+    print_follow(follows);
 }
 
 /**
@@ -186,7 +257,7 @@ void compute_follow(){
  * calls print_select when finished
  */
 void compute_select(){
-    
+    print_select(selects);
 }
 
 /**
@@ -195,10 +266,3 @@ void compute_select(){
 void parser(){
     
 }
-/*
- * implemented in lex.yy.c (generated from lexer.lex)
- */
-/*int yylex(){
-    return 0;
-}*/
-
