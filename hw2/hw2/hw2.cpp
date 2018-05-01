@@ -244,7 +244,7 @@ table selects_table = make_table();
 
 static int M(nonterminal X, tokens t)
 {
-    return selects_table[X][t]
+    return selects_table[X][t];
 }
 /*****************************************************/
 /*****************************************************/
