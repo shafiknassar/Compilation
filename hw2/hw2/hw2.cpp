@@ -27,6 +27,7 @@
 /*****************************************************/
 using std::vector;
 using std::set;
+using std::map;
 
 /*****************************************************/
 /* Data structure manipulation functions */
@@ -65,6 +66,7 @@ vector<T> vectorFromRange(vector<T> &v, int start, int end)
 /*****************************************************/
 
 typedef vector <grammar_rule> grammar_rules;
+typedef map<nonterminal, map<tokens, int> > table;
 
 static vector <grammar_rules*> divideGrammarRulesByLhs()
 {
@@ -225,6 +227,25 @@ static vector<set<tokens> > compute_select_internal()
 
 vector<set<tokens> > selects = compute_select_internal();
 
+static table make_table()
+{
+    table new_table;
+    tokens t;
+    set<tokens >::iterator it;
+    for (int i = 0; i < selects.size(); ++i) {
+        for_each_token(t) {            
+            new_table[i][t] = it != select.find(t).end() ? i : -1; 
+        }
+    }
+    return new_table;
+}
+
+table selects_table = make_table();
+
+static int M(nonterminal X, tokens t)
+{
+    return selects_table[X][t]
+}
 /*****************************************************/
 /*****************************************************/
 
