@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "hw2.h"
 #include "grammar.h"
+#include <map>
 
 /*****************************************************/
 /* Defines */
@@ -17,10 +18,11 @@
 #define IS_TERMINAL(var)    (!IS_NONTERMINAL(var))
 #define TO_NT(i)            (static_cast<nonterminal>(i))
 #define TO_TOKEN(i)         (static_cast<tokens>(i))
-#define for_each_token(t)   for (t = STARTSTRUCT; t <= EF; ++t)
+#define for_each_token(t)   for (int _##t = STARTSTRUCT; (t=TO_TOKEN(_##t)) <= EF; ++_##t)
 #define for_each_nt(nt)     for (nt; nt < NONTERMINAL_ENUM_SIZE; ++nt)
 #define contains(set, e)    ((set).find(e) != (set).end())
 #define IS_NULLABLE(nt)     (nullableBitMap[nt])
+#define ERROR               (-1)
 
 /*****************************************************/
 /* Using */
@@ -233,8 +235,10 @@ static table make_table()
     tokens t;
     set<tokens >::iterator it;
     for (int i = 0; i < selects.size(); ++i) {
+        nonterminal nt = grammar[i].lhs;
         for_each_token(t) {            
-            new_table[i][t] = it != select.find(t).end() ? i : -1; 
+            (new_table[nt])[t] = /* TODO: bilal, please check that I didn't a5re bl code */
+                    contains(selects[i], t)? i : ERROR;
         }
     }
     return new_table;
@@ -242,10 +246,20 @@ static table make_table()
 
 table selects_table = make_table();
 
-static int M(nonterminal X, tokens t)
+inline static int M(nonterminal X, tokens t)
 {
     return selects_table[X][t];
 }
+
+/* TODO 
+ 
+ * InitStack (void)                  - __
+ * Predict   (nonterminal, tokens)   - __
+ * Match     (tokens, tokens)        - done
+ 
+ */
+
+
 /*****************************************************/
 /*****************************************************/
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7FB5F3B0209BD21100B17964 /* lex.yy.c in Sources */ = {isa = PBXBuildFile; fileRef = 7FB5F3AF209BD21100B17964 /* lex.yy.c */; };
 		7FE060D22096419400FD8DDE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7FE060CE2096419400FD8DDE /* main.cpp */; };
 		7FE060D32096419400FD8DDE /* grammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7FE060CF2096419400FD8DDE /* grammar.cpp */; };
 		7FE060D52096442400FD8DDE /* hw2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7FE060D42096442400FD8DDE /* hw2.cpp */; };
@@ -25,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7FB5F3AF209BD21100B17964 /* lex.yy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lex.yy.c; sourceTree = "<group>"; };
 		7FE060C02096416E00FD8DDE /* hw2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = hw2; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FE060CA2096419400FD8DDE /* lexer.lex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lexer.lex; sourceTree = "<group>"; };
 		7FE060CB2096419400FD8DDE /* selfcheck.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = selfcheck.txt; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				7FE060CA2096419400FD8DDE /* lexer.lex */,
+				7FB5F3AF209BD21100B17964 /* lex.yy.c */,
 				7FE060CB2096419400FD8DDE /* selfcheck.txt */,
 				7FE060CC2096419400FD8DDE /* Makefile */,
 				7FE060CD2096419400FD8DDE /* hw2.h */,
@@ -139,6 +142,7 @@
 			files = (
 				7FE060D52096442400FD8DDE /* hw2.cpp in Sources */,
 				7FE060D22096419400FD8DDE /* main.cpp in Sources */,
+				7FB5F3B0209BD21100B17964 /* lex.yy.c in Sources */,
 				7FE060D32096419400FD8DDE /* grammar.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -266,6 +270,7 @@
 				7FE060C92096416F00FD8DDE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
