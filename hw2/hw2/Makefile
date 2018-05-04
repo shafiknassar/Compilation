@@ -5,5 +5,3 @@ all: clean
 clean:
 	rm -f lex.yy.c
 	rm -f hw2
-
-

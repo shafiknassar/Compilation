@@ -19,10 +19,15 @@
 #define TO_NT(i)            (static_cast<nonterminal>(i))
 #define TO_TOKEN(i)         (static_cast<tokens>(i))
 #define for_each_token(t)   for (int _##t = STARTSTRUCT; (t=TO_TOKEN(_##t)) <= EF; ++_##t)
-#define for_each_nt(nt)     for (nt; nt < NONTERMINAL_ENUM_SIZE; ++nt)
+#define for_each_nt(t)      for (int _##t = S; (t=TO_NT(_##t)) < NONTERMINAL_ENUM_SIZE; ++_##t)
 #define contains(set, e)    ((set).find(e) != (set).end())
 #define IS_NULLABLE(nt)     (nullableBitMap[nt])
 #define ERROR               (-1)
+
+/*********************/
+/* DEBUG TRACE */
+
+#define TRACE               printf("%s ; %d", __FUNCTION__,__LINE__); printf
 
 /*****************************************************/
 /* Using */
@@ -31,6 +36,10 @@ using std::vector;
 using std::set;
 using std::map;
 
+typedef vector <grammar_rule>               grammar_rules;
+typedef map<nonterminal, map<tokens, int> > table;
+typedef vector<int>                         AnalasysStack;
+
 /*****************************************************/
 /* Data structure manipulation functions */
 /*****************************************************/
@@ -38,6 +47,7 @@ using std::map;
  * merge the 2 input sets into the dst.
  * Returns true iff dst was actually changed.
  */
+
 template<typename T>
 bool mergeSets(set<T> &dst, set<T> &src) {
     bool res = false;
@@ -47,6 +57,8 @@ bool mergeSets(set<T> &dst, set<T> &src) {
         if (!contains(dst, t)) {
             res = true;
             dst.insert(t);
+            __FUNCTION__;
+            __LINE__;
         }
     }
     return res;
@@ -64,15 +76,27 @@ vector<T> vectorFromRange(vector<T> &v, int start, int end)
 }
 
 /*****************************************************/
+/* Global Variables */
+/*****************************************************/
+/* We use global variables to follow
+ the mythodology used in grammar.cpp */
+
+
+//vector <grammar_rules*> mapNonterminalsToRules;
+//vector<bool> nullableBitMap = compute_nullable_internal();
+//vector<set<tokens> > firsts = first_algorithm();
+//vector<set<tokens> > selects = compute_select_internal();
+//vector<set<tokens> > follows = follow_algorithm();
+
+/*****************************************************/
 /* Static functions */
 /*****************************************************/
 
-typedef vector <grammar_rule> grammar_rules;
-typedef map<nonterminal, map<tokens, int> > table;
 
 static vector <grammar_rules*> divideGrammarRulesByLhs()
 {
     std::vector <grammar_rules*> res;
+    
     for (int i = 0; i < NONTERMINAL_ENUM_SIZE; ++i) {
         res.push_back(new grammar_rules);
     }
@@ -229,16 +253,35 @@ static vector<set<tokens> > compute_select_internal()
 
 vector<set<tokens> > selects = compute_select_internal();
 
+#define table_contains(table, nt, t)              \
+        ((table).find(nt) != (table).end() &&     \
+        (table)[nt].find(t) != (table)[nt].end())
+
 static table make_table()
 {
     table new_table;
     tokens t;
+    nonterminal nt;
     set<tokens >::iterator it;
+    
+    for_each_nt(nt) {
+        for_each_token(t) {
+            new_table[nt][t] = ERROR;
+        }
+    }
+    
     for (int i = 0; i < selects.size(); ++i) {
-        nonterminal nt = grammar[i].lhs;
-        for_each_token(t) {            
-            (new_table[nt])[t] = /* TODO: bilal, please check that I didn't a5re bl code */
-                    contains(selects[i], t)? i : ERROR;
+        nt = grammar[i].lhs;
+        for_each_token(t) {
+            /* TODO: make sure that no element was in [nt][t] before hand */
+            /* TODO: bilal, please check that I didn't a5re bl code */
+            if (contains(selects[i], t)) {
+                if (ERROR != new_table[nt][t]) {
+                    printf("Conflict between rule %d and %d\n", i, new_table[nt][t]);
+                } else {
+                    new_table[nt][t] = i;
+                }
+            }
         }
     }
     return new_table;
@@ -246,19 +289,90 @@ static table make_table()
 
 table selects_table = make_table();
 
-inline static int M(nonterminal X, tokens t)
+inline static int M(int X, int t)
 {
-    return selects_table[X][t];
+    return selects_table[TO_NT(X)][TO_TOKEN(t)];
 }
 
-/* TODO 
- 
- * InitStack (void)                  - __
- * Predict   (nonterminal, tokens)   - __
- * Match     (tokens, tokens)        - done
- 
- */
+inline static AnalasysStack init_stack()
+{
+    AnalasysStack res;
+    res.push_back(S);
+    return res;
+}
 
+AnalasysStack stack = init_stack();
+
+static bool match(int x, int t)
+{
+    bool res = (x == t);
+    TRACE ("matching %d and %d\n", x,t);
+    if (res) {
+        stack.pop_back();
+    } // maybe else print something?
+    return res;
+}
+
+static bool predict(int x, int t)
+{
+    int rule_number = M(x,t);
+    TRACE("x=%d, t=%d\n", x,t);
+    if (ERROR == rule_number) return false; /* or maybe print something? */
+    printf("%d\n", rule_number);
+    vector<int> rhs = grammar[rule_number].rhs;
+    TRACE("popped %d\n", stack.back());
+    stack.pop_back();
+    for (int i = static_cast<int>(rhs.size())-1; i >= 0; --i) {
+        stack.push_back(rhs[i]);
+        TRACE("     pushed %d\n", stack.back());
+    }
+    return true;
+}
+
+/* returns true iff the parsing succeeded */
+bool LL1()
+{
+    tokens t = TO_TOKEN(yylex());
+    while (stack.size() > 0) {
+        TRACE("Token is %d\n", t);
+        TRACE("Stack size = %lu\n", stack.size());
+        int head = stack.back();
+        TRACE("trace: head is %d\n", head);
+        if (IS_TERMINAL(head)) {
+            if (!match(head, t)) {
+                goto syntax_error;
+            }
+        } else {
+            if (!predict(head, t)) {
+                goto syntax_error;
+            }
+        }
+        t = TO_TOKEN(yylex());
+    }
+    if (EF == t) {
+        printf("Success\n");
+        return true;
+    }
+syntax_error:
+    printf("Syntax error\n");
+    return false;
+}
+
+
+/*****************************************************/
+/* Tests API */
+/*****************************************************/
+
+void makeTableTest() {
+    table tbl = make_table();
+    tokens t;
+    nonterminal nt;
+    for_each_token(t) {
+        for_each_nt(nt) {
+            printf("table[%d][%d] = %d \n", nt, t, tbl[nt][t]);
+        }
+    }
+}
 
 /*****************************************************/
 /*****************************************************/
@@ -299,5 +413,5 @@ void compute_select(){
  * implements an LL(1) parser for the grammar using yylex()
  */
 void parser(){
-    
+    LL1();
 }

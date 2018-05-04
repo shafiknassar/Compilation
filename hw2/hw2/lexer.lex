@@ -99,35 +99,35 @@ dstring         (([^\"\\])|{escapeSeqs})*
 \"                              { buff_ptr = buff; BEGIN(double_string); }
 \'                              { buff_ptr = buff; BEGIN(single_string); }
 #                               { buff_ptr = buff; BEGIN(comment);       }
----                             showToken(STARTSTRUCT);
-\.\.\.                          showToken(ENDSTRUCT);
-\[                              showToken(LLIST);
-\]                              showToken(RLIST);
-\{                              showToken(LDICT);
-\}                              showToken(RDICT);
-:                               showToken(KEY);
-\?                              showToken(COMPLEXKEY);
-\-                              showToken(ITEM);
-,                               showToken(COMMA);
-\!\!{letters}                   showToken(TYPE);
-true                            showToken(TRUE);
-false                           showToken(FALSE);
-{decimal}|{octa}|{hexa}         showToken(INTEGER);
-{real}|{exp}|\.inf|\.NaN        showToken(REAL);
+---                             return (STARTSTRUCT);
+\.\.\.                          return (ENDSTRUCT);
+\[                              return (LLIST);
+\]                              return (RLIST);
+\{                              return (LDICT);
+\}                              return (RDICT);
+:                               return (KEY);
+\?                              return (COMPLEXKEY);
+\-                              return (ITEM);
+,                               return (COMMA);
+\!\!{letters}                   return (TYPE);
+true                            return (TRUE);
+false                           return (FALSE);
+{decimal}|{octa}|{hexa}         return (INTEGER);
+{real}|{exp}|\.inf|\.NaN        return (REAL);
 <double_string>([^\"\\\n])*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
-<double_string>\"               { showToken(STRING); BEGIN(INITIAL); }
+<double_string>\"               { return (STRING); BEGIN(INITIAL); }
 <double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
-<single_string>[^\']*           { buff_ptr = buff; strcpy(buff_ptr, yytext); showToken(STRING); }
+<single_string>[^\']*           { buff_ptr = buff; strcpy(buff_ptr, yytext); return (STRING); }
 <single_string>\'               BEGIN(INITIAL);
 <single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
 <comment>([^\n\r])*             /*showToken(COMMENT)*/;
 <comment><<EOF>>                BEGIN(INITIAL);
 <comment>{newLine}              BEGIN(INITIAL);
-{letters}({digits}|{letters})*  showToken(VAL);
-\&{letters}                     showToken(DECLARATION);
-\*{letters}                     showToken(DEREFERENCE);
+{letters}({digits}|{letters})*  return (VAL);
+\&{letters}                     return (DECLARATION);
+\*{letters}                     return (DEREFERENCE);
 <<EOF>>                         printf("%d EOF \n", yylineno); yyterminate();
 {whitespace}                    ;
 .                               printf("Error %s\n", yytext); exit(0);
@@ -159,6 +159,7 @@ const char *tokenStrings[32] = {
          
   
                 
+                
 tokens showToken(tokens t)
 {
     const char *name = tokenStrings[t];
@@ -177,7 +178,7 @@ tokens showToken(tokens t)
         {
             num = (int)strtol(yytext+2, NULL, 8);
         }
-        //printf("%d %s %d\n", yylineno, name, num);
+        printf("%d %s %d\n", yylineno, name, num);
         return t;
 
     case STRING:
@@ -188,7 +189,7 @@ tokens showToken(tokens t)
     default: ;
         
     };
-    //printf("%d %s %s\n", yylineno, name, toPrint);
+    printf("%d %s %s\n", yylineno, name, toPrint);
     return t;
 }
 

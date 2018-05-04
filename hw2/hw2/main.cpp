@@ -3,8 +3,8 @@
 #include "hw2.h"
 #include <cstring>
 
-int main(int argc, char *argv[]) {
 
+int main(int argc, char *argv[]) {
     bool parse = true;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-nullable") == 0) {
@@ -24,6 +24,11 @@ int main(int argc, char *argv[]) {
         }
         if (strcmp(argv[i], "-select") == 0) {
             compute_select();
+            parse = false;
+            continue;
+        }
+        if (strcmp(argv[i], "-testmaktable") == 0) {
+            makeTableTest();
             parse = false;
             continue;
         }

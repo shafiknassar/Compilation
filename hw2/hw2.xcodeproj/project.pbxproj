@@ -28,7 +28,7 @@
 /* Begin PBXFileReference section */
 		7FB5F3AF209BD21100B17964 /* lex.yy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lex.yy.c; sourceTree = "<group>"; };
 		7FE060C02096416E00FD8DDE /* hw2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = hw2; sourceTree = BUILT_PRODUCTS_DIR; };
-		7FE060CA2096419400FD8DDE /* lexer.lex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lexer.lex; sourceTree = "<group>"; };
+		7FE060CA2096419400FD8DDE /* lexer.lex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lexer.lex; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		7FE060CB2096419400FD8DDE /* selfcheck.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = selfcheck.txt; sourceTree = "<group>"; };
 		7FE060CC2096419400FD8DDE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		7FE060CD2096419400FD8DDE /* hw2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hw2.h; sourceTree = "<group>"; };

@@ -928,77 +928,77 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 102 "lexer.lex"
-showToken(STARTSTRUCT);
+return (STARTSTRUCT);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 103 "lexer.lex"
-showToken(ENDSTRUCT);
+return (ENDSTRUCT);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 104 "lexer.lex"
-showToken(LLIST);
+return (LLIST);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 105 "lexer.lex"
-showToken(RLIST);
+return (RLIST);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 106 "lexer.lex"
-showToken(LDICT);
+return (LDICT);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 107 "lexer.lex"
-showToken(RDICT);
+return (RDICT);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 108 "lexer.lex"
-showToken(KEY);
+return (KEY);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 109 "lexer.lex"
-showToken(COMPLEXKEY);
+return (COMPLEXKEY);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 110 "lexer.lex"
-showToken(ITEM);
+return (ITEM);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 111 "lexer.lex"
-showToken(COMMA);
+return (COMMA);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 112 "lexer.lex"
-showToken(TYPE);
+return (TYPE);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 113 "lexer.lex"
-showToken(TRUE);
+return (TRUE);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 114 "lexer.lex"
-showToken(FALSE);
+return (FALSE);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 115 "lexer.lex"
-showToken(INTEGER);
+return (INTEGER);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 116 "lexer.lex"
-showToken(REAL);
+return (REAL);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
@@ -1019,7 +1019,7 @@ YY_RULE_SETUP
 case 22:
 YY_RULE_SETUP
 #line 120 "lexer.lex"
-{ showToken(STRING); BEGIN(INITIAL); }
+{ return (STRING); BEGIN(INITIAL); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
@@ -1030,7 +1030,7 @@ case 24:
 /* rule 24 can match eol */
 YY_RULE_SETUP
 #line 122 "lexer.lex"
-{ buff_ptr = buff; strcpy(buff_ptr, yytext); showToken(STRING); }
+{ buff_ptr = buff; strcpy(buff_ptr, yytext); return (STRING); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
@@ -1060,17 +1060,17 @@ BEGIN(INITIAL);
 case 28:
 YY_RULE_SETUP
 #line 128 "lexer.lex"
-showToken(VAL);
+return (VAL);
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 129 "lexer.lex"
-showToken(DECLARATION);
+return (DECLARATION);
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 130 "lexer.lex"
-showToken(DEREFERENCE);
+return (DEREFERENCE);
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 131 "lexer.lex"
@@ -2128,6 +2128,7 @@ const char *tokenStrings[32] = {
          
   
                 
+                
 tokens showToken(tokens t)
 {
     const char *name = tokenStrings[t];
@@ -2146,7 +2147,7 @@ tokens showToken(tokens t)
         {
             num = (int)strtol(yytext+2, NULL, 8);
         }
-        //printf("%d %s %d\n", yylineno, name, num);
+        printf("%d %s %d\n", yylineno, name, num);
         return t;
 
     case STRING:
@@ -2157,7 +2158,7 @@ tokens showToken(tokens t)
     default: ;
         
     };
-    //printf("%d %s %s\n", yylineno, name, toPrint);
+    printf("%d %s %s\n", yylineno, name, toPrint);
     return t;
 }
 

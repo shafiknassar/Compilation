@@ -37,4 +37,8 @@ void parser();
  */
 int yylex();
 
+
+/***TESTS***/
+void makeTableTest();
+
 #endif //__HW2__
