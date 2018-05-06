@@ -275,7 +275,7 @@ static table make_table()
             /* TODO: bilal, please check that I didn't a5re bl code */
             if (contains(selects[i], t)) {
                 if (ERROR != new_table[nt][t]) {
-                    printf("Conflict between rule %d and %d\n", i, new_table[nt][t]);
+                    //printf("Conflict between rule %d and %d\n", i, new_table[nt][t]);
                 } else {
                     new_table[nt][t] = i;
                 }
@@ -344,18 +344,18 @@ bool LL1()
     while (stack.size() > 0) {
         //TRACE("Token is %d\n", t);
         //TRACE("Stack size = %lu\n", stack.size());
-        print_stack();
+        //print_stack();
         int head = stack.back();
         //TRACE("trace: head is %d\n", head);
         if (IS_TERMINAL(head)) {
             if (!match(head, t)) {
-                printf("match failed!\n");
+                //printf("match failed!\n");
                 goto syntax_error;
             }
             t = TO_TOKEN(yylex());
         } else {
             if (!predict(head, t)) {
-                printf("predict failed!\n");
+                //printf("predict failed!\n");
                 goto syntax_error;
             }
         }

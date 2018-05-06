@@ -63,7 +63,7 @@ void handleEscSeq(char*,char*);
 
 %option yylineno
 %option noyywrap
-printables      ([\x20-\x7E])+
+printables      ([\x0-\x7E])+
 nonprintables   ([\x0-\x1F\x7F-\xFF])+
 digit   		([0-9])
 digits          {digit}+
@@ -121,13 +121,13 @@ false                           return(FALSE);
 <single_string>[^\']*           strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <single_string>\'               BEGIN(INITIAL); return(STRING);
 <single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
-<comment>([^\n\r])*             return(COMMENT);
+<comment>([^\n\r])*             /*return(COMMENT)*/;
 <comment><<EOF>>                BEGIN(INITIAL);
 <comment>{newLine}              BEGIN(INITIAL);
 {letters}({digits}|{letters})*  return(VAL);
 \&{letters}                     return(DECLARATION);
 \*{letters}                     return(DEREFERENCE);
-<<EOF>>                         printf("%d EOF \n", yylineno); yyterminate();
+<<EOF>>                         return EF;
 {whitespace}                    ;
 .                               printf("Error %s\n", yytext); exit(0);
 
@@ -162,12 +162,10 @@ void showToken(tokens t)
     char *toPrint = yytext;
     switch(t)
     {
-    case COMMENT:
-        /* TODO: make sure it works on EOF! CR -> LF, EOF -> LF */
-        // TODO should also make sure EOF works and not <<EOF>> - can use flex manual
+    /*case COMMENT:
         printf("%d %s #%s\n", yylineno, name, toPrint);
         return;
-        
+        */
     case INTEGER:
         if (yyleng >= 2 && 'o' == yytext[1])
         {
