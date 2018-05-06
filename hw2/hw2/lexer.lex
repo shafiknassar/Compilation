@@ -57,6 +57,7 @@ char *buff_ptr;
 
 void showToken(tokens);
 void handleEscSeq(char*,char*);
+void validateBuff();
 
 
 %}
@@ -111,15 +112,17 @@ true                            return(TRUE);
 false                           return(FALSE);
 {decimal}|{octa}|{hexa}         return(INTEGER);
 {real}|{exp}|\.inf|\.NaN        return(REAL);
+<double_string>([^\"\\\n\r\x0-\x1F\x7F-\xFF]|\t)*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;// validateBuff();
 <double_string>{newLine}        {*(buff_ptr) = ' '; *(++buff_ptr) = '\0';}
-<double_string>{nonprintables}*  printf("Error %s\n", yytext); exit(0);
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
 <double_string>\"               { BEGIN(INITIAL); return(STRING); }
-<double_string>[^\"\\\n\r]*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
+<double_string>{nonprintables}  printf("Error %s\n", yytext); exit(0);
 
-<single_string>[^\']*           strcpy(buff_ptr, yytext); buff_ptr += yyleng;
+<single_string>(([^\'\x0-\x1F\x7F-\xFF])|{newLine}|{whitespace})*           strcpy(buff_ptr, yytext); buff_ptr += yyleng;// validateBuff();
 <single_string>\'               BEGIN(INITIAL); return(STRING);
+<single_string>{nonprintables}  printf("Error %s\n", yytext); exit(0);
+
 <single_string,double_string><<EOF>> printf("Error unclosed string\n"); exit(0);
 <comment>([^\n\r])*             /*return(COMMENT)*/;
 <comment><<EOF>>                BEGIN(INITIAL);
@@ -154,7 +157,18 @@ const char *tokenStrings[32] = {
     TOKENS_TABLE
 };
 #undef X
-                     
+
+#define IS_PRINTABLE(c)  ((c)<0x7F && (c)>0x1F) || ((c)==9 || (c)==10 || (c)==13)
+                
+void validateBuff() {
+    for (char *it = buff; it <= buff_ptr; ++it) {
+        if (!IS_PRINTABLE(*it)) {
+            printf("Error %c\n", *it); exit(0);
+        }
+    }
+}
+
+                
 void showToken(tokens t)
 {
     const char *name = tokenStrings[t];

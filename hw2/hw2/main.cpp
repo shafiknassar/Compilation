@@ -27,11 +27,6 @@ int main(int argc, char *argv[]) {
             parse = false;
             continue;
         }
-        if (strcmp(argv[i], "-testmaktable") == 0) {
-            makeTableTest();
-            parse = false;
-            continue;
-        }
     }
     if (parse) {
         parser();

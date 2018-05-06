@@ -44,7 +44,4 @@ void print_follow(const std::vector<std::set<tokens> >& vec);
  */
 void print_select(const std::vector<std::set<tokens> >& vec);
 
-/** TODO: remove!!! **/
-std::vector <grammar_rule> make_grammar();
-
 #endif //__GRAMMAR__

@@ -37,10 +37,4 @@ void parser();
  */
 int yylex();
 
-
-/***TESTS***/
-void makeTableTest();
-void print_nonterminal(nonterminal var);
-void print_token      (tokens var);
-
 #endif //__HW2__

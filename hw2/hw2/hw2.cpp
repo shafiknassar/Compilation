@@ -327,7 +327,7 @@ static bool predict(int x, int t)
     return true;
 }
 
-void print_stack() {
+/*void print_stack() {
     printf("Stack content:\n");
     for (int i = 0; i < stack.size(); ++i) {
         printf("    ");
@@ -335,7 +335,7 @@ void print_stack() {
         else print_nonterminal(TO_NT(stack[i]));
         printf("\n");
     }
-}
+}*/
 
 /* returns true iff the parsing succeeded */
 bool LL1()
