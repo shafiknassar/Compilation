@@ -1019,7 +1019,7 @@ YY_RULE_SETUP
 case 22:
 YY_RULE_SETUP
 #line 120 "lexer.lex"
-{ BEGIN(INITIAL); return (STRING);}
+{ BEGIN(INITIAL); printf("lexer: %d\n", STRING); return (STRING);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
@@ -1074,7 +1074,7 @@ printf("lexer: %d\n", DEREFERENCE);return (DEREFERENCE);
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 131 "lexer.lex"
-printf("%d EOF \n", yylineno); yyterminate();
+printf("%d EOF \n", yylineno); return (EF);
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */

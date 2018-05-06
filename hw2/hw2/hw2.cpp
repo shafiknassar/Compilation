@@ -349,11 +349,13 @@ bool LL1()
         //TRACE("trace: head is %d\n", head);
         if (IS_TERMINAL(head)) {
             if (!match(head, t)) {
+                printf("match failed!\n");
                 goto syntax_error;
             }
             t = TO_TOKEN(yylex());
         } else {
             if (!predict(head, t)) {
+                printf("predict failed!\n");
                 goto syntax_error;
             }
         }

@@ -117,7 +117,7 @@ false                           printf("lexer: %d\n", FALSE);return (FALSE);
 <double_string>([^\"\\\n])*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
-<double_string>\"               { BEGIN(INITIAL); return (STRING);}
+<double_string>\"               { BEGIN(INITIAL); printf("lexer: %d\n", STRING); return (STRING);}
 <double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
 <single_string>[^\']*           { buff_ptr = buff; strcpy(buff_ptr, yytext); return (STRING); }
 <single_string>\'               BEGIN(INITIAL);
@@ -128,7 +128,7 @@ false                           printf("lexer: %d\n", FALSE);return (FALSE);
 {letters}({digits}|{letters})*  printf("lexer: %d\n", VAL);return (VAL);
 \&{letters}                     printf("lexer: %d\n", DECLARATION);return (DECLARATION);
 \*{letters}                     printf("lexer: %d\n", DEREFERENCE);return (DEREFERENCE);
-<<EOF>>                         printf("%d EOF \n", yylineno); yyterminate();
+<<EOF>>                         printf("%d EOF \n", yylineno); return (EF);
 {whitespace}                    ;
 .                               printf("Error %s\n", yytext); exit(0);
 
