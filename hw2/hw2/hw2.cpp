@@ -27,7 +27,7 @@
 /*********************/
 /* DEBUG TRACE */
 
-#define TRACE               printf("%s ; %d", __FUNCTION__,__LINE__); printf
+#define TRACE               printf("%s ; %d : ", __FUNCTION__,__LINE__); printf
 
 /*****************************************************/
 /* Using */
@@ -57,8 +57,6 @@ bool mergeSets(set<T> &dst, set<T> &src) {
         if (!contains(dst, t)) {
             res = true;
             dst.insert(t);
-            __FUNCTION__;
-            __LINE__;
         }
     }
     return res;
@@ -306,7 +304,7 @@ AnalasysStack stack = init_stack();
 static bool match(int x, int t)
 {
     bool res = (x == t);
-    TRACE ("matching %d and %d\n", x,t);
+    //TRACE ("matching %d and %d\n", x,t);
     if (res) {
         stack.pop_back();
     } // maybe else print something?
@@ -316,17 +314,27 @@ static bool match(int x, int t)
 static bool predict(int x, int t)
 {
     int rule_number = M(x,t);
-    TRACE("x=%d, t=%d\n", x,t);
+    //TRACE("x=%d, t=%d\n", x,t);
     if (ERROR == rule_number) return false; /* or maybe print something? */
-    printf("%d\n", rule_number);
+    printf("%d\n", rule_number+1); //+1 to start counting from 1
     vector<int> rhs = grammar[rule_number].rhs;
-    TRACE("popped %d\n", stack.back());
+    //TRACE("popped %d\n", stack.back());
     stack.pop_back();
     for (int i = static_cast<int>(rhs.size())-1; i >= 0; --i) {
         stack.push_back(rhs[i]);
-        TRACE("     pushed %d\n", stack.back());
+        //TRACE("     pushed %d\n", stack.back());
     }
     return true;
+}
+
+void print_stack() {
+    printf("Stack content:\n");
+    for (int i = 0; i < stack.size(); ++i) {
+        printf("    ");
+        if (IS_TERMINAL(stack[i])) print_token(TO_TOKEN(stack[i]));
+        else print_nonterminal(TO_NT(stack[i]));
+        printf("\n");
+    }
 }
 
 /* returns true iff the parsing succeeded */
@@ -334,20 +342,21 @@ bool LL1()
 {
     tokens t = TO_TOKEN(yylex());
     while (stack.size() > 0) {
-        TRACE("Token is %d\n", t);
-        TRACE("Stack size = %lu\n", stack.size());
+        //TRACE("Token is %d\n", t);
+        //TRACE("Stack size = %lu\n", stack.size());
+        print_stack();
         int head = stack.back();
-        TRACE("trace: head is %d\n", head);
+        //TRACE("trace: head is %d\n", head);
         if (IS_TERMINAL(head)) {
             if (!match(head, t)) {
                 goto syntax_error;
             }
+            t = TO_TOKEN(yylex());
         } else {
             if (!predict(head, t)) {
                 goto syntax_error;
             }
         }
-        t = TO_TOKEN(yylex());
     }
     if (EF == t) {
         printf("Success\n");

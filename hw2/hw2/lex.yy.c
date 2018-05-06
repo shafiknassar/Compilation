@@ -928,77 +928,77 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 102 "lexer.lex"
-return (STARTSTRUCT);
+printf("lexer: %d\n", STARTSTRUCT); return (STARTSTRUCT);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 103 "lexer.lex"
-return (ENDSTRUCT);
+printf("lexer: %d\n", ENDSTRUCT);return (ENDSTRUCT);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 104 "lexer.lex"
-return (LLIST);
+printf("lexer: %d\n", LLIST);return (LLIST);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 105 "lexer.lex"
-return (RLIST);
+printf("lexer: %d\n", RLIST);return (RLIST);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 106 "lexer.lex"
-return (LDICT);
+printf("lexer: %d\n", LDICT);return (LDICT);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 107 "lexer.lex"
-return (RDICT);
+printf("lexer: %d\n", RDICT);return (RDICT);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 108 "lexer.lex"
-return (KEY);
+printf("lexer: %d\n", KEY);return (KEY);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 109 "lexer.lex"
-return (COMPLEXKEY);
+printf("lexer: %d\n", COMPLEXKEY);return (COMPLEXKEY);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 110 "lexer.lex"
-return (ITEM);
+printf("lexer: %d\n", ITEM);return (ITEM);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 111 "lexer.lex"
-return (COMMA);
+printf("lexer: %d\n", COMMA);return (COMMA);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 112 "lexer.lex"
-return (TYPE);
+printf("lexer: %d\n", TYPE);return (TYPE);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 113 "lexer.lex"
-return (TRUE);
+printf("lexer: %d\n", TRUE);return (TRUE);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 114 "lexer.lex"
-return (FALSE);
+printf("lexer: %d\n", FALSE);return (FALSE);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 115 "lexer.lex"
-return (INTEGER);
+printf("lexer: %d\n", INTEGER);return (INTEGER);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 116 "lexer.lex"
-return (REAL);
+printf("lexer: %d\n", REAL);return (REAL);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
@@ -1019,7 +1019,7 @@ YY_RULE_SETUP
 case 22:
 YY_RULE_SETUP
 #line 120 "lexer.lex"
-{ return (STRING); BEGIN(INITIAL); }
+{ BEGIN(INITIAL); return (STRING);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
@@ -1060,17 +1060,17 @@ BEGIN(INITIAL);
 case 28:
 YY_RULE_SETUP
 #line 128 "lexer.lex"
-return (VAL);
+printf("lexer: %d\n", VAL);return (VAL);
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 129 "lexer.lex"
-return (DECLARATION);
+printf("lexer: %d\n", DECLARATION);return (DECLARATION);
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 130 "lexer.lex"
-return (DEREFERENCE);
+printf("lexer: %d\n", DEREFERENCE);return (DEREFERENCE);
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 131 "lexer.lex"

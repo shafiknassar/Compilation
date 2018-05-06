@@ -99,25 +99,25 @@ dstring         (([^\"\\])|{escapeSeqs})*
 \"                              { buff_ptr = buff; BEGIN(double_string); }
 \'                              { buff_ptr = buff; BEGIN(single_string); }
 #                               { buff_ptr = buff; BEGIN(comment);       }
----                             return (STARTSTRUCT);
-\.\.\.                          return (ENDSTRUCT);
-\[                              return (LLIST);
-\]                              return (RLIST);
-\{                              return (LDICT);
-\}                              return (RDICT);
-:                               return (KEY);
-\?                              return (COMPLEXKEY);
-\-                              return (ITEM);
-,                               return (COMMA);
-\!\!{letters}                   return (TYPE);
-true                            return (TRUE);
-false                           return (FALSE);
-{decimal}|{octa}|{hexa}         return (INTEGER);
-{real}|{exp}|\.inf|\.NaN        return (REAL);
+---                             printf("lexer: %d\n", STARTSTRUCT); return (STARTSTRUCT);
+\.\.\.                          printf("lexer: %d\n", ENDSTRUCT);return (ENDSTRUCT);
+\[                              printf("lexer: %d\n", LLIST);return (LLIST);
+\]                              printf("lexer: %d\n", RLIST);return (RLIST);
+\{                              printf("lexer: %d\n", LDICT);return (LDICT);
+\}                              printf("lexer: %d\n", RDICT);return (RDICT);
+:                               printf("lexer: %d\n", KEY);return (KEY);
+\?                              printf("lexer: %d\n", COMPLEXKEY);return (COMPLEXKEY);
+\-                              printf("lexer: %d\n", ITEM);return (ITEM);
+,                               printf("lexer: %d\n", COMMA);return (COMMA);
+\!\!{letters}                   printf("lexer: %d\n", TYPE);return (TYPE);
+true                            printf("lexer: %d\n", TRUE);return (TRUE);
+false                           printf("lexer: %d\n", FALSE);return (FALSE);
+{decimal}|{octa}|{hexa}         printf("lexer: %d\n", INTEGER);return (INTEGER);
+{real}|{exp}|\.inf|\.NaN        printf("lexer: %d\n", REAL);return (REAL);
 <double_string>([^\"\\\n])*     strcpy(buff_ptr, yytext); buff_ptr += yyleng;
 <double_string>{escapeSeq}      handleEscSeq(yytext, buff_ptr); *(++buff_ptr) = '\0';
 <double_string>"\n"             *(buff_ptr) = ' '; *(++buff_ptr) = '\0';
-<double_string>\"               { return (STRING); BEGIN(INITIAL); }
+<double_string>\"               { BEGIN(INITIAL); return (STRING);}
 <double_string>"\\".            printf("Error undefined escape sequence %s\n", yytext+1); exit(0);
 <single_string>[^\']*           { buff_ptr = buff; strcpy(buff_ptr, yytext); return (STRING); }
 <single_string>\'               BEGIN(INITIAL);
@@ -125,9 +125,9 @@ false                           return (FALSE);
 <comment>([^\n\r])*             /*showToken(COMMENT)*/;
 <comment><<EOF>>                BEGIN(INITIAL);
 <comment>{newLine}              BEGIN(INITIAL);
-{letters}({digits}|{letters})*  return (VAL);
-\&{letters}                     return (DECLARATION);
-\*{letters}                     return (DEREFERENCE);
+{letters}({digits}|{letters})*  printf("lexer: %d\n", VAL);return (VAL);
+\&{letters}                     printf("lexer: %d\n", DECLARATION);return (DECLARATION);
+\*{letters}                     printf("lexer: %d\n", DEREFERENCE);return (DEREFERENCE);
 <<EOF>>                         printf("%d EOF \n", yylineno); yyterminate();
 {whitespace}                    ;
 .                               printf("Error %s\n", yytext); exit(0);
