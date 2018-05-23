@@ -393,6 +393,14 @@ void makeTableTest() {
  * calls print_nullable when finished
  */
 void compute_nullable(){
+    mapNonterminalsToRules = divideGrammarRulesByLhs();
+    nullableBitMap = compute_nullable_internal();
+    firsts = first_algorithm();
+    follows = follow_algorithm();
+    selects = compute_select_internal();
+    selects_table = make_table();
+    stack = init_stack();
+    
     print_nullable(nullableBitMap);
 }
 
@@ -401,6 +409,14 @@ void compute_nullable(){
  * calls print_first when finished
  */
 void compute_first(){
+    mapNonterminalsToRules = divideGrammarRulesByLhs();
+    nullableBitMap = compute_nullable_internal();
+    firsts = first_algorithm();
+    follows = follow_algorithm();
+    selects = compute_select_internal();
+    selects_table = make_table();
+    stack = init_stack();
+    
     print_first(firsts);
 }
 
@@ -409,6 +425,14 @@ void compute_first(){
  * calls print_follow when finished
  */
 void compute_follow(){
+    mapNonterminalsToRules = divideGrammarRulesByLhs();
+    nullableBitMap = compute_nullable_internal();
+    firsts = first_algorithm();
+    follows = follow_algorithm();
+    selects = compute_select_internal();
+    selects_table = make_table();
+    stack = init_stack();
+    
     print_follow(follows);
 }
 
@@ -417,6 +441,14 @@ void compute_follow(){
  * calls print_select when finished
  */
 void compute_select(){
+    mapNonterminalsToRules = divideGrammarRulesByLhs();
+    nullableBitMap = compute_nullable_internal();
+    firsts = first_algorithm();
+    follows = follow_algorithm();
+    selects = compute_select_internal();
+    selects_table = make_table();
+    stack = init_stack();
+    
     print_select(selects);
 }
 
@@ -424,5 +456,13 @@ void compute_select(){
  * implements an LL(1) parser for the grammar using yylex()
  */
 void parser(){
+    mapNonterminalsToRules = divideGrammarRulesByLhs();
+    nullableBitMap = compute_nullable_internal();
+    firsts = first_algorithm();
+    follows = follow_algorithm();
+    selects = compute_select_internal();
+    selects_table = make_table();
+    stack = init_stack();
+    
     LL1();
 }

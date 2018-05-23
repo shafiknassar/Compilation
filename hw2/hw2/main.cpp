@@ -3,7 +3,6 @@
 #include "hw2.h"
 #include <cstring>
 
-
 int main(int argc, char *argv[]) {
     bool parse = true;
     for (int i = 1; i < argc; ++i) {

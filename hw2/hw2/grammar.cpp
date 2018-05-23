@@ -40,7 +40,7 @@ void print_nonterminal(nonterminal var) {
         case MItems: std::cout << "MItems"; break;
         case Key: std::cout << "Key"; break;
         case Item: std::cout << "Item"; break;
-        default: ;
+        default:;
     };
 }
 

@@ -28,7 +28,7 @@ struct grammar_rule {
 extern std::vector<grammar_rule> grammar;
 
 /**
- * @param nullables vector of booleans, i-th element is true if i-th nonterminal (see nonterminal enum) is nullable, i.e. can produce empty word
+ * @param vec vector of booleans, i-th element is true if i-th nonterminal (see nonterminal enum) is nullable, i.e. can produce empty word
  */
 void print_nullable(const std::vector<bool>& nullables);
 /**
