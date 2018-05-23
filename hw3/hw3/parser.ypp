@@ -13,8 +13,8 @@
 %token B
 %token BOOL
 /* Binary Arithmetic Operations */
-%left MULT DIV
 %left PLUS MINUS
+%left MULT DIV
 /* Logical Operations */
 %left AND
 %left OR
@@ -72,6 +72,7 @@ FormalsList  : FormalDecl
 FormalDecl   : Type ID
              | Type ID LBRACK NUM RBRACK
              | Type ID LBRACK NUM B RBRACK
+;
 Statements   : Statement
              | Statements Statement
 ;
@@ -110,7 +111,7 @@ Exp          : LPAREN Exp RPAREN
              | STRING
              | TRUE
              | FALSE
-             | NOT EXP
+             | NOT Exp
              | Exp AND Exp
              | Exp OR Exp
              | Exp RelOp Exp
