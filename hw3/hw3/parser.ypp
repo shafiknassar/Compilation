@@ -39,10 +39,10 @@
  give different precedence to every op */
 %left EQ
 %left NEQ
-%token LT      // <
-%token GT      // >
-%token LE     // <=
-%token GE     // >=
+%nonassoc LT      // <
+%nonassoc GT      // >
+%nonassoc LE     // <=
+%nonassoc GE     // >=
 /* Assigment */
 %right ASSIGN
 /* ID */
