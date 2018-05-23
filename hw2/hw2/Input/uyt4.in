@@ -1,0 +1,8 @@
+{
+   # this is collection
+   ?[true, false,]:true,
+   
+   a1 :       true,
+   mm : "hello",
+   ?[]:"bla",
+}
