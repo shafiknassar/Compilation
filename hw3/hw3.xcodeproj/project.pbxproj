@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		7F63F7B620B5985A008FF2FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7B520B5985A008FF2FC /* main.cpp */; };
+		7F63F7C020B598B6008FF2FC /* output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7BD20B598B6008FF2FC /* output.cpp */; };
+		7F63F7C120B598B6008FF2FC /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7BF20B598B6008FF2FC /* Makefile */; };
+		7F63F7C420B598E2008FF2FC /* parser.ypp in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7C220B598E2008FF2FC /* parser.ypp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,11 @@
 /* Begin PBXFileReference section */
 		7F63F7B220B5985A008FF2FC /* hw3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = hw3; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F63F7B520B5985A008FF2FC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7F63F7BC20B598B6008FF2FC /* output.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = output.hpp; sourceTree = "<group>"; };
+		7F63F7BD20B598B6008FF2FC /* output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = output.cpp; sourceTree = "<group>"; };
+		7F63F7BE20B598B6008FF2FC /* selfcheck.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = selfcheck.txt; sourceTree = "<group>"; };
+		7F63F7BF20B598B6008FF2FC /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		7F63F7C220B598E2008FF2FC /* parser.ypp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.yacc; path = parser.ypp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +66,11 @@
 			isa = PBXGroup;
 			children = (
 				7F63F7B520B5985A008FF2FC /* main.cpp */,
+				7F63F7C220B598E2008FF2FC /* parser.ypp */,
+				7F63F7BC20B598B6008FF2FC /* output.hpp */,
+				7F63F7BD20B598B6008FF2FC /* output.cpp */,
+				7F63F7BE20B598B6008FF2FC /* selfcheck.txt */,
+				7F63F7BF20B598B6008FF2FC /* Makefile */,
 			);
 			path = hw3;
 			sourceTree = "<group>";
@@ -119,6 +132,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F63F7C420B598E2008FF2FC /* parser.ypp in Sources */,
+				7F63F7C120B598B6008FF2FC /* Makefile in Sources */,
+				7F63F7C020B598B6008FF2FC /* output.cpp in Sources */,
 				7F63F7B620B5985A008FF2FC /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
