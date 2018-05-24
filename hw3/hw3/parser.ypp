@@ -1,6 +1,7 @@
 %{
     #include <iostream>
-    //#include "attributes.h"
+    #include "attributes.h"
+    #include "output.hpp"
     using namespace std;
     
     int yylex();
@@ -60,8 +61,8 @@ Funcs        : FuncDecl
 ;
 FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
 ;
-RetType      : Type
-             | VOID
+RetType      : Type { $$=$1; }
+             | VOID { $$=$1; }
 ;
 Formals      : FormalsList
              | /*epsilon*/
@@ -69,7 +70,7 @@ Formals      : FormalsList
 FormalsList  : FormalDecl
              | FormalDecl COMMA FormalsList
 ;
-FormalDecl   : Type ID
+FormalDecl   : Type ID { $1
              | Type ID LBRACK NUM RBRACK
              | Type ID LBRACK NUM B RBRACK
 ;
@@ -97,24 +98,63 @@ Call         : ID LPAREN ExpList RPAREN
 ExpList      : Exp
              | Exp COMMA ExpList
 ;
-Type         : INT
-             | BYTE
-             | BOOL
+Type         : INT  { $$=$1; }
+             | BYTE { $$=$1; }
+             | BOOL { $$=$1; }
 ;
-Exp          : LPAREN Exp RPAREN
+Exp          : LPAREN Exp RPAREN { $$=$1; }
              | ID LBRACK Exp RBRACK
+                {
+                    TypeId type = (Expr*)$1->type;
+                    switch
+                }
              | Exp BinOp Exp
-             | ID
+             | ID { $$ = new Expr((Id*)$1->type); }
              | Call
-             | NUM
-             | NUM B
-             | STRING
-             | TRUE
-             | FALSE
+             | NUM { $$=$1; }
+             | NUM B { $$=$1; }
+             | STRING { $$=$1; }
+             | TRUE { $$=$1; }
+             | FALSE { $$=$1; }
              | NOT Exp
+                {
+                    if ((Exp*)$1->type != BOOL)
+                    {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                    $$=$1;
+                }
              | Exp AND Exp
+                {
+                    if ((Exp*)$1->type != BOOL ||
+                            (Exp*)$3->type != BOOL)
+                    {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                    $$ = new Expr(BOOL);
+                }
              | Exp OR Exp
+                 {
+                     if ((Exp*)$1->type != BOOL ||
+                            (Exp*)$3->type != BOOL)
+                     {
+                         errorMismatch(yylineno);
+                         exit(0);
+                     }
+                     $$ = new Expr(BOOL);
+                 }
              | Exp RelOp Exp
+                 {
+                     if (((Exp*)$3->type != BYTE && (Exp*)$3->type != INT) ||
+                            ((Exp*)$1->type != BYTE && (Exp*)$1->type != INT))
+                     {
+                         errorMismatch(yylineno);
+                         exit(0);
+                     }
+                     $$ = new Expr(BOOL);
+                 }
 ;
 BinOp        : PLUS
              | MINUS

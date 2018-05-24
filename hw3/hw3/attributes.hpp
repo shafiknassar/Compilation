@@ -25,8 +25,11 @@ typedef enum {
     VOID,
     INT,
     BYTE,
-    B,
-    BOOL
+    BOOL,
+    STRING,
+    INT_ARR,
+    BYTE_ARR,
+    BOOL_ARR
 } TypeId;
 
 typedef enum {
@@ -79,9 +82,10 @@ struct NumVal : public Node {
     NumVal(string i) : val(stoi(i)) {}
 };
 
-struct ID : public Node {
+struct Id : public Node {
     string id;
-    ID(string id) : id(id) {}
+    TypeId type;
+    Id(string id) : id(id) {}
 };
 
 struct Expr : public Node {
@@ -89,40 +93,40 @@ struct Expr : public Node {
     Expr(TypeId type): type(type) {}
 };
 
-struct BinOp : public Node {
+struct BinOp : public Expr {
     Node *left, *right;
     BinOpId id;
     
     BinOp(Node *l, Node *r, BinOpId id) :
-        left(l), right(r), id(id) {}
+        left(l), right(r), id(id), Expr(INT) {}
     
 };
 
-struct LogOp : public Node {
+struct LogOp : public Expr {
     Node *left, *right;
     LogOpId id;
     
     LogOp(Node *l, Node *r, LogOpId id) :
-    left(l), right(r), id(id) {}
+    left(l), right(r), id(id), Expr(BOOL) {}
 };
 
-struct StringVal : public Node {
+struct StringVal : public Expr {
     string val;
-    StringVal(string s) : val(s) {}
+    StringVal(string s) : val(s), Expr(STRING) {}
 };
 
-struct BoolVal : public Node {
+struct BoolVal : public Expr {
     bool val;
-    BoolVal(bool b) : val(b) {}
+    BoolVal(bool b) : val(b), Expr(BOOL) {}
 };
 
 
 
-struct RelOp : public Node {
+struct RelOp : public Expr {
     Node *left, *right;
     RelOpId id;
     RelOp(Node *l, Node *r, RelOpId id) :
-    left(l), right(r), id(id) {}
+    left(l), right(r), id(id), Expr(BOOL) {}
 };
 
 
