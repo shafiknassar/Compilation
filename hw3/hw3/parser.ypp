@@ -89,9 +89,13 @@ Statement    : LBRACE Statements RBRACE
              | RETURN SC
              | RETURN Exp SC
              | IF LPAREN Exp RPAREN Statement
-             | IF LPAREN Exp RPAREN Statement ELSE Statement
+             | IF LPAREN Exp RPAREN StatementWithElse ELSE Statement
              | WHILE LPAREN Exp RPAREN Statement
              | BREAK SC
+;
+StatementWithElse : /*epsilon*/
+             | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
+;
 ;
 Call         : ID LPAREN ExpList RPAREN
              | ID LPAREN RPAREN
