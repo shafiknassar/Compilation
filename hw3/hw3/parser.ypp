@@ -105,8 +105,13 @@ Type         : INT  { $$=$1; }
 Exp          : LPAREN Exp RPAREN { $$=$1; }
              | ID LBRACK Exp RBRACK
                 {
-                    TypeId type = (Expr*)$1->type;
-                    switch
+                    TypeId type = convertArrType((Id*)$1->type);
+                    if (type == ERROR)
+                    {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                    $$ = new Expr(type);
                 }
              | Exp BinOp Exp
              | ID { $$ = new Expr((Id*)$1->type); }

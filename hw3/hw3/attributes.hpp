@@ -22,6 +22,7 @@ using std::stoi;
 /***************************************/
 
 typedef enum {
+    ERROR,
     VOID,
     INT,
     BYTE,
@@ -128,6 +129,25 @@ struct RelOp : public Expr {
     RelOp(Node *l, Node *r, RelOpId id) :
     left(l), right(r), id(id), Expr(BOOL) {}
 };
+
+/***************************************/
+/* Node structs for terminals */
+/***************************************/
+
+TypeId convertArrType(TypeId arr_t) {
+    switch (arr_t) {
+        case INT_ARR:
+            return INT;
+            break;
+        case BYTE_ARR:
+            return BYTE;
+        case BOOL_ARR:
+            return BOOL;
+        default:
+            break;
+    }
+    return ERROR;
+}
 
 
 #endif /* attributes_hpp */
