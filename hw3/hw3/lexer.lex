@@ -1,17 +1,18 @@
 %{
     #include "attributes.h"
     #include "parser.tab.hpp"
+    #include "output.hpp"
 %}
 
 %option yylineno
 %option noyywrap
 
 %%
-void                                {return VOID;}
-int                                 {return INT;}
-byte                                {return BYTE;}
+void                                {yyval = (*Node) new Type(TypeID::VOID, 0); return VOID;}
+int                                 {yyval = (*Node) new Type(TypeId::INT, 4); return INT;}
+byte                                {yyval = (*Node) new Type(TypeID::BYTE, 1); return BYTE;}
 b                                   {return B;}
-bool                                {return BOOL;}
+bool                                {yyval = (*Node) new Type(TypeID::BOOL, 1); return BOOL;}
 and                                 {return AND;}
 or                                  {return OR;}
 not                                 {return NOT;}
@@ -41,10 +42,10 @@ break                               {return BREAK;}
 \-                                  {return MINUS;} /* check if backslash is necessary */
 \*                                  {return MULT;}
 \\                                  {return DIV;}
-[a-zA-Z][a-zA-Z0-9]*                {return ID;}
-0|[1-9][0-9]*                       {return NUM;}
+[a-zA-Z][a-zA-Z0-9]*                {yyval = (*Node) new ID(yytext); return ID;}
+0|[1-9][0-9]*                       {yyval = (*Node) new NumVal(yytext); return NUM;}
 \"([^\n\r\"\\]|\\[rnt"\\])+\"       {return STRING;}
 [ \t\n\r]|(\n\r)|(\r\n)|([\n\r])    ; // Whitespace, Newline, Tabs
 \/\/[^\r\n]*[ \r|\n|\r\n]?          ; // Comment
-.                                   {return ERROR_LEX;}
+.                                   { output::errorLex(yylineno); exit(0); }
 %%

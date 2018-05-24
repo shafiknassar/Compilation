@@ -7,9 +7,24 @@
 //
 
 #include <iostream>
+typedef enum {
+    EQ,
+    NEQ,
+    GE,
+    GT,
+    LE,
+    LT
+} RelOpId;
 
-int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
-    return 0;
-}
+struct Node {
+    
+};
+
+struct RelOp : public Node {
+    Node *left, *right;
+    RelOpId id;
+    RelOp(Node *l, Node *r, RelOpId id) :
+        left(l), right(r), id(id) {}
+};
+
+

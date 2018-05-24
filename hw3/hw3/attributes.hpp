@@ -13,9 +13,10 @@
 #include <sstream>
 #include <stdlib.h>
 
+
 using std::string;
 using std::stringstream;
-
+using std::stoi;
 /***************************************/
 /* Enums */
 /***************************************/
@@ -68,7 +69,24 @@ struct Node {
 
 struct Type : public Node {
     TypeId id;
-    Type(TypeId id) : id(id) {};
+    int size;
+    Type(TypeId id, int size) : id(id), size(size) {};
+};
+
+struct NumVal : public Node {
+    int val;
+    NumVal(int i) : val(i) {}
+    NumVal(string i) : val(stoi(i)) {}
+};
+
+struct ID : public Node {
+    string id;
+    ID(string id) : id(id) {}
+};
+
+struct Expr : public Node {
+    TypeId type;
+    Expr(TypeId type): type(type) {}
 };
 
 struct BinOp : public Node {
@@ -98,10 +116,6 @@ struct BoolVal : public Node {
     BoolVal(bool b) : val(b) {}
 };
 
-struct NumVal : public Node {
-    int val;
-    NumVal(int i) : val(i) {}
-};
 
 
 struct RelOp : public Node {
