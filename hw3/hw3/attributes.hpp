@@ -134,7 +134,7 @@ struct RelOp : public Expr {
 /* Node structs for terminals */
 /***************************************/
 
-TypeId convertArrType(TypeId arr_t) {
+TypeId convertFromArrType(TypeId arr_t) {
     switch (arr_t) {
         case INT_ARR:
             return INT;
@@ -148,6 +148,22 @@ TypeId convertArrType(TypeId arr_t) {
     }
     return ERROR;
 }
+
+TypeId convertToArrType(TypeId arr_t) {
+    switch (arr_t) {
+        case INT:
+            return INT_ARR;
+            break;
+        case BYTE:
+            return BYTE_ARR;
+        case BOOL:
+            return BOOL_ARR;
+        default:
+            break;
+    }
+    return ERROR;
+}
+
 
 
 #endif /* attributes_hpp */

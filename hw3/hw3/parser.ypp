@@ -38,12 +38,8 @@
 /* Relational Operators */
 /* keep them separated inorder to
  give different precedence to every op */
-%left EQ
-%left NEQ
-%nonassoc LT      // <
-%nonassoc GT      // >
-%nonassoc LE     // <=
-%nonassoc GE     // >=
+%left BINOP
+%left RELOP
 /* Assigment */
 %right ASSIGN
 /* ID */
@@ -70,18 +66,23 @@ Formals      : FormalsList
 FormalsList  : FormalDecl
              | FormalDecl COMMA FormalsList
 ;
-FormalDecl   : Type ID { $1
+FormalDecl   : Type ID { (Id*)$2->type = (Type*)$1->id; }
              | Type ID LBRACK NUM RBRACK
-             | Type ID LBRACK NUM B RBRACK
+                {
+                    (Id*)$2->type = convertToArrType((Type*)$1->id);
+                    if ((Id*)$2->type) {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                }
+             | Type ID LBRACK NUM B RBRACK /*TODO*/
 ;
 Statements   : Statement
              | Statements Statement
 ;
 Statement    : LBRACE Statements RBRACE
-             | Type ID SC
+             | FormalDecl SC
              | Type ID ASSIGN Exp SC
-             | Type ID LBRACK NUM RBRACK SC
-             | Type ID LBRACK NUM B RBRACK SC
              | ID ASSIGN Exp SC
              | ID LBRACK Exp RBRACK ASSIGN Exp SC
              | Call SC
@@ -105,7 +106,7 @@ Type         : INT  { $$=$1; }
 Exp          : LPAREN Exp RPAREN { $$=$1; }
              | ID LBRACK Exp RBRACK
                 {
-                    TypeId type = convertArrType((Id*)$1->type);
+                    TypeId type = convertFromArrType((Id*)$1->type);
                     if (type == ERROR)
                     {
                         errorMismatch(yylineno);
@@ -113,7 +114,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                     }
                     $$ = new Expr(type);
                 }
-             | Exp BinOp Exp
+             | Exp BINOP Exp
              | ID { $$ = new Expr((Id*)$1->type); }
              | Call
              | NUM { $$=$1; }
@@ -150,7 +151,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                      }
                      $$ = new Expr(BOOL);
                  }
-             | Exp RelOp Exp
+             | Exp RELOP Exp
                  {
                      if (((Exp*)$3->type != BYTE && (Exp*)$3->type != INT) ||
                             ((Exp*)$1->type != BYTE && (Exp*)$1->type != INT))
@@ -161,18 +162,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                      $$ = new Expr(BOOL);
                  }
 ;
-BinOp        : PLUS
-             | MINUS
-             | MULT
-             | DIV
-;
-RelOp        : EQ
-             | NEQ
-             | GE
-             | GT
-             | LE
-             | LT
-;
+
 
 %%
 

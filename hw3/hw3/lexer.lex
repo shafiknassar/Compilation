@@ -32,16 +32,8 @@ break                               {return BREAK;}
 \[                                  {return LBRACK;}
 \]                                  {return RBRACK;}
 =                                   {return ASSIGN;}
-==                                  {return EQ;}  /* check if backslash is necessary */
-!=                                  {return NEQ;} /* check if backslash is necessary */
-\<                                  {return LT;}
-\>                                  {return GT;}
-\<=                                 {return LE;}
-\>=                                 {return GE;}
-\+                                  {return PLUS;}
-\-                                  {return MINUS;} /* check if backslash is necessary */
-\*                                  {return MULT;}
-\\                                  {return DIV;}
+[\<\>\<=\>\]|==|!=                  {return RELOP;}
+[\+\-\*\/]                          {return BINOP;}
 [a-zA-Z][a-zA-Z0-9]*                {yyval = (*Node) new ID(yytext); return ID;}
 0|[1-9][0-9]*                       {yyval = (*Node) new NumVal(yytext); return NUM;}
 \"([^\n\r\"\\]|\\[rnt"\\])+\"       {return STRING;}
