@@ -7,3 +7,33 @@
 //
 
 #include "attributes.hpp"
+
+TypeId convertFromArrType(TypeId arr_t) {
+    switch (arr_t) {
+        case INT_ARR:
+            return INT;
+            break;
+        case BYTE_ARR:
+            return BYTE;
+        case BOOL_ARR:
+            return BOOL;
+        default:
+            break;
+    }
+    return ERROR;
+}
+
+TypeId convertToArrType(TypeId arr_t) {
+    switch (arr_t) {
+        case INT:
+            return INT_ARR;
+            break;
+        case BYTE:
+            return BYTE_ARR;
+        case BOOL:
+            return BOOL_ARR;
+        default:
+            break;
+    }
+    return ERROR;
+}

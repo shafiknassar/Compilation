@@ -1,5 +1,5 @@
 %{
-    #include "attributes.h"
+    #include "attributes.hpp"
     #include "parser.tab.hpp"
     #include "output.hpp"
 %}
@@ -32,9 +32,9 @@ break                               {return BREAK;}
 \[                                  {return LBRACK;}
 \]                                  {return RBRACK;}
 =                                   {return ASSIGN;}
-[\<\>\<=\>\]|==|!=                  {return RELOP;}
+[\<\>\<=\>]|==|!=                  {return RELOP;}
 [\+\-\*\/]                          {return BINOP;}
-[a-zA-Z][a-zA-Z0-9]*                {yyval = (*Node) new ID(yytext); return ID;}
+[a-zA-Z][a-zA-Z0-9]*                {yyval = (*Node) new Id(yytext); return ID;}
 0|[1-9][0-9]*                       {yyval = (*Node) new NumVal(yytext); return NUM;}
 \"([^\n\r\"\\]|\\[rnt"\\])+\"       {return STRING;}
 [ \t\n\r]|(\n\r)|(\r\n)|([\n\r])    ; // Whitespace, Newline, Tabs

@@ -12,11 +12,32 @@
 #include <stdio.h>
 #include <sstream>
 #include <stdlib.h>
+#include <vector>
 
 
 using std::string;
 using std::stringstream;
 using std::stoi;
+using std::vector;
+
+/***************************************/
+/* Defines */
+/***************************************/
+
+#define YYSTYPE (Node*)
+
+#define TYPES_MATCH(exp1, exp2) \
+            ((exp1)->type == (exp2)->type)
+
+#define ARR_TYPE_MATCH(arr, exp) \
+            ((convertFromArrType((arr)->type) == (exp)->type) \
+            ||
+
+#define BYTE_TO_INT_MATCH(src, dst) \
+            ((src)->type == BYTE && (dst)->type == INT)
+
+#define IS_NUM_TYPE(exp)  ((exp)->type == BYTE || (exp)->type == INT)
+
 /***************************************/
 /* Enums */
 /***************************************/
@@ -30,7 +51,8 @@ typedef enum {
     STRING,
     INT_ARR,
     BYTE_ARR,
-    BOOL_ARR
+    BOOL_ARR,
+    FUNC
 } TypeId;
 
 typedef enum {
@@ -77,17 +99,13 @@ struct Type : public Node {
     Type(TypeId id, int size) : id(id), size(size) {};
 };
 
-struct NumVal : public Node {
-    int val;
-    NumVal(int i) : val(i) {}
-    NumVal(string i) : val(stoi(i)) {}
-};
-
 struct Id : public Node {
     string id;
     TypeId type;
     Id(string id) : id(id) {}
 };
+
+/* Expressions */
 
 struct Expr : public Node {
     TypeId type;
@@ -121,7 +139,17 @@ struct BoolVal : public Expr {
     BoolVal(bool b) : val(b), Expr(BOOL) {}
 };
 
+struct NumVal : public Expr {
+    int val;
+    NumVal(int i) : val(i), Expr(INT) {}
+    NumVal(string i) : val(stoi(i)), Expr(INT) {}
+};
 
+struct ByteVal : public Expr {
+    int val;
+    ByteVal(int i) : val(i), Expr(BYTE) {}
+    ByteVal(string i) : val(stoi(i)), Expr(BYTE) {}
+};
 
 struct RelOp : public Expr {
     Node *left, *right;
@@ -130,39 +158,88 @@ struct RelOp : public Expr {
     left(l), right(r), id(id), Expr(BOOL) {}
 };
 
+/* Formal Declaration */
+
+struct FormDec : public Node {
+    Id *id;
+    FormDec(Id *id) : id(id) {};
+};
+
+struct FormList : public Node {
+    vector<TypeId> typesList;
+    void add(TypeId t) { typesList.push_back(t); }
+};
+
+
+
 /***************************************/
-/* Node structs for terminals */
+/* Helper functions */
 /***************************************/
 
-TypeId convertFromArrType(TypeId arr_t) {
-    switch (arr_t) {
-        case INT_ARR:
-            return INT;
-            break;
-        case BYTE_ARR:
-            return BYTE;
-        case BOOL_ARR:
-            return BOOL;
-        default:
-            break;
-    }
-    return ERROR;
-}
+TypeId convertFromArrType(TypeId arr_t);
 
-TypeId convertToArrType(TypeId arr_t) {
-    switch (arr_t) {
-        case INT:
-            return INT_ARR;
-            break;
-        case BYTE:
-            return BYTE_ARR;
-        case BOOL:
-            return BOOL_ARR;
-        default:
-            break;
+TypeId convertToArrType(TypeId arr_t);
+
+
+/***************************************/
+/* Symbols Tables */
+/***************************************/
+
+struct TableEntry {
+    string name;
+    TypeId type;
+    int offset;
+    
+    TableEntry(string name, TypeId type, int offset) :
+        name(name), type(type), offset(offset) {}
+    TableEntry() {};
+};
+
+struct FuncTableEntry : public TableEntry {
+    TypeId retType;
+    vector<TypeId> paramTypes;
+    
+    FuncTableEntry(string name,
+                   TypeId retType,
+                   vector<TypeId>& paramTypes)
+        : TableEntry(name, FUNC, INT_MIN),
+        retType(retType),
+        paramTypes(paramTypes) {}
+    
+    FuncTableEntry() {}
+};
+
+struct Table {
+    vector<TableEntry> entryStack;
+    
+    /*default C'tor*/
+    
+    void insert(string name, TypeId type, int offset)
+    {
+        TableEntry tmp;
+        tmp.name   = name;
+        tmp.type   = type;
+        tmp.offset = offset;
+        entryStack.push_back(tmp);
     }
-    return ERROR;
-}
+    
+    void insertFunc(string name,
+                    TypeId retType,
+                    vector<TypeId> paramTypes)
+    {
+        FuncTableEntry tmp;
+        tmp.name       = name;
+        tmp.type       = FUNC;
+        tmp.offset     = INT_MIN;
+        tmp.retType    = retType;
+        /* The following parameter can be
+         most easily acquired from a struct
+         specificaly created to FormalDecls */
+        tmp.paramTypes = paramTypes;
+        entryStack.push_back(tmp);
+    }
+};
+
 
 
 

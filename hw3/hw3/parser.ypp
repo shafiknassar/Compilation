@@ -1,6 +1,6 @@
 %{
     #include <iostream>
-    #include "attributes.h"
+    #include "attributes.hpp"
     #include "output.hpp"
     using namespace std;
     
@@ -66,7 +66,8 @@ Formals      : FormalsList
 FormalsList  : FormalDecl
              | FormalDecl COMMA FormalsList
 ;
-FormalDecl   : Type ID { (Id*)$2->type = (Type*)$1->id; }
+FormalDecl   : Type ID { (Id*)$2->type = (Type*)$1->id;
+                        /*$$ = new FormDec((Id*)$2);*/ }
              | Type ID LBRACK NUM RBRACK
                 {
                     (Id*)$2->type = convertToArrType((Type*)$1->id);
@@ -74,6 +75,7 @@ FormalDecl   : Type ID { (Id*)$2->type = (Type*)$1->id; }
                         errorMismatch(yylineno);
                         exit(0);
                     }
+                    /*$$ = new FormDec((Id*)$2);*/
                 }
              | Type ID LBRACK NUM B RBRACK /*TODO*/
 ;
@@ -83,8 +85,36 @@ Statements   : Statement
 Statement    : LBRACE Statements RBRACE
              | FormalDecl SC
              | Type ID ASSIGN Exp SC
+             {
+                 Id *id = (Id*)$2;
+                 id->type = (Type*)$1->id;
+                 Expr *exp = (Expr*)$4;
+                 if (!TYPES_MATCH(id, exp) &&
+                        !(id->type == INT && exp->type == BYTE)) {
+                     errorMismatch(yylineno);
+                     exit(0);
+                 }
+                 /* if needed, value of id can be assigned here */
+             }
              | ID ASSIGN Exp SC
+             {
+                 if (!TYPES_MATCH((Id*)$1, (Expr*)$3) &&
+                        !BYTE_TO_INT_MATCH((Expr*)$3,(Id*)$1)) {
+                     errorMismatch(yylineno);
+                     exit(0);
+                 }
+                 /* if needed, value of id can be assigned here */
+             }
              | ID LBRACK Exp RBRACK ASSIGN Exp SC
+             {
+                 Id *arr = (Id*)$1;
+                 if (((Expr*)$3->type != INT && (Expr*)$3->type != BYTE)
+                        || !ARR_TYPE_MATCH(arr, (Expr*)$6)){
+                     errorMismatch(yylineno);
+                     exit(0);
+                }
+                 /* if needed, value of id can be assigned here */
+             }
              | Call SC
              | RETURN SC
              | RETURN Exp SC
@@ -98,6 +128,7 @@ StatementWithElse : /*epsilon*/
 ;
 ;
 Call         : ID LPAREN ExpList RPAREN
+             { $$ = new Expr(/* the type of the return value */); }
              | ID LPAREN RPAREN
 ;
 ExpList      : Exp
@@ -119,10 +150,29 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                     $$ = new Expr(type);
                 }
              | Exp BINOP Exp
+             {
+                 if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1))
+                 {
+                     errorMismatch(yylineno);
+                     exit(0);
+                 }
+                 if ((Expr*)$3->type == INT || (Expr*)$1->type == INT) {
+                     $$ = new Expr(INT);
+                 } else {
+                     $$ = new Expr(BYTE);
+                 }
+             }
              | ID { $$ = new Expr((Id*)$1->type); }
              | Call
              | NUM { $$=$1; }
-             | NUM B { $$=$1; }
+             | NUM B
+             {
+                 if ((NumVal*)$1->val > 255) {
+                     errorByteTooLarge(yylineno, (NumVal*)$1->val);
+                     exit(0);
+                 }
+                 $$ = new ByteVal((NumVal*)$1->val);
+             }
              | STRING { $$=$1; }
              | TRUE { $$=$1; }
              | FALSE { $$=$1; }
@@ -157,8 +207,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                  }
              | Exp RELOP Exp
                  {
-                     if (((Exp*)$3->type != BYTE && (Exp*)$3->type != INT) ||
-                            ((Exp*)$1->type != BYTE && (Exp*)$1->type != INT))
+                     if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1))
                      {
                          errorMismatch(yylineno);
                          exit(0);
