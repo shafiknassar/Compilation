@@ -20,14 +20,20 @@ bool isMainDef = false;
 void rule_Program__Funcs();
 extern int yylineno;
 
+extern int yylex();
+extern int yylineno;
+extern char* yytexr;
+void yyerror(const char*);
+//Table table;
+
 void rule_init();
 
 void rule_Funcs__FuncDecl();
 
 // TODO: FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
 
-void rule_FormalsList__Formal_Decl(FormDec *fd);
-
+FormList* rule_FormalsList__Formal_Decl(FormDec *fd);
+FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(FormDec *fd, FormList *fl);
 void rule_FormalDecl__Type_ID(TypeId type, Id *id);
 void rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(TypeId type, Id *id, NumVal num);
 //void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK(TypeId type, Id *id, NumVal num);

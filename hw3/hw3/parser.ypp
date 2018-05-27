@@ -5,12 +5,6 @@
     #include "semantic.hpp"
     using namespace std;
     
-    extern int yylex();
-    extern int yylineno;
-    extern char* yytexr;
-    void yyerror(const char*);
-    Table table;
-    
     
     %}
 /* Type tokens */

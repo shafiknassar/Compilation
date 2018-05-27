@@ -11,8 +11,17 @@
 using namespace output;
 using std::stoi;
 
-void rule_init() {
-    
+Table tmp;
+
+void rule_init()
+{
+    vector<TypeId> arg;
+    arg.push_back(STRING);
+    tableStack.push_back(tmp);
+    tableStack[0].insertFunc("print", VOID, arg);
+    arg.pop_back();
+    arg.push_back(INT);
+    tableStack[0].insertFunc("printi", VOID, arg);
 }
 
 void rule_Program__Funcs();
@@ -20,9 +29,27 @@ void rule_Program__Funcs();
 void rule_Funcs__FuncDecl();
 
 // TODO: FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+//{
+//    //TODO: should check if defined (in the table);
+//    String func_name = (Id*)$2->id;
+//    TypeId func_ret = (Type*)$1->type;
+//
+//
+//
+//}
 
-void rule_FormalsList__Formal_Decl(FormDec *fd);
-
+FormList* rule_FormalsList__Formal_Decl(FormDec *fd);
+FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
+                                            FormDec *fd, FormList *fl)
+{
+    Id *decl_id = fd->id;
+    if(fl->redefined(decl_id)) {
+        errorDef(yylineno, decl_id->id);
+        exit(0);
+    }
+    fl->add(decl_id);
+    return fl;
+}
 void rule_FormalDecl__Type_ID(TypeId type, Id *id);
 void rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK();
 void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK();
