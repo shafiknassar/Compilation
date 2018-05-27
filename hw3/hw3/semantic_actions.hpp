@@ -11,12 +11,14 @@
 
 #include <stdio.h>
 #include "attributes.cpp"
+#include "output.hpp"
 
 /* global variables */
 vector<Table> tableStack;
 vector<int>   offsetStack;
 bool isMainDef = false;
 void rule_Program__Funcs();
+extern int yylineno;
 
 void rule_init();
 
@@ -59,4 +61,5 @@ Expr rule_Exp__NOT_Exp(Expr *exp);
 Expr rule_Exp__Exp_AND_Exp(Expr *exp1, Expr *exp2);
 Expr rule_Exp__Exp_OR_Exp(Expr *exp1, Expr *exp2);
 Expr rule_Exp__Exp_RELOP_Exp(Expr *exp1, Expr *exp2);
+
 #endif /* semantic_actions_hpp */
