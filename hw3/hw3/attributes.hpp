@@ -31,8 +31,7 @@ using std::find;
             ((exp1)->type == (exp2)->type)
 
 #define ARR_TYPE_MATCH(arr, exp) \
-            ((convertFromArrType((arr)->type) == (exp)->type) \
-            ||
+            ((convertFromArrType((arr)->type) == (exp)->type))
 
 #define BYTE_TO_INT_MATCH(src, dst) \
             ((src)->type == BYTE && (dst)->type == INT)
@@ -237,12 +236,23 @@ struct Table {
         tmp.type       = FUNC;
         tmp.offset     = INT_MIN;
         tmp.retType    = retType;
-        /* The following parameter can be
+        /* 
+         The following parameter can be
          most easily acquired from a struct
-         specificaly created to FormalDecls */
+         specificaly created to FormalDecls
+         */
         tmp.paramTypes = paramTypes;
         entryStack.push_back(tmp);
     }
+    
+    bool isAlreadyDefined(Id *id) {
+        for (int i = 0; i < entryStack.size(); ++i) {
+            if (entryStack[i].name == id->id) return true;
+        }
+        return false;
+    }
+    
+    
 };
 
 

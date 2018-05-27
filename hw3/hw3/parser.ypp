@@ -9,6 +9,11 @@
     extern char* yytexr;
     void yyerror(const char*);
     Table table;
+    
+    /* global variables */
+    vector<Table> tableStack;
+    vector<int>   offsetStack;
+    
     %}
 /* Type tokens */
 %token VOID // special case: can be a return type, but not a variable declaration
