@@ -172,7 +172,7 @@ struct FormList : public Node {
         if(find(typesList.begin(), typesList.end(), id) != typesList.end())
             return true;
         return false;
-        }
+    }
     
 };
 
