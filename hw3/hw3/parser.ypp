@@ -58,15 +58,7 @@
 
 Program      : Funcs
 ;
-Init         : {
-                    vector<TypeId> arg;
-                    arg.push_back(STRING);
-                    tableStack.push_back();
-                    tableStack[0].insertFunc("print", VOID, arg);
-                    arg.pop_back();
-                    arg.push_back(INT);
-                    tableStack[0].insertFunc("printi", VOID, arg);
-                }
+Init         : { rule_init(); }
 Funcs        : FuncDecl
              | /*epsilon*/
 ;
@@ -86,21 +78,8 @@ RetType      : Type { $$=$1; }
 Formals      : FormalsList { $$ = $1;}
              | /*epsilon*/ { $$ = new FormList(); /*empty list*/}
 ;
-FormalsList  : FormalDecl
-                {
-                    $$ = new FormList()->add((FormDec*)$1->id);
-                }
-             | FormalDecl COMMA FormalsList
-                {
-                    FormList decl_list = (FormList*)$3;
-                    Id decl_id = (Id*)$1;
-                    if(decl_list->redefined(decl_id->id)) {
-                        errorDef(yylineno, decl_id->id);
-                        exit(0);
-                    }
-                    decl_list->add(decl_id);
-                    $$ = $3;
-                }
+FormalsList  : FormalDecl { $$ = new FormList()->add((FormDec*)$1->id); }
+             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalList((FormDec*)$1, (FormList*)$3); }
 ;
 FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((TypeId)$1, (Id*)$2); }
              | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
@@ -112,48 +91,17 @@ Statements   : Statement
 ;
 //TODO
 Statement    : LBRACE Statements RBRACE
-             | FormalDecl SC
-             | Type ID ASSIGN Exp SC
-                {
-                    //TODO: should check if defined (in the table);
-                    Id *id = (Id*)$2;
-                    id->type = (Type*)$1->id;
-                    Expr *exp = (Expr*)$4;
-                    if (!TYPES_MATCH(id, exp) &&
-                        !(id->type == INT && exp->type == BYTE)) {
-                            errorMismatch(yylineno);
-                            exit(0);
-                        }
-                 /* if needed, value of id can be assigned here */
-                }
-             | ID ASSIGN Exp SC
-                {
-                    //TODO: should check if defined (in the table);
-                    if (!TYPES_MATCH((Id*)$1, (Expr*)$3) &&
-                        !BYTE_TO_INT_MATCH((Expr*)$3,(Id*)$1)) {
-                            errorMismatch(yylineno);
-                            exit(0);
-                        }
-                 /* if needed, value of id can be assigned here */
-                }
-             | ID LBRACK Exp RBRACK ASSIGN Exp SC
-                {
-                    //TODO: should check if defined (in the table);
-                    Id *arr = (Id*)$1;
-                    if (((Expr*)$3->type != INT && (Expr*)$3->type != BYTE)
-                        || !ARR_TYPE_MATCH(arr, (Expr*)$6)){
-                            errorMismatch(yylineno);
-                            exit(0);
-                        }
-                 /* if needed, value of id can be assigned here */
-                }
+             | FormalDecl SC { rule_Statement__FormalDecl_SC((FormDec*)$1); }
+             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((TypeId)$1, (Id*)$2, (Expr*)$4); }
+             | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); }
+             | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); }
              | Call SC
-             | RETURN SC
-             | RETURN Exp SC
-             | IF LPAREN Exp RPAREN Statement
-             | IF LPAREN Exp RPAREN StatementWithElse ELSE Statement
-             | WHILE LPAREN Exp RPAREN Statement
-             | BREAK SC
+             | RETURN SC { rule_Statement__RETURN_SC(); }
+             | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
+             | IF LPAREN Exp RPAREN Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+             | IF LPAREN Exp RPAREN StatementWithElse ELSE Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement((Expr*)$3);}
+             | WHILE LPAREN Exp RPAREN Statement { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+             | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
 //TODO
 StatementWithElse : /*epsilon*/
