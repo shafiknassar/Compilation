@@ -10,10 +10,6 @@
     void yyerror(const char*);
     Table table;
     
-    /* global variables */
-    vector<Table> tableStack;
-    vector<int>   offsetStack;
-    bool isMainDef = false;
     
     %}
 /* Type tokens */

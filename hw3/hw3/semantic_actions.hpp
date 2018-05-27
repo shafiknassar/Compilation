@@ -10,5 +10,13 @@
 #define semantic_actions_hpp
 
 #include <stdio.h>
+#include "attributes.cpp"
+
+/* global variables */
+vector<Table> tableStack;
+vector<int>   offsetStack;
+bool isMainDef = false;
+
+
 
 #endif /* semantic_actions_hpp */

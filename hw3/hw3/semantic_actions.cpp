@@ -8,5 +8,12 @@
 
 #include "semantic_actions.hpp"
 
+void rule_init() {
+    
+}
+
+void rule_FormalDecl_TypeID(TypeId type, Id *id) {
+    
+}
 
 
