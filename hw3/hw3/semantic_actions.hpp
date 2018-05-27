@@ -26,6 +26,17 @@ extern char* yytexr;
 void yyerror(const char*);
 //Table table;
 
+/*****************************************/
+/* 5ara 3arasak */
+/*****************************************/
+
+void openScope();
+
+void closeScope();
+
+/*****************************************/
+/* Rule Functions */
+/*****************************************/
 void rule_init();
 
 void rule_Funcs__FuncDecl();
@@ -33,17 +44,19 @@ void rule_Funcs__FuncDecl();
 // TODO: FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
 
 FormList* rule_FormalsList__Formal_Decl(FormDec *fd);
-FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(FormDec *fd, FormList *fl);
-void rule_FormalDecl__Type_ID(TypeId type, Id *id);
-void rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(TypeId type, Id *id, NumVal num);
-//void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK(TypeId type, Id *id, NumVal num);
+FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
+                                                FormDec *fd, FormList *fl);
+FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id);
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(
+                                                Type *type, Id *id, NumVal *num);
+//void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK(Type * type, Id *id, NumVal num);
 
 void rule_Statements__Statement();
 void rule_Statements__Statements_Statement();
 
 void rule_Statement__LBRACE_Statements_RBRACE();
 void rule_Statement__FormalDecl_SC(FormDec *fm);
-void rule_Statement__Type_ID_ASSIGN_Exp_SC(TypeId type, Id *id, Expr *exp);
+void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type *type, Id *id, Expr *exp);
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp);
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *id, Expr *exp1, Expr *exp2);
 void rule_Statement__Call_SC();

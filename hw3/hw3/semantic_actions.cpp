@@ -13,6 +13,28 @@ using std::stoi;
 
 Table tmp;
 
+/*****************************************/
+/* 5ara 3arasak */
+/*****************************************/
+
+void openScope()
+{
+    tableStack.push_back(tmp);
+    offsetStack.push_back(offsetStack.back());
+}
+
+void closeScope()
+{
+    endScope();
+    tableStack.pop_back();
+    offsetStack.pop_back();
+    /* TODO print scope variables */
+}
+
+/*****************************************/
+/* Rule Functions */
+/*****************************************/
+
 void rule_init()
 {
     vector<TypeId> arg;
@@ -50,32 +72,76 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
     fl->add(decl_id);
     return fl;
 }
-void rule_FormalDecl__Type_ID(TypeId type, Id *id);
-void rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK();
-void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK();
+FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
+{
+    id->type = type->id;
+    if (isAlreadyDefined(tableStack, id)) {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
+    tableStack.back().insert(id, offsetStack.back());
+    offsetStack.back() += type->size;
+    return new FormDec(id);
+}
+
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *num)
+{
+    int arr_size = num->val;
+    if (arr_size <= 0 || arr_size >= 256) {
+        errorInvalidArraySize(yylineno, id->id);
+        exit(0);
+    }
+    id->type = convertToArrType(type->id);
+    if (id->type == ERROR) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+    if (isAlreadyDefined(tableStack, id)) {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
+    tableStack.back().insertArr(id, offsetStack.back(), arr_size);
+    offsetStack.back() += type->size * arr_size;
+    return new FormDec(id);
+}
 
 void rule_Statements__Statement();
 void rule_Statements__Statements_Statement();
 
-void rule_Statement__LBRACE_Statements_RBRACE();
-void rule_Statement__FormalDecl_SC();
-void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type type, Id *id, Expr *exp)
+void rule_Statement__LBRACE_Statements_RBRACE()
 {
-    //TODO: should check if defined (in the table);
-    id->type = type.id;
+    
+}
+void rule_Statement__FormalDecl_SC()
+{
+    
+}
+void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
+{
+    id->type = type->id;
     if (!TYPES_MATCH(id, exp) &&
         !(id->type == INT && exp->type == BYTE)) {
         errorMismatch(yylineno);
         exit(0);
     }
+    if (tableStack.back().isDefinedInScope(id))
+    {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
+    tableStack.back().insert(id, offsetStack.back());
+    offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
 }
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 {
-    //TODO: should check if defined (in the table);
     if (!TYPES_MATCH(id, (exp)) &&
         !BYTE_TO_INT_MATCH(exp, id)) {
         errorMismatch(yylineno);
+        exit(0);
+    }
+    if (!isAlreadyDefined(tableStack, id)) {
+        errorUndef(yylineno, id->id);
         exit(0);
     }
     /* if needed, value of id can be assigned here */
@@ -86,6 +152,10 @@ void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr
     if ((exp->type != INT && exp->type != BYTE)
         || !ARR_TYPE_MATCH(arr, rval)){
         errorMismatch(yylineno);
+        exit(0);
+    }
+    if (!isAlreadyDefined(tableStack, arr)) {
+        errorUndef(yylineno, arr->id);
         exit(0);
     }
     /* if needed, value of id can be assigned here */

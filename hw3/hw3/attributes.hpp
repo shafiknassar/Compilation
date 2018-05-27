@@ -30,8 +30,9 @@ using std::find;
 #define TYPES_MATCH(exp1, exp2) \
             ((exp1)->type == (exp2)->type)
 
-#define ARR_TYPE_MATCH(arr, exp) \
-            ((convertFromArrType((arr)->type) == (exp)->type))
+#define ARR_TYPE_MATCH(arr, exp)                              \
+            ((convertFromArrType((arr)->type) == (exp)->type) \
+            || (arr)->type == INT_ARR && (exp)->type == BYTE)
 
 #define BYTE_TO_INT_MATCH(src, dst) \
             ((src)->type == BYTE && (dst)->type == INT)

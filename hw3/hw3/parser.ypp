@@ -50,9 +50,9 @@
 
 %%
 
-Program      : Funcs
+Program      : mInit Funcs
 ;
-Init         : { rule_init(); }
+mInit         : { rule_init(); }
 Funcs        : FuncDecl
              | /*epsilon*/
 ;
@@ -75,7 +75,7 @@ Formals      : FormalsList { $$ = $1;}
 FormalsList  : FormalDecl { $$ = new FormList()->add((FormDec*)$1->id); }
              | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalList((FormDec*)$1, (FormList*)$3); }
 ;
-FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((TypeId)$1, (Id*)$2); }
+FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); }
              | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
              | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
 ;
@@ -84,9 +84,13 @@ Statements   : Statement
              | Statements Statement
 ;
 //TODO
-Statement    : LBRACE Statements RBRACE
-             | FormalDecl SC { rule_Statement__FormalDecl_SC((FormDec*)$1); }
-             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((TypeId)$1, (Id*)$2, (Expr*)$4); }
+
+mOS : { openScope(); }
+mCS : { closeScope(); }
+
+Statement    : LBRACE mOS Statements mCS RBRACE
+             | FormalDecl SC //{ rule_Statement__FormalDecl_SC((FormDec*)$1); }
+             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); }
              | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); }
              | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); }
              | Call SC
