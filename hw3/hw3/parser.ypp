@@ -102,62 +102,9 @@ FormalsList  : FormalDecl
                     $$ = $3;
                 }
 ;
-FormalDecl   : Type ID
-                {
-                    Id *curr = (Id*)$2;
-                    curr->type = (Type*)$1->id;
-                    if (isAlreadyDefined(tableStack, curr)) {
-                        errorDef(yylineno, curr->id);
-                        exit(0);
-                    }
-                    $$ = new FormDec(curr);
-                    tableStack.back.insert(curr, offsetStack.back);
-                    offsetStack.back += (Type*)$1->size;
-                }
-             | Type ID LBRACK NUM RBRACK
-                {
-                    //TODO: should check if redefined (in the table);
-                    Id *curr = (Id*)$2;
-                    NumVal arr_size = (NumVal*)$4->val;
-                    if (arr_size <= 0 || arr_size >= 256) {
-                        errorInvalidArraySize(yylineno, curr->id);
-                        exit(0);
-                    }
-                    curr->type = convertToArrType((Type*)$1->id);
-                    if (curr->type == ERROR) {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    if (isAlreadyDefined(tableStack, curr)) {
-                        errorDef(yylineno, curr->id);
-                        exit(0);
-                    }
-                    tableStack.back.insertArr(curr, offsetStack.back, arr_size);
-                    offsetStack.back += (Type*)$1->size * arr_size;
-                    $$ = new FormDec((Id*)$2);
-                }
-             | Type ID LBRACK NUM B RBRACK /*we should handle it like the one above (post on facebook) arr[5 b]*/
-                {
-                    //TODO: should check if redefined (in the table);
-                    Id *curr = (Id*)$2;
-                    NumVal arr_size = (NumVal*)$4->val;
-                    if (arr_size <= 0) {
-                        errorInvalidArraySize(yylineno, curr->id);
-                        exit(0);
-                    }
-                    curr->type = convertToArrType((Type*)$1->id);
-                    if (curr->type == ERROR) {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    if (isAlreadyDefined(tableStack, curr)) {
-                        errorDef(yylineno, curr->id);
-                        exit(0);
-                    }
-                    tableStack.back.insertArr(curr, offsetStack.back, arr_size);
-                    offsetStack.back += (Type*)$1->size * arr_size;
-                    $$ = new FormDec((Id*)$2);
-                }
+FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((TypeId)$1, (Id*)$2); }
+             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
+             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
 ;
 //TODO
 Statements   : Statement
@@ -213,9 +160,8 @@ StatementWithElse : /*epsilon*/
              | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
 ;
 //TODO
-Call         : ID LPAREN ExpList RPAREN
-                { $$ = new Expr(/* the type of the return value */); }
-             | ID LPAREN RPAREN
+Call         : ID LPAREN ExpList RPAREN { $$ = void rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (vector<Expr*>*)$3); }
+             | ID LPAREN RPAREN { rule_Call__ID_LPAREN_RPAREN((Id*)$1);
 ;
 //TODO
 ExpList      : Exp
@@ -226,76 +172,19 @@ Type         : INT  { $$=$1; }
              | BOOL { $$=$1; }
 ;
 Exp          : LPAREN Exp RPAREN { $$=$1; }
-             | ID LBRACK Exp RBRACK
-                {
-                    TypeId type = convertFromArrType((Id*)$1->type);
-                    if (type == ERROR)
-                    {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    $$ = new Expr(type);
-                }
-             | Exp BINOP Exp
-                {
-                    if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1)) {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    if ((Expr*)$3->type == INT || (Expr*)$1->type == INT) {
-                        $$ = new Expr(INT);
-                    } else {
-                        $$ = new Expr(BYTE);
-                    }
-                }
+             | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); }
+             | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); }
              | ID { $$ = new Expr((Id*)$1->type); }
              | Call
              | NUM { $$=$1; }
-             | NUM B
-                {
-                    if ((NumVal*)$1->val > 255) {
-                        errorByteTooLarge(yylineno, (NumVal*)$1->val);
-                        exit(0);
-                    }
-                    $$ = new ByteVal((NumVal*)$1->val);
-                }
+             | NUM B { $$ = rule_Exp__NUMB((NumVal*)$1->val); }
              | STRING { $$=$1; }
              | TRUE { $$=$1; }
              | FALSE { $$=$1; }
-             | NOT Exp
-                {
-                    if ((Exp*)$1->type != BOOL) {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    $$=$1;
-                }
-             | Exp AND Exp
-                {
-                    if ((Exp*)$1->type != BOOL ||
-                            (Exp*)$3->type != BOOL) {
-                        errorMismatch(yylineno);
-                        exit(0);
-                    }
-                    $$ = new Expr(BOOL);
-                }
-             | Exp OR Exp
-                 {
-                     if ((Exp*)$1->type != BOOL ||
-                            (Exp*)$3->type != BOOL) {
-                         errorMismatch(yylineno);
-                         exit(0);
-                     }
-                     $$ = new Expr(BOOL);
-                 }
-             | Exp RELOP Exp
-                 {
-                     if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1)) {
-                         errorMismatch(yylineno);
-                         exit(0);
-                     }
-                     $$ = new Expr(BOOL);
-                 }
+             | NOT Exp { $$ = rule_Exp__NOT_Exp((Expr*)$1); }
+             | Exp AND Exp { $$ = rule_Exp__Exp_AND_Exp((Expr*)$1, (Expr*)$3); }
+             | Exp OR Exp { $$ = rule_Exp__Exp_OR_Exp((Expr*)$1, (Expr*)$3); }
+             | Exp RELOP Exp { $$ = rule_Exp__Exp_RELOP_Exp((Expr*)$1, (Expr*)$3); }
 ;
 
 
