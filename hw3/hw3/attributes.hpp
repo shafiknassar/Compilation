@@ -213,6 +213,14 @@ struct FuncTableEntry : public TableEntry {
     FuncTableEntry() {}
 };
 
+struct ArrTableEntry : public TableEntry {
+    int size;
+    
+    ArrTableEntry(string name, TypeId type, int offset, int size) :
+    TableEntry(name, type, offset), size(size) {}
+    ArrTableEntry() {};
+};
+
 struct Table {
     vector<TableEntry> entryStack;
     
@@ -220,10 +228,12 @@ struct Table {
     
     void insert(string name, TypeId type, int offset)
     {
-        TableEntry tmp;
-        tmp.name   = name;
-        tmp.type   = type;
-        tmp.offset = offset;
+        TableEntry tmp(name, type, offset);
+        entryStack.push_back(tmp);
+    }
+    
+    void insertArr(Id *id, int offset, int size) {
+        ArrTableEntry tmp(id->id, id->type, offset, size);
         entryStack.push_back(tmp);
     }
     
@@ -245,17 +255,24 @@ struct Table {
         entryStack.push_back(tmp);
     }
     
-    bool isAlreadyDefined(Id *id) {
+    void insert(Id *id, int offset) {
+        insert(id->id, id->type, offset);
+    }
+    
+    bool isDefinedInScope(Id *id) {
         for (int i = 0; i < entryStack.size(); ++i) {
             if (entryStack[i].name == id->id) return true;
         }
         return false;
     }
-    
-    
 };
 
-
+bool isAlreadyDefined(vector<Table> scopes, Id *id) {
+    for (int i = scopes.size()-1; i >= 0; --i) {
+        if (scopes[i].isDefinedInScope(id)) return true;
+    }
+    return false;
+}
 
 
 #endif /* attributes_hpp */

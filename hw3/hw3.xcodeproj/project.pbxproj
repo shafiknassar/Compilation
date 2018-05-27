@@ -12,6 +12,7 @@
 		7F63F7C120B598B6008FF2FC /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7BF20B598B6008FF2FC /* Makefile */; };
 		7F63F7C420B598E2008FF2FC /* parser.ypp in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7C220B598E2008FF2FC /* parser.ypp */; };
 		7F63F7C720B5C590008FF2FC /* attributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F63F7C520B5C590008FF2FC /* attributes.cpp */; };
+		8CF04F4B20BB4BE700AD546D /* semantic_actions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8CF04F4920BB4BE700AD546D /* semantic_actions.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +38,8 @@
 		7F63F7C520B5C590008FF2FC /* attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attributes.cpp; sourceTree = "<group>"; };
 		7F63F7C620B5C590008FF2FC /* attributes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = attributes.hpp; sourceTree = "<group>"; };
 		8CEC0CF420B5AC7F001960F4 /* lexer.lex */ = {isa = PBXFileReference; lastKnownFileType = text; path = lexer.lex; sourceTree = "<group>"; };
+		8CF04F4920BB4BE700AD546D /* semantic_actions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = semantic_actions.cpp; sourceTree = "<group>"; };
+		8CF04F4A20BB4BE700AD546D /* semantic_actions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = semantic_actions.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +74,8 @@
 			children = (
 				7F63F7B520B5985A008FF2FC /* main.cpp */,
 				7F63F7C220B598E2008FF2FC /* parser.ypp */,
+				8CF04F4920BB4BE700AD546D /* semantic_actions.cpp */,
+				8CF04F4A20BB4BE700AD546D /* semantic_actions.hpp */,
 				7F63F7C520B5C590008FF2FC /* attributes.cpp */,
 				7F63F7C620B5C590008FF2FC /* attributes.hpp */,
 				7F63F7BC20B598B6008FF2FC /* output.hpp */,
@@ -142,6 +147,7 @@
 				7F63F7C420B598E2008FF2FC /* parser.ypp in Sources */,
 				7F63F7C120B598B6008FF2FC /* Makefile in Sources */,
 				7F63F7C020B598B6008FF2FC /* output.cpp in Sources */,
+				8CF04F4B20BB4BE700AD546D /* semantic_actions.cpp in Sources */,
 				7F63F7C720B5C590008FF2FC /* attributes.cpp in Sources */,
 				7F63F7B620B5985A008FF2FC /* main.cpp in Sources */,
 			);

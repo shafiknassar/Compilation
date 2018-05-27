@@ -13,6 +13,7 @@
     /* global variables */
     vector<Table> tableStack;
     vector<int>   offsetStack;
+    bool isMainDef = false;
     
     %}
 /* Type tokens */
@@ -60,6 +61,15 @@
 
 Program      : Funcs
 ;
+Init         : {
+                    vector<TypeId> arg;
+                    arg.push_back(STRING);
+                    tableStack.push_back();
+                    tableStack[0].insertFunc("print", VOID, arg);
+                    arg.pop_back();
+                    arg.push_back(INT);
+                    tableStack[0].insertFunc("printi", VOID, arg);
+                }
 Funcs        : FuncDecl
              | /*epsilon*/
 ;
@@ -81,14 +91,13 @@ Formals      : FormalsList { $$ = $1;}
 ;
 FormalsList  : FormalDecl
                 {
-                    //TODO: should check if redefined (in the table);
-                    $$ = new FormList().add((Id*)$1->id);
+                    $$ = new FormList()->add((FormDec*)$1->id);
                 }
              | FormalDecl COMMA FormalsList
                 {
                     FormList decl_list = (FormList*)$3;
                     Id decl_id = (Id*)$1;
-                    if(decl_list->redrfined(decl_id->id)) {
+                    if(decl_list->redefined(decl_id->id)) {
                         errorDef(yylineno, decl_id->id);
                         exit(0);
                     }
@@ -98,39 +107,58 @@ FormalsList  : FormalDecl
 ;
 FormalDecl   : Type ID
                 {
-                    //TODO: should check if redefined (in the table);
-                    (Id*)$2->type = (Type*)$1->id;
-                    $$ = new FormDec((Id*)$2);
-                    
+                    Id *curr = (Id*)$2;
+                    curr->type = (Type*)$1->id;
+                    if (isAlreadyDefined(tableStack, curr)) {
+                        errorDef(yylineno, curr->id);
+                        exit(0);
+                    }
+                    $$ = new FormDec(curr);
+                    tableStack.back.insert(curr, offsetStack.back);
+                    offsetStack.back += (Type*)$1->size;
                 }
              | Type ID LBRACK NUM RBRACK
                 {
                     //TODO: should check if redefined (in the table);
+                    Id *curr = (Id*)$2;
                     NumVal arr_size = (NumVal*)$4->val;
                     if (arr_size <= 0 || arr_size >= 256) {
-                        errorMismatch(yylineno);//error mismatch?
+                        errorInvalidArraySize(yylineno, curr->id);
                         exit(0);
                     }
-                    (Id*)$2->type = convertToArrType((Type*)$1->id);
-                    if ((Id*)$2->type) {
+                    curr->type = convertToArrType((Type*)$1->id);
+                    if (curr->type == ERROR) {
                         errorMismatch(yylineno);
                         exit(0);
                     }
+                    if (isAlreadyDefined(tableStack, curr)) {
+                        errorDef(yylineno, curr->id);
+                        exit(0);
+                    }
+                    tableStack.back.insertArr(curr, offsetStack.back, arr_size);
+                    offsetStack.back += (Type*)$1->size * arr_size;
                     $$ = new FormDec((Id*)$2);
                 }
-             | Type ID LBRACK NUM B RBRACK /*we should handle it like the one above (post on facebook)*/
+             | Type ID LBRACK NUM B RBRACK /*we should handle it like the one above (post on facebook) arr[5 b]*/
                 {
                     //TODO: should check if redefined (in the table);
+                    Id *curr = (Id*)$2;
                     NumVal arr_size = (NumVal*)$4->val;
                     if (arr_size <= 0) {
-                        errorMismatch(yylineno);//error mismatch?
+                        errorInvalidArraySize(yylineno, curr->id);
                         exit(0);
                     }
-                    (Id*)$2->type = convertToArrType((Type*)$1->id);
-                    if ((Id*)$2->type) {
+                    curr->type = convertToArrType((Type*)$1->id);
+                    if (curr->type == ERROR) {
                         errorMismatch(yylineno);
                         exit(0);
                     }
+                    if (isAlreadyDefined(tableStack, curr)) {
+                        errorDef(yylineno, curr->id);
+                        exit(0);
+                    }
+                    tableStack.back.insertArr(curr, offsetStack.back, arr_size);
+                    offsetStack.back += (Type*)$1->size * arr_size;
                     $$ = new FormDec((Id*)$2);
                 }
 ;
