@@ -2,6 +2,7 @@
     #include <iostream>
     #include "attributes.hpp"
     #include "output.hpp"
+    #include "semantic.hpp"
     using namespace std;
     
     extern int yylex();
