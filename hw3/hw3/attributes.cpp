@@ -12,7 +12,6 @@ TypeId convertFromArrType(TypeId arr_t) {
     switch (arr_t) {
         case INT_ARR:
             return INT;
-            break;
         case BYTE_ARR:
             return BYTE;
         case BOOL_ARR:
@@ -27,7 +26,6 @@ TypeId convertToArrType(TypeId arr_t) {
     switch (arr_t) {
         case INT:
             return INT_ARR;
-            break;
         case BYTE:
             return BYTE_ARR;
         case BOOL:

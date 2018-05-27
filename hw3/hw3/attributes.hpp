@@ -19,6 +19,7 @@ using std::string;
 using std::stringstream;
 using std::stoi;
 using std::vector;
+using std::find;
 
 /***************************************/
 /* Defines */
@@ -166,11 +167,15 @@ struct FormDec : public Node {
 };
 
 struct FormList : public Node {
-    vector<TypeId> typesList;
-    void add(TypeId t) { typesList.push_back(t); }
+    vector<Id*> typesList;
+    void add(Id* id) { typesList.push_back(id); }
+    bool redefined(Id* id) {
+        if(find(typesList.begin(), typesList.end(), id) != typesList.end())
+            return true;
+        return false;
+        }
+    
 };
-
-
 
 /***************************************/
 /* Helper functions */

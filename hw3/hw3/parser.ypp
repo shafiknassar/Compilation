@@ -4,8 +4,11 @@
     #include "output.hpp"
     using namespace std;
     
-    int yylex();
+    extern int yylex();
+    extern int yylineno;
+    extern char* yytexr;
     void yyerror(const char*);
+    Table table;
     %}
 /* Type tokens */
 %token VOID // special case: can be a return type, but not a variable declaration
@@ -56,65 +59,117 @@ Funcs        : FuncDecl
              | /*epsilon*/
 ;
 FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+                {
+                    //TODO: should check if defined (in the table);
+                    String func_name = (Id*)$2->id;
+                    TypeId func_ret = (Type*)$1->type;
+                    
+                    
+                    
+                }
 ;
 RetType      : Type { $$=$1; }
              | VOID { $$=$1; }
 ;
-Formals      : FormalsList
-             | /*epsilon*/
+Formals      : FormalsList { $$ = $1;}
+             | /*epsilon*/ { $$ = new FormList(); /*empty list*/}
 ;
 FormalsList  : FormalDecl
+                {
+                    //TODO: should check if redefined (in the table);
+                    $$ = new FormList().add((Id*)$1->id);
+                }
              | FormalDecl COMMA FormalsList
+                {
+                    FormList decl_list = (FormList*)$3;
+                    Id decl_id = (Id*)$1;
+                    if(decl_list->redrfined(decl_id->id)) {
+                        errorDef(yylineno, decl_id->id);
+                        exit(0);
+                    }
+                    decl_list->add(decl_id);
+                    $$ = $3;
+                }
 ;
-FormalDecl   : Type ID { (Id*)$2->type = (Type*)$1->id;
-                        /*$$ = new FormDec((Id*)$2);*/ }
+FormalDecl   : Type ID
+                {
+                    //TODO: should check if redefined (in the table);
+                    (Id*)$2->type = (Type*)$1->id;
+                    $$ = new FormDec((Id*)$2);
+                    
+                }
              | Type ID LBRACK NUM RBRACK
                 {
+                    //TODO: should check if redefined (in the table);
+                    NumVal arr_size = (NumVal*)$4->val;
+                    if (arr_size <= 0 || arr_size >= 256) {
+                        errorMismatch(yylineno);//error mismatch?
+                        exit(0);
+                    }
                     (Id*)$2->type = convertToArrType((Type*)$1->id);
                     if ((Id*)$2->type) {
                         errorMismatch(yylineno);
                         exit(0);
                     }
-                    /*$$ = new FormDec((Id*)$2);*/
+                    $$ = new FormDec((Id*)$2);
                 }
-             | Type ID LBRACK NUM B RBRACK /*TODO*/
+             | Type ID LBRACK NUM B RBRACK /*we should handle it like the one above (post on facebook)*/
+                {
+                    //TODO: should check if redefined (in the table);
+                    NumVal arr_size = (NumVal*)$4->val;
+                    if (arr_size <= 0) {
+                        errorMismatch(yylineno);//error mismatch?
+                        exit(0);
+                    }
+                    (Id*)$2->type = convertToArrType((Type*)$1->id);
+                    if ((Id*)$2->type) {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                    $$ = new FormDec((Id*)$2);
+                }
 ;
+//TODO
 Statements   : Statement
              | Statements Statement
 ;
+//TODO
 Statement    : LBRACE Statements RBRACE
              | FormalDecl SC
              | Type ID ASSIGN Exp SC
-             {
-                 Id *id = (Id*)$2;
-                 id->type = (Type*)$1->id;
-                 Expr *exp = (Expr*)$4;
-                 if (!TYPES_MATCH(id, exp) &&
+                {
+                    //TODO: should check if defined (in the table);
+                    Id *id = (Id*)$2;
+                    id->type = (Type*)$1->id;
+                    Expr *exp = (Expr*)$4;
+                    if (!TYPES_MATCH(id, exp) &&
                         !(id->type == INT && exp->type == BYTE)) {
-                     errorMismatch(yylineno);
-                     exit(0);
-                 }
+                            errorMismatch(yylineno);
+                            exit(0);
+                        }
                  /* if needed, value of id can be assigned here */
-             }
-             | ID ASSIGN Exp SC
-             {
-                 if (!TYPES_MATCH((Id*)$1, (Expr*)$3) &&
-                        !BYTE_TO_INT_MATCH((Expr*)$3,(Id*)$1)) {
-                     errorMismatch(yylineno);
-                     exit(0);
-                 }
-                 /* if needed, value of id can be assigned here */
-             }
-             | ID LBRACK Exp RBRACK ASSIGN Exp SC
-             {
-                 Id *arr = (Id*)$1;
-                 if (((Expr*)$3->type != INT && (Expr*)$3->type != BYTE)
-                        || !ARR_TYPE_MATCH(arr, (Expr*)$6)){
-                     errorMismatch(yylineno);
-                     exit(0);
                 }
+             | ID ASSIGN Exp SC
+                {
+                    //TODO: should check if defined (in the table);
+                    if (!TYPES_MATCH((Id*)$1, (Expr*)$3) &&
+                        !BYTE_TO_INT_MATCH((Expr*)$3,(Id*)$1)) {
+                            errorMismatch(yylineno);
+                            exit(0);
+                        }
                  /* if needed, value of id can be assigned here */
-             }
+                }
+             | ID LBRACK Exp RBRACK ASSIGN Exp SC
+                {
+                    //TODO: should check if defined (in the table);
+                    Id *arr = (Id*)$1;
+                    if (((Expr*)$3->type != INT && (Expr*)$3->type != BYTE)
+                        || !ARR_TYPE_MATCH(arr, (Expr*)$6)){
+                            errorMismatch(yylineno);
+                            exit(0);
+                        }
+                 /* if needed, value of id can be assigned here */
+                }
              | Call SC
              | RETURN SC
              | RETURN Exp SC
@@ -123,14 +178,16 @@ Statement    : LBRACE Statements RBRACE
              | WHILE LPAREN Exp RPAREN Statement
              | BREAK SC
 ;
+//TODO
 StatementWithElse : /*epsilon*/
              | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
 ;
-;
+//TODO
 Call         : ID LPAREN ExpList RPAREN
-             { $$ = new Expr(/* the type of the return value */); }
+                { $$ = new Expr(/* the type of the return value */); }
              | ID LPAREN RPAREN
 ;
+//TODO
 ExpList      : Exp
              | Exp COMMA ExpList
 ;
@@ -150,36 +207,34 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                     $$ = new Expr(type);
                 }
              | Exp BINOP Exp
-             {
-                 if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1))
-                 {
-                     errorMismatch(yylineno);
-                     exit(0);
-                 }
-                 if ((Expr*)$3->type == INT || (Expr*)$1->type == INT) {
-                     $$ = new Expr(INT);
-                 } else {
-                     $$ = new Expr(BYTE);
-                 }
-             }
+                {
+                    if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1)) {
+                        errorMismatch(yylineno);
+                        exit(0);
+                    }
+                    if ((Expr*)$3->type == INT || (Expr*)$1->type == INT) {
+                        $$ = new Expr(INT);
+                    } else {
+                        $$ = new Expr(BYTE);
+                    }
+                }
              | ID { $$ = new Expr((Id*)$1->type); }
              | Call
              | NUM { $$=$1; }
              | NUM B
-             {
-                 if ((NumVal*)$1->val > 255) {
-                     errorByteTooLarge(yylineno, (NumVal*)$1->val);
-                     exit(0);
-                 }
-                 $$ = new ByteVal((NumVal*)$1->val);
-             }
+                {
+                    if ((NumVal*)$1->val > 255) {
+                        errorByteTooLarge(yylineno, (NumVal*)$1->val);
+                        exit(0);
+                    }
+                    $$ = new ByteVal((NumVal*)$1->val);
+                }
              | STRING { $$=$1; }
              | TRUE { $$=$1; }
              | FALSE { $$=$1; }
              | NOT Exp
                 {
-                    if ((Exp*)$1->type != BOOL)
-                    {
+                    if ((Exp*)$1->type != BOOL) {
                         errorMismatch(yylineno);
                         exit(0);
                     }
@@ -188,8 +243,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
              | Exp AND Exp
                 {
                     if ((Exp*)$1->type != BOOL ||
-                            (Exp*)$3->type != BOOL)
-                    {
+                            (Exp*)$3->type != BOOL) {
                         errorMismatch(yylineno);
                         exit(0);
                     }
@@ -198,8 +252,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
              | Exp OR Exp
                  {
                      if ((Exp*)$1->type != BOOL ||
-                            (Exp*)$3->type != BOOL)
-                     {
+                            (Exp*)$3->type != BOOL) {
                          errorMismatch(yylineno);
                          exit(0);
                      }
@@ -207,8 +260,7 @@ Exp          : LPAREN Exp RPAREN { $$=$1; }
                  }
              | Exp RELOP Exp
                  {
-                     if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1))
-                     {
+                     if (!IS_NUM_TYPE((Expr*)$3) || !IS_NUM_TYPE((Expr*)$1)) {
                          errorMismatch(yylineno);
                          exit(0);
                      }
