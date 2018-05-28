@@ -35,3 +35,20 @@ TypeId convertToArrType(TypeId arr_t) {
     }
     return ERROR;
 }
+
+bool isAlreadyDefined(vector<Table> scopes, Id *id) {
+    for (int i = (int)scopes.size()-1; i >= 0; --i) {
+        if (scopes[i].isDefinedInScope(id)) return true;
+    }
+    return false;
+}
+
+FuncTableEntry* funcLookup(vector<Table> scopes, Id *id)
+{
+    FuncTableEntry *res = NULL;
+    for (int i = (int)scopes.size()-1; i >= 0; --i) {
+        res = scopes[i].getFuncEntry(id->id);
+        if (NULL != res) return res;
+    }
+    return NULL;
+}

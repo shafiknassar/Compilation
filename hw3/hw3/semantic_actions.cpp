@@ -52,7 +52,7 @@ void extractTypesFromFormList(FormList &src, vector<TypeId> &dst)
         dst.push_back(src.idList[i]->type);
     }
 }
-
+/* TODO: delete and fix usage */
 void calculateArgOffsets(FormList &src, vector<int> &dst)
 {
     int curr = 0;
@@ -68,13 +68,13 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
 
 void rule_init()
 {
-    vector<TypeId> arg;
-    arg.push_back(STRING);
+    vector<Type*> *args = new vector<Type*>();
+    args->push_back(new Type(STRING, 0));
     tableStack.push_back(cloningTable);
-    tableStack[0].insertFunc("print", VOID, arg);
-    arg.pop_back();
-    arg.push_back(INT);
-    tableStack[0].insertFunc("printi", VOID, arg);
+    tableStack[0].insertFunc("print", new Type(VOID, 0), *args);
+    args = new vector<Type*>();
+    args->push_back(new Type(INT, 4));
+    tableStack[0].insertFunc("printi", new Type(VOID, 0), *args);
 }
 
 void rule_Program__Funcs();
@@ -108,9 +108,9 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     }
     
     /* Declare function in scope (global) */
-    vector<TypeId> argTypes;
-    extractTypesFromFormList(*args, argTypes);
-    tableStack.back().insertFunc(id->id, retType->id, argTypes);
+    //vector<TypeId> argTypes;
+    //extractTypesFromFormList(*args, argTypes);
+    tableStack.back().insertFunc(id->id, retType, args->typeList);
     
     /* create function scope - openScope */
     Table &currScope = openFuncScope(id->id, retType);
@@ -144,6 +144,7 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
 FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
 {
     id->type = type->id;
+    id->size = typeSize(id->type);
     if (isAlreadyDefined(tableStack, id)) {
         errorDef(yylineno, id->id);
         exit(0);
@@ -161,6 +162,7 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
         exit(0);
     }
     id->type = convertToArrType(type->id);
+    id->size = typeSize(id->type) * num->val;
     if (id->type == ERROR) {
         errorMismatch(yylineno);
         exit(0);
@@ -190,6 +192,7 @@ void rule_Statement__FormalDecl_SC()
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
 {
     id->type = type->id;
+    id->size = exp->size;
     if (!TYPES_MATCH(id, exp) &&
         !(id->type == INT && exp->type == BYTE)) {
         errorMismatch(yylineno);
@@ -242,8 +245,44 @@ void rule_Statement__BREAK_SC();
 
 void rule_StatementWithElse__epsilon();
 void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_StatementWithElse();
-void rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id);
-void rule_Call__ID_LPAREN_RPAREN(Id *id);
+
+bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
+    vector<Type*> &expected = funcData->paramTypes;
+    vector<Expr*> &actual   = expList->v;
+    if (actual.size() != expected.size()) {
+        return false;
+    }
+    for (int i = 0; i < actual.size(); ++i) {
+        if (expected[i]->id != actual[i]->type ||
+                expected[i]->size != actual[i]->size)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList)
+{
+    FuncTableEntry *funcData = funcLookup(tableStack, id);
+    if (NULL == funcData) {
+        errorUndefFunc(yylineno, id->id);
+        exit(0);
+    }
+    if (!paramMatchExpected(funcData, expList)) {
+        //errorPrototypeMismatch(yylineno, id->id, /* TODO strings of the input */);
+        exit(0);
+    }
+    return new Expr(*(funcData->retType));
+}
+Expr* rule_Call__ID_LPAREN_RPAREN(Id *id) {
+    FuncTableEntry *funcData = funcLookup(tableStack, id);
+    if (NULL == funcData) {
+        errorUndefFunc(yylineno, id->id);
+        exit(0);
+    }
+    return new Expr(*(funcData->retType));
+}
 
 Expr* rule_Exp__ID_LBRACK_Exp_RBRACK(Id *id)
 {

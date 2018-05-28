@@ -92,7 +92,7 @@ Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); } /*DONE*/
              | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); } /*DONE*/
              | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); } /*DONE*/
-             | Call SC { /* TODO!! */ }
+             | Call SC { /* TODO?? */ }
              | RETURN SC { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
              | IF LPAREN Exp RPAREN Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
@@ -109,24 +109,24 @@ StatementWithElse : /*epsilon*/
              | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
 ;
 //TODO
-Call         : ID LPAREN ExpList RPAREN { $$ = void rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (vector<Expr*>*)$3); }
-             | ID LPAREN RPAREN { rule_Call__ID_LPAREN_RPAREN((Id*)$1);
+Call         : ID LPAREN ExpList RPAREN { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); } /*DONE*/
+            | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); } /*DONE*/
 ;
 //TODO
-ExpList      : Exp
-             | Exp COMMA ExpList
+ExpList      : Exp { $$ = new ExprList(); (ExprList*)$$->l.push_back((Expr*)$1); }   /*DONE*/
+             | Exp COMMA ExpList { $$ = $3; (ExprList*)$$->l.push_back((Expr*)$1); } /*DONE*/
 ;
-Type         : INT  { $$=$1; }
-             | BYTE { $$=$1; }
-             | BOOL { $$=$1; }
+Type         : INT  { $$=$1; } /*DONE*/
+             | BYTE { $$=$1; } /*DONE*/
+             | BOOL { $$=$1; } /*DONE*/
 ;
-Exp          : LPAREN Exp RPAREN { $$=$1; }
-             | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); }
-             | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); }
-             | ID { $$ = new Expr((Id*)$1->type); }
-             | Call
-             | NUM { $$=$1; }
-             | NUM B { $$ = rule_Exp__NUMB((NumVal*)$1->val); }
+Exp          : LPAREN Exp RPAREN { $$=$1; } /*DONE*/
+             | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); } /*DONE*/
+             | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); } /*DONE*/
+             | ID { $$ = new Expr((Id*)$1->type, (Id*)$1->size); } /*DONE*/
+             | Call { $$ = $1; } /*DONE*/
+             | NUM { $$=$1; } /*DONE*/
+             | NUM B { $$ = rule_Exp__NUMB((NumVal*)$1->val); } /*DONE*/
              | STRING { $$=$1; }
              | TRUE { $$=$1; }
              | FALSE { $$=$1; }

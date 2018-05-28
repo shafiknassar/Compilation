@@ -13,6 +13,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <vector>
+#include <cassert>
 
 
 using std::string;
@@ -58,6 +59,19 @@ typedef enum {
     FUNC
 } TypeId;
 
+int typeSize(TypeId id)
+{
+    switch (id) {
+        case INT:
+            return 4;
+        case VOID:
+            return 0;
+        case STRING: ;
+        default: ;
+    }
+    return 1;
+}
+
 typedef enum {
     PLUS,
     MINUS,
@@ -100,11 +114,14 @@ struct Type : public Node {
     TypeId id;
     int size;
     Type(TypeId id, int size) : id(id), size(size) {};
+    Type(Type const &t)       : id(t.id), size(t.size) {};
+    Type()                    : id(ERROR), size(-1) {}
 };
 
 struct Id : public Node {
     string id;
     TypeId type;
+    int size;
     Id(string id) : id(id) {}
 };
 
@@ -112,7 +129,13 @@ struct Id : public Node {
 
 struct Expr : public Node {
     TypeId type;
-    Expr(TypeId type): type(type) {}
+    int size;
+    Expr(TypeId type) : type(type), size(typeSize(type)) {}
+    Expr(Type t)      : type(t.id), size(t.size) {}
+};
+
+struct ExprList : public Node {
+    vector<Expr*> v;
 };
 
 struct BinOp : public Expr {
@@ -209,12 +232,13 @@ struct TableEntry {
 };
 
 struct FuncTableEntry : public TableEntry {
-    TypeId retType;
-    vector<TypeId> paramTypes;
+    Type *retType;
+    vector<Type*> paramTypes;
+    
     
     FuncTableEntry(string name,
-                   TypeId retType,
-                   vector<TypeId>& paramTypes)
+                   Type *retType,
+                   vector<Type*>& paramTypes)
         : TableEntry(name, FUNC, INT_MIN),
         retType(retType),
         paramTypes(paramTypes) {}
@@ -249,9 +273,19 @@ struct Table {
         entryStack.push_back(tmp);
     }
     
+    FuncTableEntry* getFuncEntry(string name) {
+        for (int i = 0; i < entryStack.size(); ++i) {
+            if (entryStack[i].type == FUNC &&
+                    entryStack[i].name == name) {
+                return (FuncTableEntry*)&(entryStack[i]);
+            }
+        }
+        return NULL;
+    }
+    
     void insertFunc(string name,
-                    TypeId retType,
-                    vector<TypeId> paramTypes)
+                    Type *retType,
+                    vector<Type*> &paramTypes)
     {
         FuncTableEntry tmp;
         tmp.name       = name;
@@ -284,12 +318,9 @@ struct FuncScopeTable : public Table {
     string name;
 };
 
-bool isAlreadyDefined(vector<Table> scopes, Id *id) {
-    for (int i = (int)scopes.size()-1; i >= 0; --i) {
-        if (scopes[i].isDefinedInScope(id)) return true;
-    }
-    return false;
-}
+bool isAlreadyDefined(vector<Table> scopes, Id *id);
+
+FuncTableEntry* funcLookup(vector<Table> scopes, Id *id);
 
 
 #endif /* attributes_hpp */
