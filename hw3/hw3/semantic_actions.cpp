@@ -10,8 +10,12 @@
 
 using namespace output;
 using std::stoi;
+using std::reverse;
 
-Table tmp;
+/* it's ok to use those variables when pushing to a vector
+ * since the push_back method copies the arg */
+Table            cloningTable;
+FuncScopeTable   cloningFuncTable;
 
 /*****************************************/
 /* 5ara 3arasak */
@@ -19,7 +23,7 @@ Table tmp;
 
 void openScope()
 {
-    tableStack.push_back(tmp);
+    tableStack.push_back(cloningTable);
     offsetStack.push_back(offsetStack.back());
 }
 
@@ -31,6 +35,33 @@ void closeScope()
     /* TODO print scope variables */
 }
 
+Table& openFuncScope(string funcName, Type *retType)
+{
+    cloningFuncTable.name = funcName;
+    cloningFuncTable.retType = retType;
+    tableStack.push_back(cloningFuncTable);
+    offsetStack.push_back(offsetStack.back());
+    
+    return tableStack.back();
+}
+
+void extractTypesFromFormList(FormList &src, vector<TypeId> &dst)
+{
+    for (int i = 0; i < src.idList.size(); ++i)
+    {
+        dst.push_back(src.idList[i]->type);
+    }
+}
+
+void calculateArgOffsets(FormList &src, vector<int> &dst)
+{
+    int curr = 0;
+    for (int i = 0; i < src.size(); ++i) {
+        curr -= src.typeList[i]->size;
+        dst.push_back(curr);
+    }
+}
+
 /*****************************************/
 /* Rule Functions */
 /*****************************************/
@@ -39,7 +70,7 @@ void rule_init()
 {
     vector<TypeId> arg;
     arg.push_back(STRING);
-    tableStack.push_back(tmp);
+    tableStack.push_back(cloningTable);
     tableStack[0].insertFunc("print", VOID, arg);
     arg.pop_back();
     arg.push_back(INT);
@@ -60,7 +91,45 @@ void rule_Funcs__FuncDecl();
 //
 //}
 
-FormList* rule_FormalsList__Formal_Decl(FormDec *fd);
+
+void rule_FuncHeader(Type *retType, Id *id, FormList *args)
+{
+    if (!(retType->id == INT || retType->id == BYTE
+          || retType->id == BOOL || retType->id == VOID))
+    {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+    
+    if (isAlreadyDefined(tableStack, id))
+    {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
+    
+    /* Declare function in scope (global) */
+    vector<TypeId> argTypes;
+    extractTypesFromFormList(*args, argTypes);
+    tableStack.back().insertFunc(id->id, retType->id, argTypes);
+    
+    /* create function scope - openScope */
+    Table &currScope = openFuncScope(id->id, retType);
+    vector<int> argOffsets;
+    calculateArgOffsets(*args, argOffsets);
+    for (int i = args->size()-1; i >= 0 ; i++) {
+        currScope.insert(args->idList[i], argOffsets[i]);
+    }
+    
+}
+
+void rule_FuncDecl__RetType_ID_LPAREN_Formals_RPAREN_LBRACE_Statements_RBRACE(
+            Type *retType, Id *id, FormList *args)
+{
+    
+    
+}
+
+
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
                                             FormDec *fd, FormList *fl)
 {
@@ -69,7 +138,7 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
         errorDef(yylineno, decl_id->id);
         exit(0);
     }
-    fl->add(decl_id);
+    fl->add(fd);
     return fl;
 }
 FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
@@ -81,7 +150,7 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
     }
     tableStack.back().insert(id, offsetStack.back());
     offsetStack.back() += type->size;
-    return new FormDec(id);
+    return new FormDec(id, type);
 }
 
 FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *num)
@@ -101,8 +170,10 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
         exit(0);
     }
     tableStack.back().insertArr(id, offsetStack.back(), arr_size);
-    offsetStack.back() += type->size * arr_size;
-    return new FormDec(id);
+    type->size *= arr_size;
+    offsetStack.back() += type->size;
+    
+    return new FormDec(id, type);
 }
 
 void rule_Statements__Statement();
@@ -146,9 +217,9 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
     }
     /* if needed, value of id can be assigned here */
 }
+
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr *rval)
 {
-    //TODO: should check if defined (in the table);
     if ((exp->type != INT && exp->type != BYTE)
         || !ARR_TYPE_MATCH(arr, rval)){
         errorMismatch(yylineno);
@@ -160,6 +231,7 @@ void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr
     }
     /* if needed, value of id can be assigned here */
 }
+
 void rule_Statement__Call_SC();
 void rule_Statement__RETURN_SC();
 void rule_Statement__RETURN_Exp_SC();

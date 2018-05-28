@@ -13,12 +13,21 @@
 #include "attributes.cpp"
 #include "output.hpp"
 
+/*****************************************/
 /* global variables */
+/*****************************************/
+
 vector<Table> tableStack;
+
 vector<int>   offsetStack;
+
+int negativeOffset = 0;
+
 bool isMainDef = false;
-void rule_Program__Funcs();
-extern int yylineno;
+
+/*****************************************/
+/* External Declarations */
+/*****************************************/
 
 extern int yylex();
 extern int yylineno;
@@ -37,18 +46,21 @@ void closeScope();
 /*****************************************/
 /* Rule Functions */
 /*****************************************/
+
+void rule_Program__Funcs();
+
 void rule_init();
 
 void rule_Funcs__FuncDecl();
 
-// TODO: FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+void rule_FuncDecl__RetType_ID_LPAREN_Formals_RPAREN_LBRACE_Statements_RBRACE();
 
-FormList* rule_FormalsList__Formal_Decl(FormDec *fd);
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
                                                 FormDec *fd, FormList *fl);
 FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id);
 FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(
                                                 Type *type, Id *id, NumVal *num);
+/* TODO: delete - same as above! */
 //void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK(Type * type, Id *id, NumVal num);
 
 void rule_Statements__Statement();

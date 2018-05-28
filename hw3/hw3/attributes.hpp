@@ -45,10 +45,12 @@ using std::find;
 
 typedef enum {
     ERROR,
+    /* Original Types */
     VOID,
     INT,
     BYTE,
     BOOL,
+    /* end of Original Types */
     STRING,
     INT_ARR,
     BYTE_ARR,
@@ -163,17 +165,23 @@ struct RelOp : public Expr {
 
 struct FormDec : public Node {
     Id *id;
-    FormDec(Id *id) : id(id) {};
+    Type *type;
+    FormDec(Id *id, Type *t) : id(id), type(t) {};
 };
 
 struct FormList : public Node {
-    vector<Id*> typesList;
-    void add(Id* id) { typesList.push_back(id); }
+    vector<Id*> idList;
+    vector<Type*> typeList;
+
+    void add(Id *id, Type *t) { idList.push_back(id); typeList.push_back(t); }
+    void add(FormDec *fd)     { idList.push_back(fd->id); typeList.push_back(fd->type); }
     bool redefined(Id* id) {
-        if(find(typesList.begin(), typesList.end(), id) != typesList.end())
+        if(find(idList.begin(), idList.end(), id) != idList.end())
             return true;
         return false;
     }
+    
+    int size() { return (int)idList.size(); }
     
 };
 
@@ -225,6 +233,9 @@ struct ArrTableEntry : public TableEntry {
 struct Table {
     vector<TableEntry> entryStack;
     
+    /* Virtual D'tor */
+    virtual ~Table() {};
+    
     /*default C'tor*/
     
     void insert(string name, TypeId type, int offset)
@@ -268,8 +279,13 @@ struct Table {
     }
 };
 
+struct FuncScopeTable : public Table {
+    Type *retType;
+    string name;
+};
+
 bool isAlreadyDefined(vector<Table> scopes, Id *id) {
-    for (int i = scopes.size()-1; i >= 0; --i) {
+    for (int i = (int)scopes.size()-1; i >= 0; --i) {
         if (scopes[i].isDefinedInScope(id)) return true;
     }
     return false;

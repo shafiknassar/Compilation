@@ -50,50 +50,49 @@
 
 %%
 
-Program      : mInit Funcs
+Program      : mInit Funcs /*DONE*/
 ;
 mInit         : { rule_init(); }
-Funcs        : FuncDecl
+Funcs        : FuncDecl /*DONE*/
              | /*epsilon*/
 ;
-FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+FuncDecl     : FuncHeader LBRACE Statements RBRACE /*DONE*/
                 {
                     //TODO: should check if defined (in the table);
-                    String func_name = (Id*)$2->id;
-                    TypeId func_ret = (Type*)$1->type;
-                    
-                    
-                    
+                    //String func_name = (Id*)$2->id;
+                    //TypeId func_ret = (Type*)$1->type;
+                    closeScope();
                 }
 ;
-RetType      : Type { $$=$1; }
-             | VOID { $$=$1; }
+
+FuncHeader   : RetType ID LPAREN Formals RPAREN /*DONE*/
+             { rule_FuncHeader((Type*)$1, (Id*)$2, (FormList*)$4); }
+
+
+RetType      : Type { $$=$1; } /*DONE*/
+             | VOID { $$=$1; } /*DONE*/
 ;
-Formals      : FormalsList { $$ = $1;}
-             | /*epsilon*/ { $$ = new FormList(); /*empty list*/}
+Formals      : FormalsList { $$ = $1;} /*DONE*/
+             | /*epsilon*/ { $$ = new FormList(); /*empty list*/} /*DONE*/
 ;
-FormalsList  : FormalDecl { $$ = new FormList()->add((FormDec*)$1->id); }
-             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalList((FormDec*)$1, (FormList*)$3); }
+FormalsList  : FormalDecl { $$ = new FormList()->add((FormDec*)$1); } /*DONE*/
+             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)$1, (FormList*)$3); } /*DONE*/
 ;
-FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); }
-             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
-             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); }
+FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); } /*DONE*/
+             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
+             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
 ;
 //TODO
-Statements   : Statement
-             | Statements Statement
+Statements   : Statement /*DONE*/
+             | Statements Statement /*DONE*/
 ;
 //TODO
-
-mOS : { openScope(); }
-mCS : { closeScope(); }
-
-Statement    : LBRACE mOS Statements mCS RBRACE
+Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | FormalDecl SC //{ rule_Statement__FormalDecl_SC((FormDec*)$1); }
-             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); }
-             | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); }
-             | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); }
-             | Call SC
+             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); } /*DONE*/
+             | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); } /*DONE*/
+             | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); } /*DONE*/
+             | Call SC { /* TODO!! */ }
              | RETURN SC { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
              | IF LPAREN Exp RPAREN Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
@@ -101,6 +100,10 @@ Statement    : LBRACE mOS Statements mCS RBRACE
              | WHILE LPAREN Exp RPAREN Statement { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
+
+mOpenScope  : { openScope(); } /*DONE*/
+mCloseScope : { closeScope(); } /*DONE*/
+
 //TODO
 StatementWithElse : /*epsilon*/
              | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
