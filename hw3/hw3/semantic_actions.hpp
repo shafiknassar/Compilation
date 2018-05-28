@@ -25,9 +25,6 @@ int negativeOffset = 0;
 
 bool isMainDef = false;
 
-TypeId retType = NONE;
-
-bool inWhileLoop = false;
 /*****************************************/
 /* External Declarations */
 /*****************************************/
@@ -56,7 +53,7 @@ void rule_Program__Funcs();
 void rule_init();
 
 void rule_Funcs__FuncDecl();
-
+void rule_FuncHeader(Type *retType, Id *id, FormList *args);
 void rule_FuncDecl__RetType_ID_LPAREN_Formals_RPAREN_LBRACE_Statements_RBRACE();
 
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(

@@ -2,7 +2,7 @@
     #include <iostream>
     #include "attributes.hpp"
     #include "output.hpp"
-    #include "semantic.hpp"
+    #include "semantic_actions.hpp"
     using namespace std;
     
     
@@ -75,12 +75,12 @@ RetType      : Type { $$=$1; } /*DONE*/
 Formals      : FormalsList { $$ = $1;} /*DONE*/
              | /*epsilon*/ { $$ = new FormList(); /*empty list*/} /*DONE*/
 ;
-FormalsList  : FormalDecl { $$ = new FormList()->add((FormDec*)$1); } /*DONE*/
+FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((FormDec*)$1); } /*DONE*/
              | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)$1, (FormList*)$3); } /*DONE*/
 ;
-FormalDecl   : Type ID { $$ = void rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); } /*DONE*/
-             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
-             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((TypeId)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
+FormalDecl   : Type ID { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); } /*DONE*/
+             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
+             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
 ;
 //TODO
 Statements   : Statement /*DONE*/
@@ -92,28 +92,29 @@ Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); } /*DONE*/
              | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); } /*DONE*/
              | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); } /*DONE*/
-             | Call SC { /* TODO?? */ }
+             | Call SC
              | RETURN SC { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
-             | IF LPAREN Exp RPAREN Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
-             | IF LPAREN Exp RPAREN StatementWithElse ELSE Statement { rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement((Expr*)$3);}
-             | WHILE LPAREN Exp RPAREN Statement { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+             | IF LPAREN Exp RPAREN mOpenScope Statement mCloseScope { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+             | IF LPAREN Exp RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope Statement mCloseScope { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3);}
+             | WHILE LPAREN Exp RPAREN mOWhileScope Statement mCWhileScope { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
 
 mOpenScope  : { openScope(); } /*DONE*/
 mCloseScope : { closeScope(); } /*DONE*/
+mOWhileScope: { openScope(); tableStack.back().isWhile = true; }
+mCWhileScope: { closeScope(); tableStack.back().isWhile = false; }
 
-//TODO
 StatementWithElse : /*epsilon*/
-             | IF LPAREN Exp RPAREN StatementWithElse ELSE StatementWithElse
+             | IF LPAREN Exp RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope StatementWithElse mCloseScope
 ;
 Call         : ID LPAREN ExpList RPAREN { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); } /*DONE*/
             | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); } /*DONE*/
 ;
 
-ExpList      : Exp { $$ = new ExprList(); (ExprList*)$$->l.push_back((Expr*)$1); }   /*DONE*/
-             | Exp COMMA ExpList { $$ = $3; (ExprList*)$$->l.push_back((Expr*)$1); } /*DONE*/
+ExpList      : Exp { $$ = new ExprList(); ((ExprList*)$$)->v.push_back((Expr*)$1); }   /*DONE*/
+             | Exp COMMA ExpList { $$ = $3; ((ExprList*)$$)->v.push_back((Expr*)$1); } /*DONE*/
 ;
 Type         : INT  { $$=$1; } /*DONE*/
              | BYTE { $$=$1; } /*DONE*/
@@ -122,10 +123,10 @@ Type         : INT  { $$=$1; } /*DONE*/
 Exp          : LPAREN Exp RPAREN { $$=$1; } /*DONE*/
              | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); } /*DONE*/
              | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); } /*DONE*/
-             | ID { $$ = new Expr((Id*)$1->type, (Id*)$1->size); } /*DONE*/
+             | ID { $$ = new Expr(((Id*)$1)->type, ((Id*)$1)->size); } /*DONE*/
              | Call { $$ = $1; } /*DONE*/
              | NUM { $$=$1; } /*DONE*/
-             | NUM B { $$ = rule_Exp__NUMB((NumVal*)$1->val); } /*DONE*/
+             | NUM B { $$ = rule_Exp__NUMB(((NumVal*)$1)); } /*DONE*/
              | STRING { $$=$1; }/*DONE*/
              | TRUE { $$=$1; }/*DONE*/
              | FALSE { $$=$1; }/*DONE*/

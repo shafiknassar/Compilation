@@ -15,7 +15,6 @@ using std::reverse;
 /* it's ok to use those variables when pushing to a vector
  * since the push_back method copies the arg */
 Table            cloningTable;
-FuncScopeTable   cloningFuncTable;
 
 /*****************************************/
 /* 5ara 3arasak */
@@ -23,12 +22,13 @@ FuncScopeTable   cloningFuncTable;
 string etos(TypeId type)
 {
     switch (type) {
-        case INT: return "INT";
-        case VOID: return "VOID";
-        case BOOL: return "BOOL";
+        case M_INT: return "INT";
+        case M_VOID: return "VOID";
+        case M_BOOL: return "BOOL";
         default: return "ERROR";
     }
 }
+
 
 void printScope()
 {
@@ -41,6 +41,9 @@ void printScope()
 
 void openScope()
 {
+    cloningTable.isFunc  = false;
+    cloningTable.isWhile = false;
+    cloningTable.retType = tableStack.back().retType;
     tableStack.push_back(cloningTable);
     offsetStack.push_back(offsetStack.back());
 }
@@ -55,9 +58,10 @@ void closeScope()
 
 Table& openFuncScope(string funcName, Type *retType)
 {
-    cloningFuncTable.name = funcName;
-    cloningFuncTable.retType = retType;
-    tableStack.push_back(cloningFuncTable);
+    cloningTable.retType = retType;
+    cloningTable.isFunc  = true;
+    cloningTable.isWhile = false;
+    tableStack.push_back(cloningTable);
     offsetStack.push_back(offsetStack.back());
     
     return tableStack.back();
@@ -87,33 +91,22 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
 void rule_init()
 {
     vector<Type*> *args = new vector<Type*>();
-    args->push_back(new Type(STRING, 0));
+    args->push_back(new Type(M_STRING, 0));
     tableStack.push_back(cloningTable);
-    tableStack[0].insertFunc("print", new Type(VOID, 0), *args);
+    tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
     args = new vector<Type*>();
-    args->push_back(new Type(INT, 4));
-    tableStack[0].insertFunc("printi", new Type(VOID, 0), *args);
+    args->push_back(new Type(M_INT, 4));
+    tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
 }
 
 void rule_Program__Funcs();
 
 void rule_Funcs__FuncDecl();
 
-// TODO: FuncDecl     : RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
-//{
-//    //TODO: should check if defined (in the table);
-//    String func_name = (Id*)$2->id;
-//    TypeId func_ret = (Type*)$1->type;
-//
-//
-//
-//}
-
-
 void rule_FuncHeader(Type *retType, Id *id, FormList *args)
 {
-    if (!(retType->id == INT || retType->id == BYTE
-          || retType->id == BOOL || retType->id == VOID))
+    if (!(retType->id == M_INT || retType->id == M_BYTE
+          || retType->id == M_BOOL || retType->id == M_VOID))
     {
         errorMismatch(yylineno);
         exit(0);
@@ -159,6 +152,7 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
     fl->add(fd);
     return fl;
 }
+
 FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
 {
     id->type = type->id;
@@ -196,23 +190,12 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
     return new FormDec(id, type);
 }
 
-void rule_Statements__Statement();
-void rule_Statements__Statements_Statement();
-
-void rule_Statement__LBRACE_Statements_RBRACE()
-{
-    
-}
-void rule_Statement__FormalDecl_SC()
-{
-    
-}
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
 {
     id->type = type->id;
     id->size = exp->size;
     if (!TYPES_MATCH(id, exp) &&
-        !(id->type == INT && exp->type == BYTE)) {
+        !(id->type == M_INT && exp->type == M_BYTE)) {
         errorMismatch(yylineno);
         exit(0);
     }
@@ -241,7 +224,7 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr *rval)
 {
-    if ((exp->type != INT && exp->type != BYTE)
+    if ((exp->type != M_INT && exp->type != M_BYTE)
         || !ARR_TYPE_MATCH(arr, rval)){
         errorMismatch(yylineno);
         exit(0);
@@ -253,13 +236,56 @@ void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr
     /* if needed, value of id can be assigned here */
 }
 
-void rule_Statement__Call_SC();
-void rule_Statement__RETURN_SC();
-void rule_Statement__RETURN_Exp_SC();
-void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement();
-void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement();
-void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement();
-void rule_Statement__BREAK_SC();
+void rule_Statement__RETURN_SC()
+{
+    if (tableStack.back().retType->id != M_VOID)
+    {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+
+void rule_Statement__RETURN_Exp_SC(Expr *exp)
+{
+    if (tableStack.back().retType->id == M_INT && exp->type == M_BYTE)
+        return;
+    
+    if (tableStack.back().retType->id != exp->type &&
+            tableStack.back().retType->size != exp->size)
+    {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expr *exp) {
+    if (exp->type != M_BOOL) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+/*
+void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expr *exp)
+{
+    if (exp->type != BOOL) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+ */
+void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement(Expr *exp)
+{
+    if(exp->type != M_BOOL) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+void rule_Statement__BREAK_SC()
+{
+    if (!tableStack.back().isWhile) {
+        errorUnexpectedBreak(yylineno);
+        exit(0);
+    }
+}
 
 void rule_StatementWithElse__epsilon();
 void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_StatementWithElse();
@@ -318,10 +344,10 @@ Expr* rule_Exp__Exp_BINOP_Exp(Expr *exp1, Expr *exp2)
         errorMismatch(yylineno);
         exit(0);
     }
-    if (exp2->type == INT || exp1->type == INT) {
-        return new Expr(INT);
+    if (exp2->type == M_INT || exp1->type == M_INT) {
+        return new Expr(M_INT);
     }
-    return new Expr(BYTE);
+    return new Expr(M_BYTE);
 }
 Expr* rule_Exp__NUMB(NumVal *num)
 {
@@ -333,7 +359,7 @@ Expr* rule_Exp__NUMB(NumVal *num)
 }
 Expr* rule_Exp__NOT_Exp(Expr *exp)
 {
-    if (exp->type != BOOL) {
+    if (exp->type != M_BOOL) {
         errorMismatch(yylineno);
         exit(0);
     }
@@ -341,21 +367,21 @@ Expr* rule_Exp__NOT_Exp(Expr *exp)
 }
 Expr* rule_Exp__Exp_AND_Exp(Expr *exp1, Expr *exp2)
 {
-    if (exp1->type != BOOL ||
-        exp2->type != BOOL) {
+    if (exp1->type != M_BOOL ||
+        exp2->type != M_BOOL) {
         errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(BOOL);
+    return new Expr(M_BOOL);
 }
 Expr* rule_Exp__Exp_OR_Exp(Expr *exp1, Expr *exp2)
 {
-    if (exp1->type != BOOL ||
-        exp2->type != BOOL) {
+    if (exp1->type != M_BOOL ||
+        exp2->type != M_BOOL) {
         errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(BOOL);
+    return new Expr(M_BOOL);
 }
 Expr* rule_Exp__Exp_RELOP_Exp(Expr *exp1, Expr *exp2)
 {
@@ -363,5 +389,5 @@ Expr* rule_Exp__Exp_RELOP_Exp(Expr *exp1, Expr *exp2)
         errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(BOOL);
+    return new Expr(M_BOOL);
 }

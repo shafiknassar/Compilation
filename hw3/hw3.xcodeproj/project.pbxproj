@@ -37,7 +37,7 @@
 		7F63F7C220B598E2008FF2FC /* parser.ypp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.yacc; path = parser.ypp; sourceTree = "<group>"; };
 		7F63F7C520B5C590008FF2FC /* attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attributes.cpp; sourceTree = "<group>"; };
 		7F63F7C620B5C590008FF2FC /* attributes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = attributes.hpp; sourceTree = "<group>"; };
-		8CEC0CF420B5AC7F001960F4 /* lexer.lex */ = {isa = PBXFileReference; lastKnownFileType = text; path = lexer.lex; sourceTree = "<group>"; };
+		8CEC0CF420B5AC7F001960F4 /* scanner.lex */ = {isa = PBXFileReference; lastKnownFileType = text; path = scanner.lex; sourceTree = "<group>"; };
 		8CF04F4920BB4BE700AD546D /* semantic_actions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = semantic_actions.cpp; sourceTree = "<group>"; };
 		8CF04F4A20BB4BE700AD546D /* semantic_actions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = semantic_actions.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -82,7 +82,7 @@
 				7F63F7BD20B598B6008FF2FC /* output.cpp */,
 				7F63F7BE20B598B6008FF2FC /* selfcheck.txt */,
 				7F63F7BF20B598B6008FF2FC /* Makefile */,
-				8CEC0CF420B5AC7F001960F4 /* lexer.lex */,
+				8CEC0CF420B5AC7F001960F4 /* scanner.lex */,
 			);
 			path = hw3;
 			sourceTree = "<group>";

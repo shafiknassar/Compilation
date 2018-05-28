@@ -26,19 +26,19 @@ using std::find;
 /* Defines */
 /***************************************/
 
-#define YYSTYPE (Node*)
+#define YYSTYPE Node*
 
 #define TYPES_MATCH(exp1, exp2) \
             ((exp1)->type == (exp2)->type)
 
 #define ARR_TYPE_MATCH(arr, exp)                              \
             ((convertFromArrType((arr)->type) == (exp)->type) \
-            || (arr)->type == INT_ARR && (exp)->type == BYTE)
+            || (arr)->type == INT_ARR && (exp)->type == M_BYTE)
 
 #define BYTE_TO_INT_MATCH(src, dst) \
-            ((src)->type == BYTE && (dst)->type == INT)
+            ((src)->type == M_BYTE && (dst)->type == M_INT)
 
-#define IS_NUM_TYPE(exp)  ((exp)->type == BYTE || (exp)->type == INT)
+#define IS_NUM_TYPE(exp)  ((exp)->type == M_BYTE || (exp)->type == M_INT)
 
 /***************************************/
 /* Enums */
@@ -47,12 +47,12 @@ using std::find;
 typedef enum {
     ERROR,
     /* Original Types */
-    VOID,
-    INT,
-    BYTE,
-    BOOL,
+    M_VOID,
+    M_INT,
+    M_BYTE,
+    M_BOOL,
     /* end of Original Types */
-    STRING,
+    M_STRING,
     INT_ARR,
     BYTE_ARR,
     BOOL_ARR,
@@ -63,46 +63,16 @@ typedef enum {
 int typeSize(TypeId id)
 {
     switch (id) {
-        case INT:
+        case M_INT:
             return 4;
-        case VOID:
+        case M_VOID:
             return 0;
-        case STRING: ;
+        case M_STRING: ;
         default: ;
     }
     return 1;
 }
 
-typedef enum {
-    PLUS,
-    MINUS,
-    MULT,
-    DIV
-} BinOpId;
-
-typedef enum {
-    AND,
-    OR,
-    NOT
-} LogOpId;
-
-typedef enum {
-    IF,
-    ELSE,
-    WHILE,
-    BREAK,
-    RETURN
-} CtrlFlowId;
-
-
-typedef enum {
-    EQ,
-    NEQ,
-    GE,
-    GT,
-    LE,
-    LT
-} RelOpId;
 
 /***************************************/
 /* Node structs for terminals */
@@ -116,7 +86,7 @@ struct Type : public Node {
     int size;
     Type(TypeId id, int size) : id(id), size(size) {};
     Type(Type const &t)       : id(t.id), size(t.size) {};
-    Type()                    : id(ERROR), size(-1) {}
+    Type()                    : id(NONE), size(-1) {}
 };
 
 struct Id : public Node {
@@ -133,56 +103,33 @@ struct Expr : public Node {
     int size;
     Expr(TypeId type) : type(type), size(typeSize(type)) {}
     Expr(Type t)      : type(t.id), size(t.size) {}
+    Expr(TypeId type, int size) : type(type), size(size) {}
 };
 
 struct ExprList : public Node {
     vector<Expr*> v;
 };
 
-struct BinOp : public Expr {
-    Node *left, *right;
-    BinOpId id;
-    
-    BinOp(Node *l, Node *r, BinOpId id) :
-        left(l), right(r), id(id), Expr(INT) {}
-    
-};
-
-struct LogOp : public Expr {
-    Node *left, *right;
-    LogOpId id;
-    
-    LogOp(Node *l, Node *r, LogOpId id) :
-    left(l), right(r), id(id), Expr(BOOL) {}
-};
-
 struct StringVal : public Expr {
     string val;
-    StringVal(string s) : val(s), Expr(STRING) {}
+    StringVal(string s) : val(s), Expr(M_STRING) {}
 };
 
 struct BoolVal : public Expr {
     bool val;
-    BoolVal(bool b) : val(b), Expr(BOOL) {}
+    BoolVal(bool b) : val(b), Expr(M_BOOL) {}
 };
 
 struct NumVal : public Expr {
     int val;
-    NumVal(int i) : val(i), Expr(INT) {}
-    NumVal(string i) : val(stoi(i)), Expr(INT) {}
+    NumVal(int i) : val(i), Expr(M_INT) {}
+    NumVal(string i) : val(stoi(i)), Expr(M_INT) {}
 };
 
 struct ByteVal : public Expr {
     int val;
-    ByteVal(int i) : val(i), Expr(BYTE) {}
-    ByteVal(string i) : val(stoi(i)), Expr(BYTE) {}
-};
-
-struct RelOp : public Expr {
-    Node *left, *right;
-    RelOpId id;
-    RelOp(Node *l, Node *r, RelOpId id) :
-    left(l), right(r), id(id), Expr(BOOL) {}
+    ByteVal(int i) : val(i), Expr(M_BYTE) {}
+    ByteVal(string i) : val(stoi(i)), Expr(M_BYTE) {}
 };
 
 /* Formal Declaration */
@@ -257,11 +204,15 @@ struct ArrTableEntry : public TableEntry {
 
 struct Table {
     vector<TableEntry> entryStack;
+    bool isWhile;
+    bool isFunc;
+    Type *retType;
     
     /* Virtual D'tor */
     virtual ~Table() {};
     
     /*default C'tor*/
+    Table() : isWhile(false), isFunc(false) {}
     
     void insert(string name, TypeId type, int offset)
     {
@@ -315,8 +266,6 @@ struct Table {
 };
 
 struct FuncScopeTable : public Table {
-    Type *retType;
-    string name;
 };
 
 bool isAlreadyDefined(vector<Table> scopes, Id *id);

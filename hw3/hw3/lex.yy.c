@@ -527,8 +527,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "lexer.lex"
-#line 2 "lexer.lex"
+#line 1 "scanner.lex"
+#line 2 "scanner.lex"
     #include "attributes.hpp"
     #include "parser.tab.hpp"
     #include "output.hpp"
@@ -714,7 +714,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 10 "lexer.lex"
+#line 10 "scanner.lex"
 
 #line 720 "lex.yy.c"
 
@@ -811,169 +811,169 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 11 "lexer.lex"
-{yyval = (*Node) new Type(TypeID::VOID, 0); return VOID;}
+#line 11 "scanner.lex"
+{yylval = (Node*) new Type(M_VOID, 0); return VOID;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 12 "lexer.lex"
-{yyval = (*Node) new Type(TypeId::INT, 4); return INT;}
+#line 12 "scanner.lex"
+{yylval = (Node*) new Type(M_INT, 4); return INT;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 13 "lexer.lex"
-{yyval = (*Node) new Type(TypeID::BYTE, 1); return BYTE;}
+#line 13 "scanner.lex"
+{yylval = (Node*) new Type(M_BYTE, 1); return BYTE;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 14 "lexer.lex"
+#line 14 "scanner.lex"
 {return B;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 15 "lexer.lex"
-{yyval = (*Node) new Type(TypeID::BOOL, 1); return BOOL;}
+#line 15 "scanner.lex"
+{yylval = (Node*) new Type(M_BOOL, 1); return BOOL;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 16 "lexer.lex"
+#line 16 "scanner.lex"
 {return AND;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 17 "lexer.lex"
+#line 17 "scanner.lex"
 {return OR;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 18 "lexer.lex"
+#line 18 "scanner.lex"
 {return NOT;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 19 "lexer.lex"
+#line 19 "scanner.lex"
 {return TRUE;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 20 "lexer.lex"
+#line 20 "scanner.lex"
 {return FALSE;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 21 "lexer.lex"
+#line 21 "scanner.lex"
 {return RETURN;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 22 "lexer.lex"
+#line 22 "scanner.lex"
 {return IF;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 23 "lexer.lex"
+#line 23 "scanner.lex"
 {return ELSE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 24 "lexer.lex"
+#line 24 "scanner.lex"
 {return WHILE;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 25 "lexer.lex"
+#line 25 "scanner.lex"
 {return BREAK;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 26 "lexer.lex"
+#line 26 "scanner.lex"
 {return SC;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 27 "lexer.lex"
+#line 27 "scanner.lex"
 {return COMMA;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 28 "lexer.lex"
+#line 28 "scanner.lex"
 {return LPAREN;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 29 "lexer.lex"
+#line 29 "scanner.lex"
 {return RPAREN;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 30 "lexer.lex"
+#line 30 "scanner.lex"
 {return LBRACE;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 31 "lexer.lex"
+#line 31 "scanner.lex"
 {return RBRACE;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 32 "lexer.lex"
+#line 32 "scanner.lex"
 {return LBRACK;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 33 "lexer.lex"
+#line 33 "scanner.lex"
 {return RBRACK;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 34 "lexer.lex"
+#line 34 "scanner.lex"
 {return ASSIGN;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 35 "lexer.lex"
+#line 35 "scanner.lex"
 {return RELOP;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 36 "lexer.lex"
+#line 36 "scanner.lex"
 {return BINOP;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 37 "lexer.lex"
-{yyval = (*Node) new Id(yytext); return ID;}
+#line 37 "scanner.lex"
+{yylval = (Node*) new Id(yytext); return ID;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 38 "lexer.lex"
-{yyval = (*Node) new NumVal(yytext); return NUM;}
+#line 38 "scanner.lex"
+{yylval = (Node*) new NumVal(yytext); return NUM;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 39 "lexer.lex"
+#line 39 "scanner.lex"
 {return STRING;}
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 40 "lexer.lex"
+#line 40 "scanner.lex"
 ; // Whitespace, Newline, Tabs
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 41 "lexer.lex"
+#line 41 "scanner.lex"
 ; // Comment
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 42 "lexer.lex"
+#line 42 "scanner.lex"
 { output::errorLex(yylineno); exit(0); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 43 "lexer.lex"
+#line 43 "scanner.lex"
 ECHO;
 	YY_BREAK
 #line 980 "lex.yy.c"
@@ -1985,7 +1985,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 43 "lexer.lex"
+#line 43 "scanner.lex"
 
 
 
