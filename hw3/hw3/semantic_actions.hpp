@@ -25,6 +25,9 @@ int negativeOffset = 0;
 
 bool isMainDef = false;
 
+TypeId retType = NONE;
+
+bool inWhileLoop = false;
 /*****************************************/
 /* External Declarations */
 /*****************************************/
@@ -43,6 +46,7 @@ void openScope();
 
 void closeScope();
 
+void printScope();
 /*****************************************/
 /* Rule Functions */
 /*****************************************/

@@ -56,7 +56,8 @@ typedef enum {
     INT_ARR,
     BYTE_ARR,
     BOOL_ARR,
-    FUNC
+    FUNC,
+    NONE
 } TypeId;
 
 int typeSize(TypeId id)

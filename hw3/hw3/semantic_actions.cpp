@@ -20,6 +20,24 @@ FuncScopeTable   cloningFuncTable;
 /*****************************************/
 /* 5ara 3arasak */
 /*****************************************/
+string etos(TypeId type)
+{
+    switch (type) {
+        case INT: return "INT";
+        case VOID: return "VOID";
+        case BOOL: return "BOOL";
+        default: return "ERROR";
+    }
+}
+
+void printScope()
+{
+    Table curr_scope = tableStack.back();
+    for (int i = 0; i < curr_scope.entryStack.size(); i++) {
+        TableEntry entry = curr_scope.entryStack.at(i);
+        output::printID(entry.name, entry.offset, etos(entry.type));
+    }
+}
 
 void openScope()
 {
@@ -32,7 +50,7 @@ void closeScope()
     endScope();
     tableStack.pop_back();
     offsetStack.pop_back();
-    /* TODO print scope variables */
+    printScope();
 }
 
 Table& openFuncScope(string funcName, Type *retType)
