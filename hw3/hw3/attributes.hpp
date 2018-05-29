@@ -178,7 +178,7 @@ struct FuncTableEntry : public TableEntry {
     FuncTableEntry() : retType(new Type()) {}
     vector<string>* getArgs() {
         vector<string> *args = new vector<string>();
-        for (int i = 0; i < paramTypes.size(); i++) {
+        for (int i = (int)paramTypes.size()-1; i >= 0; i--) {
             string typeStr = etos(paramTypes.at(i)->id);
             if (isArrType(paramTypes.at(i)->id)) {
                 TypeId type = convertFromArrType(paramTypes.at(i)->id);

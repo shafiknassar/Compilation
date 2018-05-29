@@ -120,7 +120,7 @@ Type         : INT  { $$=$1; } /*DONE*/
              | BYTE { $$=$1; } /*DONE*/
              | BOOL { $$=$1; } /*DONE*/
 ;
-Exp          : LPAREN Exp RPAREN { $$=$1; } /*DONE*/
+Exp          : LPAREN Exp RPAREN { $$=$2; } /*DONE*/
              | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); } /*DONE*/
              | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); } /*DONE*/
              | ID { $$ = rule_Exp__ID((Id*)$1); } /*DONE*/

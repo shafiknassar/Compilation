@@ -91,9 +91,13 @@ void extractTypesFromFormList(FormList &src, vector<TypeId> &dst)
 void calculateArgOffsets(FormList &src, vector<int> &dst)
 {
     int curr = 0;
-    for (int i = 0; i < src.size(); ++i) {
+    vector<int> tmp;
+    for (int i = src.size()-1; i >= 0; --i) {
         curr -= src.typeList[i]->size;
-        dst.push_back(curr);
+        tmp.push_back(curr);
+    }
+    for (int i = src.size()-1; i >= 0; --i) {
+        dst.push_back(tmp[i]);
     }
 }
 
