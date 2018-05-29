@@ -120,12 +120,12 @@ void rule_Program__end() {
 void rule_init()
 {
     vector<Type*> *args = new vector<Type*>();
-    args->push_back(new Type(M_STRING, 0));
+    args->push_back(new Type(M_STRING, 1));
     tableStack.push_back(*new Table());
     offsetStack.push_back(0);
     tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
     args = new vector<Type*>();
-    args->push_back(new Type(M_INT, 4));
+    args->push_back(new Type(M_INT, 1));
     tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
 }
 
@@ -440,7 +440,8 @@ Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList)
         exit(0);
     }
     if (!paramMatchExpected(funcData, expList)) {
-        errorPrototypeMismatch(yylineno, id->id, *typeListToStringVector(funcData->paramTypes));
+        vector<string> *strs = typeListToStringVector(funcData->paramTypes);
+        errorPrototypeMismatch(yylineno, id->id, *strs);
         exit(0);
     }
     return new Expr(*(funcData->retType));
