@@ -10,7 +10,7 @@
 
 %%
 void                                {yylval = (Node*) new Type(M_VOID, 0); return VOID;}
-int                                 {yylval = (Node*) new Type(M_INT, 4); return INT;}
+int                                 {yylval = (Node*) new Type(M_INT, 1); return INT;}
 byte                                {yylval = (Node*) new Type(M_BYTE, 1); return BYTE;}
 b                                   {return B;}
 bool                                {yylval = (Node*) new Type(M_BOOL, 1); return BOOL;}

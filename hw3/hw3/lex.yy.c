@@ -818,7 +818,7 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 13 "scanner.lex"
-{yylval = (Node*) new Type(M_INT, 4); return INT;}
+{yylval = (Node*) new Type(M_INT, 1); return INT;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP

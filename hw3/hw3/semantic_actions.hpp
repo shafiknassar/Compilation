@@ -42,7 +42,7 @@ void closeWhileScope();
 /* Rule Functions */
 /*****************************************/
 
-void rule_Program__Funcs();
+void rule_Program__end();
 
 void rule_init();
 

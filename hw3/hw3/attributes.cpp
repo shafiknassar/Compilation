@@ -57,11 +57,37 @@ int typeSize(TypeId id)
 {
     switch (id) {
         case M_INT:
-            return 4;
+            return 1;
         case M_VOID:
             return 0;
         case M_STRING: ;
         default: ;
     }
     return 1;
+}
+
+string etos(TypeId type)
+{
+    switch (type) {
+        case M_INT: return string("INT");
+        case M_VOID: return string("VOID");
+        case M_BOOL: return string("BOOL");
+        case M_STRING: return string("STRING");
+            
+            
+            
+        default: return "ERROR";
+    }
+}
+
+bool isArrType(TypeId t) {
+    switch (t) {
+        case INT_ARR:
+        case BYTE_ARR:
+        case BOOL_ARR:
+            return true;
+        default:
+            break;
+    }
+    return false;
 }

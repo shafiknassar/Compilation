@@ -16,8 +16,10 @@
 #include <vector>
 #include <cassert>
 #include "TypeId.h"
+#include "output.hpp"
 
 using namespace std;
+using namespace output;
 using std::string;
 using std::stringstream;
 using std::stoi;
@@ -47,6 +49,10 @@ using std::find;
 /***************************************/
 
 int typeSize(TypeId id);
+string etos(TypeId type);
+
+bool isArrType(TypeId t);
+
 
 /***************************************/
 /* Node structs for terminals */
@@ -165,6 +171,18 @@ struct FuncTableEntry : public TableEntry {
         paramTypes(paramTypes) {}
     
     FuncTableEntry() {}
+    vector<string>* getArgs() {
+        vector<string> *args = new vector<string>();
+        for (int i = 0; i < paramTypes.size(); i++) {
+            string typeStr = etos(paramTypes.at(i)->id);
+            if (isArrType(paramTypes.at(i)->id)) {
+                TypeId type = convertFromArrType(paramTypes.at(i)->id);
+                typeStr = makeArrayType(etos(type), paramTypes.at(i)->size);
+            }
+            args->push_back(typeStr);
+        }
+        return args;
+    }
 };
 
 struct ArrTableEntry : public TableEntry {

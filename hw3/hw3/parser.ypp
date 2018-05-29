@@ -51,19 +51,14 @@
 
 %%
 
-Program      : mInit Funcs /*DONE*/
+Program      : mInit Funcs { rule_Program__end();}
+    /*DONE*/
 ;
 mInit         : { rule_init(); }
 Funcs        : FuncDecl /*DONE*/
              | /*epsilon*/
 ;
-FuncDecl     : FuncHeader LBRACE Statements RBRACE /*DONE*/
-                {
-                    //TODO: should check if defined (in the table);
-                    //String func_name = (Id*)$2->id;
-                    //TypeId func_ret = (Type*)$1->type;
-                    closeScope();
-                }
+FuncDecl     : FuncHeader LBRACE Statements RBRACE { closeScope(); }
 ;
 
 FuncHeader   : RetType ID LPAREN Formals RPAREN /*DONE*/

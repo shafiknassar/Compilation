@@ -29,23 +29,23 @@ bool isMainDef = false;
 /*****************************************/
 /* 5ara 3arasak */
 /*****************************************/
-string etos(TypeId type)
-{
-    switch (type) {
-        case M_INT: return "INT";
-        case M_VOID: return "VOID";
-        case M_BOOL: return "BOOL";
-        default: return "ERROR";
-    }
-}
-
 
 void printScope()
 {
     Table curr_scope = tableStack.back();
     for (int i = 0; i < curr_scope.entryStack.size(); i++) {
-        TableEntry entry = curr_scope.entryStack.at(i);
-        output::printID(entry.name, entry.offset, etos(entry.type));
+        TableEntry *entry = &(curr_scope.entryStack.at(i));
+        string type(etos(entry->type));
+        if (entry->type == FUNC) {
+            FuncTableEntry *func_entry = (FuncTableEntry*)entry;
+            vector<string> *args = func_entry->getArgs();
+            type = makeFunctionType(etos(func_entry->retType->id), *args);
+        } else if (isArrType(entry->type)) {
+            ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
+            TypeId arr_type = convertFromArrType(arr_entry->type);
+            type = makeArrayType(etos(arr_type), arr_entry->size);
+        }
+        printID(entry->name, entry->offset, type);
     }
 }
 
@@ -61,9 +61,9 @@ void openScope()
 void closeScope()
 {
     endScope();
+    printScope();
     tableStack.pop_back();
     offsetStack.pop_back();
-    printScope();
 }
 
 Table& openFuncScope(string funcName, Type *retType)
@@ -101,6 +101,13 @@ void closeWhileScope() { closeScope(); tableStack.back().isWhile = false; }
 /* Rule Functions */
 /*****************************************/
 
+void rule_Program__end() {
+    if (!isMainDef) {
+        errorMainMissing();
+        exit(0);
+    }
+}
+
 void rule_init()
 {
     vector<Type*> *args = new vector<Type*>();
@@ -111,8 +118,6 @@ void rule_init()
     args->push_back(new Type(M_INT, 4));
     tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
 }
-
-void rule_Program__Funcs();
 
 void rule_Funcs__FuncDecl();
 
@@ -125,8 +130,18 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
         exit(0);
     }
     
-    if (isAlreadyDefined(tableStack, id))
-    {
+    if (id->id == "main") {
+        if (isMainDef) {
+            errorDef(yylineno, id->id);
+            exit(0);
+        } else if (retType->id != M_VOID || args->size() != 0) {
+            errorMismatch(yylineno);
+            exit(0);
+        } else
+            isMainDef = true;
+    }
+    
+    if (isAlreadyDefined(tableStack, id)) {
         errorDef(yylineno, id->id);
         exit(0);
     }
@@ -143,13 +158,6 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     for (int i = args->size()-1; i >= 0 ; i++) {
         currScope.insert(args->idList[i], argOffsets[i]);
     }
-    
-}
-
-void rule_FuncDecl__RetType_ID_LPAREN_Formals_RPAREN_LBRACE_Statements_RBRACE(
-            Type *retType, Id *id, FormList *args)
-{
-    
     
 }
 
