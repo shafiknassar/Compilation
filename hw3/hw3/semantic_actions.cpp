@@ -10,11 +10,21 @@
 
 using namespace output;
 using std::stoi;
-using std::reverse;
+using std::to_string;
 
 /* it's ok to use those variables when pushing to a vector
  * since the push_back method copies the arg */
 Table            cloningTable;
+
+/*****************************************/
+/* global variables */
+/*****************************************/
+
+vector<Table> tableStack;
+
+vector<int>   offsetStack;
+
+bool isMainDef = false;
 
 /*****************************************/
 /* 5ara 3arasak */
@@ -83,6 +93,9 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
         dst.push_back(curr);
     }
 }
+
+void openWhileScope() { openScope(); tableStack.back().isWhile = true; }
+void closeWhileScope() { closeScope(); tableStack.back().isWhile = false; }
 
 /*****************************************/
 /* Rule Functions */
@@ -352,7 +365,8 @@ Expr* rule_Exp__Exp_BINOP_Exp(Expr *exp1, Expr *exp2)
 Expr* rule_Exp__NUMB(NumVal *num)
 {
     if (num->val > 255) {
-        errorByteTooLarge(yylineno, to_string(num->val));
+        long long int n = num->val;
+        errorByteTooLarge(yylineno, to_string(n));
         exit(0);
     }
     return new ByteVal(num->val);

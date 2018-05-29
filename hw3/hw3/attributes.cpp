@@ -52,3 +52,16 @@ FuncTableEntry* funcLookup(vector<Table> scopes, Id *id)
     }
     return NULL;
 }
+
+int typeSize(TypeId id)
+{
+    switch (id) {
+        case M_INT:
+            return 4;
+        case M_VOID:
+            return 0;
+        case M_STRING: ;
+        default: ;
+    }
+    return 1;
+}

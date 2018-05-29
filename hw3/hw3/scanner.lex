@@ -2,6 +2,7 @@
     #include "attributes.hpp"
     #include "parser.tab.hpp"
     #include "output.hpp"
+    #define YYSTYPE Node*
 %}
 
 %option yylineno

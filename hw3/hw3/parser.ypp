@@ -1,9 +1,10 @@
 %{
     #include <iostream>
-    #include "attributes.hpp"
+    //#include "attributes.hpp"
     #include "output.hpp"
     #include "semantic_actions.hpp"
     using namespace std;
+    
     
     
     %}
@@ -103,8 +104,8 @@ Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
 
 mOpenScope  : { openScope(); } /*DONE*/
 mCloseScope : { closeScope(); } /*DONE*/
-mOWhileScope: { openScope(); tableStack.back().isWhile = true; }
-mCWhileScope: { closeScope(); tableStack.back().isWhile = false; }
+mOWhileScope: { openWhileScope(); }
+mCWhileScope: { closeWhileScope(); }
 
 StatementWithElse : /*epsilon*/
              | IF LPAREN Exp RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope StatementWithElse mCloseScope

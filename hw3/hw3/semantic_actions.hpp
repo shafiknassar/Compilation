@@ -10,20 +10,9 @@
 #define semantic_actions_hpp
 
 #include <stdio.h>
-#include "attributes.cpp"
+#include <string>
+#include "attributes.hpp"
 #include "output.hpp"
-
-/*****************************************/
-/* global variables */
-/*****************************************/
-
-vector<Table> tableStack;
-
-vector<int>   offsetStack;
-
-int negativeOffset = 0;
-
-bool isMainDef = false;
 
 /*****************************************/
 /* External Declarations */
@@ -44,6 +33,11 @@ void openScope();
 void closeScope();
 
 void printScope();
+
+void openWhileScope();
+
+void closeWhileScope();
+
 /*****************************************/
 /* Rule Functions */
 /*****************************************/

@@ -12,10 +12,12 @@
 #include <stdio.h>
 #include <sstream>
 #include <stdlib.h>
+#include <algorithm>
 #include <vector>
 #include <cassert>
+#include "TypeId.h"
 
-
+using namespace std;
 using std::string;
 using std::stringstream;
 using std::stoi;
@@ -44,41 +46,12 @@ using std::find;
 /* Enums */
 /***************************************/
 
-typedef enum {
-    ERROR,
-    /* Original Types */
-    M_VOID,
-    M_INT,
-    M_BYTE,
-    M_BOOL,
-    /* end of Original Types */
-    M_STRING,
-    INT_ARR,
-    BYTE_ARR,
-    BOOL_ARR,
-    FUNC,
-    NONE
-} TypeId;
-
-int typeSize(TypeId id)
-{
-    switch (id) {
-        case M_INT:
-            return 4;
-        case M_VOID:
-            return 0;
-        case M_STRING: ;
-        default: ;
-    }
-    return 1;
-}
-
+int typeSize(TypeId id);
 
 /***************************************/
 /* Node structs for terminals */
 /***************************************/
 struct Node {
-    //virtual string print() = 0;
 };
 
 struct Type : public Node {
@@ -123,13 +96,13 @@ struct BoolVal : public Expr {
 struct NumVal : public Expr {
     int val;
     NumVal(int i) : val(i), Expr(M_INT) {}
-    NumVal(string i) : val(stoi(i)), Expr(M_INT) {}
+    NumVal(string i) : val(std::stoi(i)), Expr(M_INT) {}
 };
 
 struct ByteVal : public Expr {
     int val;
     ByteVal(int i) : val(i), Expr(M_BYTE) {}
-    ByteVal(string i) : val(stoi(i)), Expr(M_BYTE) {}
+    ByteVal(string i) : val(std::stoi(i)), Expr(M_BYTE) {}
 };
 
 /* Formal Declaration */
