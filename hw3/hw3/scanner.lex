@@ -2,6 +2,10 @@
     #include "attributes.hpp"
     #include "parser.tab.hpp"
     #include "output.hpp"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
     #define YYSTYPE Node*
 %}
 
@@ -36,7 +40,7 @@ break                               {return BREAK;}
 (\=\=|\!\=|\<|\>|\<\=|\>\=)         {return RELOP;}
 [\+\-\*\/]                          {return BINOP;}
 [a-zA-Z][a-zA-Z0-9]*                {yylval = (Node*) new Id(yytext); return ID;}
-0|[1-9][0-9]*                       {yylval = (Node*) new NumVal(yytext); return NUM;}
+0|[1-9][0-9]*                       {yylval = (Node*) new NumVal(atoi(yytext)); return NUM;}
 \"([^\n\r\"\\]|\\[rnt"\\])+\"       {return STRING;}
 [ \t\n\r]|(\n\r)|(\r\n)|([\n\r])    ; // Whitespace, Newline, Tabs
 \/\/[^\r\n]*[ \r|\n|\r\n]?          ; // Comment

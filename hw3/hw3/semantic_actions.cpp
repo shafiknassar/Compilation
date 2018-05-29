@@ -324,6 +324,10 @@ Expr* rule_Exp__ID(Id *id)
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 {
     TableEntry *entry = idLookup(tableStack, id);
+    if (NULL ==  entry) {
+        errorUndef(yylineno, id->id);
+        exit(0);
+    }
     id->type = entry->type;
     int size = 1;
     if (isArrType(id->type)) size = ((ArrTableEntry*)entry)->size;

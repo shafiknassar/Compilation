@@ -23,7 +23,6 @@ using namespace std;
 using namespace output;
 using std::string;
 using std::stringstream;
-using std::stoi;
 using std::vector;
 using std::find;
 using std::cout;
@@ -104,13 +103,11 @@ struct BoolVal : public Expr {
 struct NumVal : public Expr {
     int val;
     NumVal(int i) : val(i), Expr(M_INT) {}
-    NumVal(string i) : val(std::stoi(i)), Expr(M_INT) {}
 };
 
 struct ByteVal : public Expr {
     int val;
     ByteVal(int i) : val(i), Expr(M_BYTE) {}
-    ByteVal(string i) : val(std::stoi(i)), Expr(M_BYTE) {}
 };
 
 /* Formal Declaration */
