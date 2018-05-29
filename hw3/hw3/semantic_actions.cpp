@@ -278,6 +278,22 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
 }
+
+Expr* rule_Exp__ID(Id *id)
+{
+    TableEntry *entry = idLookup(tableStack, id);
+    int size = 1;
+    if (NULL == entry) {
+        errorUndef(yylineno, id->id);
+        exit(0);
+    }
+    if (isArrType(entry->type))
+    {
+        size = ((ArrTableEntry*)entry)->size;
+    }
+    return new Expr(entry->type, size);
+}
+
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 {
     if (!TYPES_MATCH(id, (exp)) &&

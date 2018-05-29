@@ -82,6 +82,7 @@ Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList);
 Expr* rule_Call__ID_LPAREN_RPAREN(Id *id);
 
 Expr* rule_Exp__ID_LBRACK_Exp_RBRACK(Id *id);
+Expr* rule_Exp__ID(Id *id);
 Expr* rule_Exp__Exp_BINOP_Exp(Expr *exp1, Expr *exp2);
 Expr* rule_Exp__NUMB(NumVal *num);
 Expr* rule_Exp__NOT_Exp(Expr *exp);
