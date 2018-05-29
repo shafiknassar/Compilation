@@ -85,6 +85,9 @@ Statements   : Statement /*DONE*/
              | Statements Statement /*DONE*/
 ;
 //TODO
+
+IfHeader     : IF LPAREN Exp { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+
 Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | Type ID SC { rule_Statement__Type_ID_SC((Type*)$1, (Id*)$2); }
              | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Id*)$2, (NumVal*)$4); }
@@ -95,8 +98,8 @@ Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | Call SC
              | RETURN SC { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
-             | IF LPAREN Exp RPAREN mOpenScope Statement mCloseScope { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
-             | IF LPAREN Exp RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope Statement mCloseScope { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3);}
+             | IfHeader RPAREN mOpenScope Statement mCloseScope
+             | IfHeader RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope Statement mCloseScope
              | WHILE LPAREN Exp RPAREN mOWhileScope Statement mCWhileScope { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
@@ -130,7 +133,7 @@ Exp          : LPAREN Exp RPAREN { $$=$2; } /*DONE*/
              | STRING { $$= new Expr(M_STRING); }/*DONE*/
              | TRUE { $$ = new Expr(M_BOOL); }/*DONE*/
              | FALSE { $$ = new Expr(M_BOOL); }/*DONE*/
-             | NOT Exp { $$ = rule_Exp__NOT_Exp((Expr*)$1); }/*DONE*/
+             | NOT Exp { $$ = rule_Exp__NOT_Exp((Expr*)$2); }/*DONE*/
              | Exp AND Exp { $$ = rule_Exp__Exp_AND_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
              | Exp OR Exp { $$ = rule_Exp__Exp_OR_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
              | Exp RELOP Exp { $$ = rule_Exp__Exp_RELOP_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
