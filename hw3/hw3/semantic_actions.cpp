@@ -37,7 +37,7 @@ void printScope()
 {
     Table curr_scope = tableStack.back();
     for (int i = 0; i < curr_scope.entryStack.size(); i++) {
-        TableEntry *entry = (curr_scope.entryStack.at(i));
+        TableEntry *entry = (curr_scope.entryStack[i]);
         string type(etos(entry->type));
         if (entry->type == FUNC) {
             FuncTableEntry *func_entry = (FuncTableEntry*)entry;
@@ -202,7 +202,12 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
         exit(0);
     }
     id->type = convertToArrType(type->id);
-    id->size = typeSize(id->type) * num->val;
+    id->size = num->val;
+    type->id = convertToArrType(type->id);
+    type->size = id->size;
+    
+    
+    
     if (id->type == ERROR) {
         errorMismatch(yylineno);
         exit(0);
@@ -216,6 +221,17 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
     //offsetStack.back() += type->size;
     
     return new FormDec(id, type);
+}
+
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(Type *type, Id *id, NumVal *num)
+{
+    int arr_size = num->val;
+    if (arr_size > 255) {
+        long long int n = num->val;
+        errorByteTooLarge(yylineno, to_string(n));
+        exit(0);
+    }
+    return rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(type, id, num);
 }
 
 void rule_Statement__Type_ID_SC(Type* type, Id* id)
@@ -235,7 +251,7 @@ void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Id* id, NumVal* nu
         exit(0);
     }
     id->type = convertToArrType(type->id);
-    id->size = typeSize(id->type) * num->val;
+    id->size = arr_size;
     if (id->type == ERROR) {
         errorMismatch(yylineno);
         exit(0);
@@ -246,7 +262,7 @@ void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Id* id, NumVal* nu
         exit(0);
     }
     tableStack.back().insertArr(id, offsetStack.back(), arr_size);
-    type->size *= arr_size;
+    type->size = arr_size;
     offsetStack.back() += type->size;
 }
 void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Id* id, NumVal* num)
@@ -296,6 +312,11 @@ Expr* rule_Exp__ID(Id *id)
 
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 {
+    TableEntry *entry = idLookup(tableStack, id);
+    id->type = entry->type;
+    int size = 1;
+    if (isArrType(id->type)) size = ((ArrTableEntry*)entry)->size;
+    id->size = size;
     if (!TYPES_MATCH(id, (exp)) &&
         !BYTE_TO_INT_MATCH(exp, id)) {
         errorMismatch(yylineno);
@@ -393,6 +414,20 @@ bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
     return true;
 }
 
+vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
+{
+    vector<string> *res = new vector<string>();
+    for (int i = 0; i < paramTypes.size(); ++i) {
+        string name = etos(paramTypes[i]->id);
+        if (isArrType(paramTypes[i]->id)) {
+            TypeId t = convertFromArrType(paramTypes[i]->id);
+            name = makeArrayType(etos(t), paramTypes[i]->size);
+        }
+        res->push_back(name);
+    }
+    return res;
+}
+
 Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList)
 {
     FuncTableEntry *funcData = funcLookup(tableStack, id);
@@ -401,7 +436,7 @@ Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList)
         exit(0);
     }
     if (!paramMatchExpected(funcData, expList)) {
-        //errorPrototypeMismatch(yylineno, id->id, /* TODO strings of the input */);
+        errorPrototypeMismatch(yylineno, id->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
     return new Expr(*(funcData->retType));
@@ -410,6 +445,11 @@ Expr* rule_Call__ID_LPAREN_RPAREN(Id *id) {
     FuncTableEntry *funcData = funcLookup(tableStack, id);
     if (NULL == funcData) {
         errorUndefFunc(yylineno, id->id);
+        exit(0);
+    }
+    if (funcData->paramTypes.size() != 0)
+    {
+        errorPrototypeMismatch(yylineno, id->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
     return new Expr(*(funcData->retType));

@@ -217,7 +217,7 @@ struct Table {
     }
     
     void insertArr(Id *id, int offset, int size) {
-        //cout << "Table::insertArr " << " " << id->id << size << endl;
+        //cout << "Table::insertArr " << " " << id->id << " "<< size << endl;
         ArrTableEntry *tmp = new ArrTableEntry(id->id, id->type, offset, size);
         entryStack.push_back(tmp);
     }
@@ -264,6 +264,10 @@ struct Table {
     }
     
     void insert(Id *id, TypeId type, int offset) {
+        if (isArrType(type)) {
+            insertArr(id, offset, id->size);
+            return;
+        }
         insert(id->id, type, offset);
     }
     

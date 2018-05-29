@@ -78,7 +78,7 @@ FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((FormDec*)
 ;
 FormalDecl   : Type ID { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); } /*DONE*/
              | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
-             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
+             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
 ;
 //TODO
 Statements   : Statement /*DONE*/

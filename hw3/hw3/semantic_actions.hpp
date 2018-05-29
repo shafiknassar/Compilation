@@ -55,8 +55,8 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
 FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id);
 FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(
                                                 Type *type, Id *id, NumVal *num);
-/* TODO: delete - same as above! */
-//void rule_FormalDecl__Type_ID_LBRACK_NUM_B_RBRACK(Type * type, Id *id, NumVal num);
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(
+                                                    Type *type, Id *id, NumVal *num);
 
 void rule_Statements__Statement();
 void rule_Statements__Statements_Statement();
