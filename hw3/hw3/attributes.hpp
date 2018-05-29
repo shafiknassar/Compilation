@@ -208,7 +208,7 @@ struct Table {
     virtual ~Table() {};
     
     /*default C'tor*/
-    Table() : isWhile(false), isFunc(false) {}
+    Table() : isWhile(false), isFunc(false), retType(new Type()) {}
     
     void insert(string name, TypeId type, int offset)
     {

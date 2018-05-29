@@ -54,10 +54,11 @@ void printScope()
 
 void openScope()
 {
+    Type *tmp = tableStack.back().retType;
     tableStack.push_back(*new Table());
     tableStack.back().isFunc  = false;
     tableStack.back().isWhile = false;
-    tableStack.back().retType = tableStack.back().retType;
+    tableStack.back().retType = tmp;
     offsetStack.push_back(offsetStack.back());
 }
 
@@ -369,6 +370,14 @@ void rule_Statement__RETURN_Exp_SC(Expr *exp)
         exit(0);
     }
 }
+
+void rule_IF_header(Expr *exp) {
+    if (exp->type != M_BOOL) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+}
+
 void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expr *exp) {
     if (exp->type != M_BOOL) {
         errorMismatch(yylineno);
