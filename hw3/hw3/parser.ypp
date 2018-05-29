@@ -28,16 +28,16 @@
 %token FALSE
 %token NUM
 %token STRING
-/* Control Flow */
-%token IF
-%token ELSE
-%token WHILE
-%token BREAK
-%token RETURN
 /* Brackets and Parenthesis */
 %left LPAREN RPAREN
 %left LBRACE RBRACE
 %left LBRACK RBRACK
+/* Control Flow */
+%token IF
+%nonassoc ELSE
+%token WHILE
+%token BREAK
+%token RETURN
 /* Relational Operators */
 /* keep them separated inorder to
  give different precedence to every op */
@@ -101,7 +101,7 @@ Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
              | RETURN SC { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
              | IfHeader RPAREN mOpenScope Statement mCloseScope
-             | IfHeader RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope Statement mCloseScope
+             | IfHeader RPAREN mOpenScope Statement mCloseScope ELSE mOpenScope Statement mCloseScope
              | WhileHeader RPAREN mOWhileScope Statement mCWhileScope
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
@@ -111,9 +111,7 @@ mCloseScope : { closeScope(); } /*DONE*/
 mOWhileScope: { openWhileScope(); }
 mCWhileScope: { closeWhileScope(); }
 
-StatementWithElse : /*epsilon*/
-             | IfHeader RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope StatementWithElse mCloseScope
-;
+
 Call         : ID LPAREN ExpList RPAREN { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); } /*DONE*/
             | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); } /*DONE*/
 ;
