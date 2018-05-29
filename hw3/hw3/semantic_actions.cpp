@@ -109,6 +109,8 @@ void rule_Program__end() {
         errorMainMissing();
         exit(0);
     }
+    endScope();
+    printScope();
 }
 
 void rule_init()
@@ -149,6 +151,7 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
         errorDef(yylineno, id->id);
         exit(0);
     }
+    
     
     /* Declare function in scope (global) */
     //vector<TypeId> argTypes;

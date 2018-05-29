@@ -128,8 +128,9 @@ struct FormList : public Node {
     void add(Id *id, Type *t) { idList.push_back(id); typeList.push_back(t); }
     void add(FormDec *fd)     { idList.push_back(fd->id); typeList.push_back(fd->type); }
     bool redefined(Id* id) {
-        if(find(idList.begin(), idList.end(), id) != idList.end())
-            return true;
+        for (int i = 0; i < idList.size(); ++i) {
+            if (id->id == idList[i]->id) return true;
+        }
         return false;
     }
     
@@ -168,7 +169,7 @@ struct FuncTableEntry : public TableEntry {
     FuncTableEntry(string name,
                    Type *retType,
                    vector<Type*>& paramTypes)
-        : TableEntry(name, FUNC, INT_MIN),
+        : TableEntry(name, FUNC, 0),
         retType(),
         paramTypes(paramTypes) {
             this->retType = new Type(*retType);
@@ -211,12 +212,12 @@ struct Table {
     
     void insert(string name, TypeId type, int offset)
     {
-        cout << "Table::insert " << name << " " <<  etos(type) << endl;
+        //cout << "Table::insert " << name << " " <<  etos(type) << endl;
         entryStack.push_back(new TableEntry(name, type, offset));
     }
     
     void insertArr(Id *id, int offset, int size) {
-        cout << "Table::insertArr " << " " << id->id << size << endl;
+        //cout << "Table::insertArr " << " " << id->id << size << endl;
         ArrTableEntry *tmp = new ArrTableEntry(id->id, id->type, offset, size);
         entryStack.push_back(tmp);
     }
@@ -225,7 +226,7 @@ struct Table {
         for (int i = 0; i < entryStack.size(); ++i) {
             if (entryStack[i]->type == FUNC &&
                     entryStack[i]->name == name) {
-                return (FuncTableEntry*)&(entryStack[i]);
+                return (FuncTableEntry*)(entryStack[i]);
             }
         }
         return NULL;
@@ -247,11 +248,11 @@ struct Table {
                     Type *retType,
                     vector<Type*> &paramTypes)
     {
-        cout << "Table::insertFunc " << name << " " << etos(retType->id) << endl;
+        //cout << "Table::insertFunc " << name << " " << etos(retType->id) << endl;
         FuncTableEntry *tmp = new FuncTableEntry();
         tmp->name       = name;
         tmp->type       = FUNC;
-        tmp->offset     = INT_MIN;
+        tmp->offset     = 0;
         tmp->retType    = retType;
         /* 
          The following parameter can be
