@@ -114,6 +114,11 @@ void rule_Program__end() {
         errorMainMissing();
         exit(0);
     }
+    FuncTableEntry *mainEntry = funcLookup(tableStack, new Id("main"));
+    if (mainEntry->retType->id != M_VOID || mainEntry->paramTypes.size() != 0) {
+        errorMainMissing();
+        exit(0);
+    }
     endScope();
     printScope();
 }
@@ -145,11 +150,9 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
         if (isMainDef) {
             errorDef(yylineno, id->id);
             exit(0);
-        } else if (retType->id != M_VOID || args->size() != 0) {
-            errorMismatch(yylineno);
-            exit(0);
-        } else
+        } else {
             isMainDef = true;
+        }
     }
     
     if (isAlreadyDefined(tableStack, id)) {
@@ -425,6 +428,10 @@ bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
         return false;
     }
     for (int i = 0; i < actual.size(); ++i) {
+        if (expected[i]->id == M_INT && actual[i]->type == M_BYTE)
+        {
+            continue;
+        }
         if (expected[i]->id != actual[i]->type ||
                 expected[i]->size != actual[i]->size)
         {

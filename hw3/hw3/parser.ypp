@@ -110,7 +110,7 @@ mOWhileScope: { openWhileScope(); }
 mCWhileScope: { closeWhileScope(); }
 
 StatementWithElse : /*epsilon*/
-             | IF LPAREN Exp RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope StatementWithElse mCloseScope
+             | IfHeader RPAREN mOpenScope StatementWithElse mCloseScope ELSE mOpenScope StatementWithElse mCloseScope
 ;
 Call         : ID LPAREN ExpList RPAREN { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); } /*DONE*/
             | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); } /*DONE*/
