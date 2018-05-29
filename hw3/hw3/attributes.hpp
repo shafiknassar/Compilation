@@ -102,7 +102,8 @@ struct BoolVal : public Expr {
 
 struct NumVal : public Expr {
     int val;
-    NumVal(int i) : val(i), Expr(M_INT) {}
+    string sVal;
+    NumVal(int i, string sVal) : val(i), Expr(M_INT), sVal(sVal) {}
 };
 
 struct ByteVal : public Expr {

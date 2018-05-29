@@ -10,8 +10,6 @@
 #include <iostream>
 
 using namespace output;
-using std::stoi;
-using std::to_string;
 using std::cout;
 using std::endl;
 
@@ -234,12 +232,12 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
     return new FormDec(id, type);
 }
 
+
 FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(Type *type, Id *id, NumVal *num)
 {
     int arr_size = num->val;
     if (arr_size > 255) {
-        long long int n = num->val;
-        errorByteTooLarge(yylineno, to_string(n));
+        errorByteTooLarge(yylineno, num->sVal);
         exit(0);
     }
     return rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(type, id, num);
@@ -280,8 +278,7 @@ void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Id* id, NumVal* n
 {
     int arr_size = num->val;
     if (arr_size > 255) {
-        long long int n = num->val;
-        errorByteTooLarge(yylineno, to_string(n));
+        errorByteTooLarge(yylineno, num->sVal);
         exit(0);
     }
     rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(type, id, num);
@@ -519,8 +516,7 @@ Expr* rule_Exp__Exp_BINOP_Exp(Expr *exp1, Expr *exp2)
 Expr* rule_Exp__NUMB(NumVal *num)
 {
     if (num->val > 255) {
-        long long int n = num->val;
-        errorByteTooLarge(yylineno, to_string(n));
+        errorByteTooLarge(yylineno, num->sVal);
         exit(0);
     }
     return new ByteVal(num->val);
