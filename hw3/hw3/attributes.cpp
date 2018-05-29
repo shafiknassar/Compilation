@@ -53,6 +53,15 @@ FuncTableEntry* funcLookup(vector<Table> scopes, Id *id)
     return NULL;
 }
 
+TableEntry *idLookup(vector<Table> scopes, Id *id) {
+    TableEntry *res = NULL;
+    for (int i = (int)scopes.size()-1; i >= 0; --i) {
+        res = scopes[i].getEntry(id->id);
+        if (NULL != res) return res;
+    }
+    return NULL;
+}
+
 int typeSize(TypeId id)
 {
     switch (id) {
@@ -76,7 +85,7 @@ string etos(TypeId type)
             
             
             
-        default: return "ERROR";
+        default: return string("ERROR");
     }
 }
 

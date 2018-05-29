@@ -5,6 +5,8 @@
     #include "semantic_actions.hpp"
     using namespace std;
     
+    //#define YYERROR_VERBOSE 1
+    //#define YYDEBUG 1
     
     
     %}
@@ -55,7 +57,7 @@ Program      : mInit Funcs { rule_Program__end();}
     /*DONE*/
 ;
 mInit         : { rule_init(); }
-Funcs        : FuncDecl /*DONE*/
+Funcs        : FuncDecl Funcs /*DONE*/
              | /*epsilon*/
 ;
 FuncDecl     : FuncHeader LBRACE Statements RBRACE { closeScope(); }
@@ -135,8 +137,9 @@ Exp          : LPAREN Exp RPAREN { $$=$1; } /*DONE*/
 
 %%
 
-void yyerror(const char*) { cout << "syntax error" << endl; }
+void yyerror(const char*) { errorSyn(yylineno); }
 
 int main() {
+    //yydebug = 1;
     return yyparse();
 }

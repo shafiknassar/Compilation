@@ -207,8 +207,7 @@ struct Table {
     
     void insert(string name, TypeId type, int offset)
     {
-        TableEntry tmp(name, type, offset);
-        entryStack.push_back(tmp);
+        entryStack.push_back(*new TableEntry(name, type, offset));
     }
     
     void insertArr(Id *id, int offset, int size) {
@@ -225,6 +224,18 @@ struct Table {
         }
         return NULL;
     }
+    
+    TableEntry* getEntry(string name) {
+        for (int i = 0; i < entryStack.size(); ++i) {
+            if (entryStack[i].name == name) {
+                return &(entryStack[i]);
+            }
+        }
+        return NULL;
+    }
+    
+    TableEntry* getEntry(Id *id) { return getEntry(id->id); }
+
     
     void insertFunc(string name,
                     Type *retType,
@@ -262,6 +273,8 @@ struct FuncScopeTable : public Table {
 bool isAlreadyDefined(vector<Table> scopes, Id *id);
 
 FuncTableEntry* funcLookup(vector<Table> scopes, Id *id);
+
+TableEntry *idLookup(vector<Table> scopes, Id *id);
 
 
 #endif /* attributes_hpp */

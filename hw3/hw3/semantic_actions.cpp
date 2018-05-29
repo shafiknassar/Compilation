@@ -7,10 +7,13 @@
 //
 
 #include "semantic_actions.hpp"
+#include <iostream>
 
 using namespace output;
 using std::stoi;
 using std::to_string;
+using std::cout;
+using std::endl;
 
 /* it's ok to use those variables when pushing to a vector
  * since the push_back method copies the arg */
@@ -51,10 +54,10 @@ void printScope()
 
 void openScope()
 {
-    cloningTable.isFunc  = false;
-    cloningTable.isWhile = false;
-    cloningTable.retType = tableStack.back().retType;
-    tableStack.push_back(cloningTable);
+    tableStack.push_back(*new Table());
+    tableStack.back().isFunc  = false;
+    tableStack.back().isWhile = false;
+    tableStack.back().retType = tableStack.back().retType;
     offsetStack.push_back(offsetStack.back());
 }
 
@@ -68,10 +71,10 @@ void closeScope()
 
 Table& openFuncScope(string funcName, Type *retType)
 {
-    cloningTable.retType = retType;
-    cloningTable.isFunc  = true;
-    cloningTable.isWhile = false;
-    tableStack.push_back(cloningTable);
+    tableStack.push_back(*new Table());
+    tableStack.back().retType = retType;
+    tableStack.back().isFunc  = true;
+    tableStack.back().isWhile = false;
     offsetStack.push_back(offsetStack.back());
     
     return tableStack.back();
@@ -94,7 +97,7 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
     }
 }
 
-void openWhileScope() { openScope(); tableStack.back().isWhile = true; }
+void openWhileScope()  { openScope(); tableStack.back().isWhile = true; }
 void closeWhileScope() { closeScope(); tableStack.back().isWhile = false; }
 
 /*****************************************/
@@ -112,7 +115,8 @@ void rule_init()
 {
     vector<Type*> *args = new vector<Type*>();
     args->push_back(new Type(M_STRING, 0));
-    tableStack.push_back(cloningTable);
+    tableStack.push_back(*new Table());
+    offsetStack.push_back(0);
     tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
     args = new vector<Type*>();
     args->push_back(new Type(M_INT, 4));
@@ -155,7 +159,7 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     Table &currScope = openFuncScope(id->id, retType);
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
-    for (int i = args->size()-1; i >= 0 ; i++) {
+    for (int i = args->size()-1; i >= 0 ; i--) {
         currScope.insert(args->idList[i], argOffsets[i]);
     }
     
@@ -220,7 +224,7 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
         errorMismatch(yylineno);
         exit(0);
     }
-    if (tableStack.back().isDefinedInScope(id))
+    if (isAlreadyDefined(tableStack, id))
     {
         errorDef(yylineno, id->id);
         exit(0);
@@ -245,13 +249,14 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr *rval)
 {
-    if ((exp->type != M_INT && exp->type != M_BYTE)
-        || !ARR_TYPE_MATCH(arr, rval)){
-        errorMismatch(yylineno);
+    TableEntry *entry = idLookup(tableStack, arr);
+    if (NULL == entry) {
+        errorUndef(yylineno, arr->id);
         exit(0);
     }
-    if (!isAlreadyDefined(tableStack, arr)) {
-        errorUndef(yylineno, arr->id);
+    if ((exp->type != M_INT && exp->type != M_BYTE)
+        || !ARR_TYPE_MATCH(entry, rval)){
+        errorMismatch(yylineno);
         exit(0);
     }
     /* if needed, value of id can be assigned here */
@@ -351,7 +356,12 @@ Expr* rule_Call__ID_LPAREN_RPAREN(Id *id) {
 
 Expr* rule_Exp__ID_LBRACK_Exp_RBRACK(Id *id)
 {
-    TypeId type = convertFromArrType(id->type);
+    TableEntry *entry = idLookup(tableStack, id);
+    if (NULL == entry) {
+        errorUndef(yylineno, id->id);
+        exit(0);
+    }
+    TypeId type = convertFromArrType(entry->type);
     if (type == ERROR)
     {
         errorMismatch(yylineno);
@@ -379,6 +389,7 @@ Expr* rule_Exp__NUMB(NumVal *num)
     }
     return new ByteVal(num->val);
 }
+
 Expr* rule_Exp__NOT_Exp(Expr *exp)
 {
     if (exp->type != M_BOOL) {
