@@ -37,7 +37,7 @@ void printScope()
 {
     Table curr_scope = tableStack.back();
     for (int i = 0; i < curr_scope.entryStack.size(); i++) {
-        TableEntry *entry = &(curr_scope.entryStack.at(i));
+        TableEntry *entry = (curr_scope.entryStack.at(i));
         string type(etos(entry->type));
         if (entry->type == FUNC) {
             FuncTableEntry *func_entry = (FuncTableEntry*)entry;
@@ -160,7 +160,7 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
     for (int i = args->size()-1; i >= 0 ; i--) {
-        currScope.insert(args->idList[i], argOffsets[i]);
+        currScope.insert(args->idList[i], args->typeList[i]->id, argOffsets[i]);
     }
     
 }
@@ -186,8 +186,8 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
         errorDef(yylineno, id->id);
         exit(0);
     }
-    tableStack.back().insert(id, offsetStack.back());
-    offsetStack.back() += type->size;
+    //tableStack.back().insert(id, offsetStack.back());
+    //offsetStack.back() += type->size;
     return new FormDec(id, type);
 }
 
@@ -208,11 +208,53 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
         errorDef(yylineno, id->id);
         exit(0);
     }
+    //tableStack.back().insertArr(id, offsetStack.back(), arr_size);
+    //type->size *= arr_size;
+    //offsetStack.back() += type->size;
+    
+    return new FormDec(id, type);
+}
+
+void rule_Statement__Type_ID_SC(Type* type, Id* id)
+{
+    if (isAlreadyDefined(tableStack, id)) {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
+    tableStack.back().insert(id, type->id, offsetStack.back());
+    offsetStack.back() += type->size;
+}
+void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Id* id, NumVal* num)
+{
+    int arr_size = num->val;
+    if (arr_size <= 0 || arr_size >= 256) {
+        errorInvalidArraySize(yylineno, id->id);
+        exit(0);
+    }
+    id->type = convertToArrType(type->id);
+    id->size = typeSize(id->type) * num->val;
+    if (id->type == ERROR) {
+        errorMismatch(yylineno);
+        exit(0);
+    }
+    
+    if (isAlreadyDefined(tableStack, id)) {
+        errorDef(yylineno, id->id);
+        exit(0);
+    }
     tableStack.back().insertArr(id, offsetStack.back(), arr_size);
     type->size *= arr_size;
     offsetStack.back() += type->size;
-    
-    return new FormDec(id, type);
+}
+void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Id* id, NumVal* num)
+{
+    int arr_size = num->val;
+    if (arr_size > 255) {
+        long long int n = num->val;
+        errorByteTooLarge(yylineno, to_string(n));
+        exit(0);
+    }
+    rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(type, id, num);
 }
 
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
@@ -229,7 +271,7 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
         errorDef(yylineno, id->id);
         exit(0);
     }
-    tableStack.back().insert(id, offsetStack.back());
+    tableStack.back().insert(id, type->id, offsetStack.back());
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
 }

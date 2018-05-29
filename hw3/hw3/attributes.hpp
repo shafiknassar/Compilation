@@ -17,6 +17,7 @@
 #include <cassert>
 #include "TypeId.h"
 #include "output.hpp"
+#include <iostream>
 
 using namespace std;
 using namespace output;
@@ -25,6 +26,7 @@ using std::stringstream;
 using std::stoi;
 using std::vector;
 using std::find;
+using std::cout;
 
 /***************************************/
 /* Defines */
@@ -167,10 +169,12 @@ struct FuncTableEntry : public TableEntry {
                    Type *retType,
                    vector<Type*>& paramTypes)
         : TableEntry(name, FUNC, INT_MIN),
-        retType(retType),
-        paramTypes(paramTypes) {}
+        retType(),
+        paramTypes(paramTypes) {
+            this->retType = new Type(*retType);
+        }
     
-    FuncTableEntry() {}
+    FuncTableEntry() : retType(new Type()) {}
     vector<string>* getArgs() {
         vector<string> *args = new vector<string>();
         for (int i = 0; i < paramTypes.size(); i++) {
@@ -194,7 +198,7 @@ struct ArrTableEntry : public TableEntry {
 };
 
 struct Table {
-    vector<TableEntry> entryStack;
+    vector<TableEntry*> entryStack;
     bool isWhile;
     bool isFunc;
     Type *retType;
@@ -207,18 +211,20 @@ struct Table {
     
     void insert(string name, TypeId type, int offset)
     {
-        entryStack.push_back(*new TableEntry(name, type, offset));
+        cout << "Table::insert " << name << " " <<  etos(type) << endl;
+        entryStack.push_back(new TableEntry(name, type, offset));
     }
     
     void insertArr(Id *id, int offset, int size) {
-        ArrTableEntry tmp(id->id, id->type, offset, size);
+        cout << "Table::insertArr " << " " << id->id << size << endl;
+        ArrTableEntry *tmp = new ArrTableEntry(id->id, id->type, offset, size);
         entryStack.push_back(tmp);
     }
     
     FuncTableEntry* getFuncEntry(string name) {
         for (int i = 0; i < entryStack.size(); ++i) {
-            if (entryStack[i].type == FUNC &&
-                    entryStack[i].name == name) {
+            if (entryStack[i]->type == FUNC &&
+                    entryStack[i]->name == name) {
                 return (FuncTableEntry*)&(entryStack[i]);
             }
         }
@@ -227,8 +233,8 @@ struct Table {
     
     TableEntry* getEntry(string name) {
         for (int i = 0; i < entryStack.size(); ++i) {
-            if (entryStack[i].name == name) {
-                return &(entryStack[i]);
+            if (entryStack[i]->name == name) {
+                return (entryStack[i]);
             }
         }
         return NULL;
@@ -241,27 +247,28 @@ struct Table {
                     Type *retType,
                     vector<Type*> &paramTypes)
     {
-        FuncTableEntry tmp;
-        tmp.name       = name;
-        tmp.type       = FUNC;
-        tmp.offset     = INT_MIN;
-        tmp.retType    = retType;
+        cout << "Table::insertFunc " << name << " " << etos(retType->id) << endl;
+        FuncTableEntry *tmp = new FuncTableEntry();
+        tmp->name       = name;
+        tmp->type       = FUNC;
+        tmp->offset     = INT_MIN;
+        tmp->retType    = retType;
         /* 
          The following parameter can be
          most easily acquired from a struct
          specificaly created to FormalDecls
          */
-        tmp.paramTypes = paramTypes;
+        tmp->paramTypes = paramTypes;
         entryStack.push_back(tmp);
     }
     
-    void insert(Id *id, int offset) {
-        insert(id->id, id->type, offset);
+    void insert(Id *id, TypeId type, int offset) {
+        insert(id->id, type, offset);
     }
     
     bool isDefinedInScope(Id *id) {
         for (int i = 0; i < entryStack.size(); ++i) {
-            if (entryStack[i].name == id->id) return true;
+            if (entryStack[i]->name == id->id) return true;
         }
         return false;
     }

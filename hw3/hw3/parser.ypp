@@ -86,7 +86,9 @@ Statements   : Statement /*DONE*/
 ;
 //TODO
 Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
-             | FormalDecl SC //{ rule_Statement__FormalDecl_SC((FormDec*)$1); }
+             | Type ID SC { rule_Statement__Type_ID_SC((Type*)$1, (Id*)$2); }
+             | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Id*)$2, (NumVal*)$4); }
+             | Type ID LBRACK NUM B RBRACK SC { rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC((Type*)$1, (Id*)$2, (NumVal*)$4); }
              | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); } /*DONE*/
              | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); } /*DONE*/
              | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); } /*DONE*/

@@ -82,6 +82,10 @@ string etos(TypeId type)
         case M_VOID: return string("VOID");
         case M_BOOL: return string("BOOL");
         case M_STRING: return string("STRING");
+        case INT_ARR: return string("IARR");
+        case BYTE_ARR: return string("CARR");
+        case BOOL_ARR: return string("BARR");
+        case ERROR: return string("error");
             
             
             

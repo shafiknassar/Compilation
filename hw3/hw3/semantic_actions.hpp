@@ -62,7 +62,9 @@ void rule_Statements__Statement();
 void rule_Statements__Statements_Statement();
 
 void rule_Statement__LBRACE_Statements_RBRACE();
-void rule_Statement__FormalDecl_SC(FormDec *fm);
+void rule_Statement__Type_ID_SC(Type* type, Id* id);
+void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Id* id, NumVal* num);
+void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Id* id, NumVal* num);
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type *type, Id *id, Expr *exp);
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp);
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *id, Expr *exp1, Expr *exp2);
