@@ -41,8 +41,8 @@
 /* Relational Operators */
 /* keep them separated inorder to
  give different precedence to every op */
+%nonassoc RELOP
 %left BINOP
-%left RELOP
 /* Assigment */
 %right ASSIGN
 /* ID */

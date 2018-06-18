@@ -166,7 +166,6 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     //vector<TypeId> argTypes;
     //extractTypesFromFormList(*args, argTypes);
     tableStack.back().insertFunc(id->id, retType, args->typeList);
-    
     /* create function scope - openScope */
     Table &currScope = openFuncScope(id->id, retType);
     vector<int> argOffsets;
@@ -321,7 +320,7 @@ Expr* rule_Exp__ID(Id *id)
 void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 {
     TableEntry *entry = idLookup(tableStack, id);
-    if (NULL ==  entry) {
+    if (NULL ==  entry || entry->type == FUNC) {
         errorUndef(yylineno, id->id);
         exit(0);
     }
@@ -448,7 +447,7 @@ bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
 vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
 {
     vector<string> *res = new vector<string>();
-    for (int i = 0; i < paramTypes.size(); ++i) {
+    for (int i = paramTypes.size() - 1 ; i >= 0 ; i--) {
         string name = etos(paramTypes[i]->id);
         if (isArrType(paramTypes[i]->id)) {
             TypeId t = convertFromArrType(paramTypes[i]->id);

@@ -86,6 +86,7 @@ string etos(TypeId type)
         case INT_ARR: return string("IARR");
         case BYTE_ARR: return string("CARR");
         case BOOL_ARR: return string("BARR");
+        case FUNC: return string("FUNC");
         case ERROR: return string("error");
             
             
