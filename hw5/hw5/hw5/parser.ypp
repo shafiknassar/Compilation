@@ -54,89 +54,125 @@
 %%
 
 Program      : mInit Funcs { rule_Program__end();}
-    /*DONE*/
+     
 ;
 mInit         : { rule_init(); }
-Funcs        : FuncDecl Funcs /*DONE*/
+Funcs        : FuncDecl Funcs  
              | /*epsilon*/
 ;
 FuncDecl     : FuncHeader LBRACE Statements RBRACE { closeScope(); }
 ;
 
-FuncHeader   : RetType ID LPAREN Formals RPAREN /*DONE*/
-             { rule_FuncHeader((Type*)$1, (Id*)$2, (FormList*)$4); }
+FuncHeader   : RetType ID LPAREN Formals RPAREN  
+             { rule_FuncHeader((Type*)$1, (Id*)$2, (FormList*)$4);
+             /* map variables to registers */}
 
 
-RetType      : Type { $$=$1; } /*DONE*/
-             | VOID { $$=$1; } /*DONE*/
+RetType      : Type { $$=$1; }  
+             | VOID { $$=$1; }  
 ;
-Formals      : FormalsList { $$ = $1;} /*DONE*/
-             | /*epsilon*/ { $$ = new FormList(); /*empty list*/} /*DONE*/
+Formals      : FormalsList { $$ = $1;}  
+             | /*epsilon*/ { $$ = new FormList(); /*empty list*/}  
 ;
-FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((FormDec*)$1); } /*DONE*/
-             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)$1, (FormList*)$3); } /*DONE*/
+FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((FormDec*)$1); }  
+             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)$1, (FormList*)$3); }  
 ;
-FormalDecl   : Type ID { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); } /*DONE*/
-             | Type ID LBRACK NUM RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
-             | Type ID LBRACK NUM B RBRACK { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); } /*DONE*/
+FormalDecl   : Type ID
+                { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Id*)$2); }
+                /* assign variable to register */
+             | Type ID LBRACK NUM RBRACK
+                /* assign array address to register */
+                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); }
+             | Type ID LBRACK NUM B RBRACK
+                /* assign array address to register */
+                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Id*)$2, (NumVal*)$4); }
 ;
 //TODO
-Statements   : Statement /*DONE*/
-             | Statements Statement /*DONE*/
+Statements   : Statement  
+             | Statements Statement  
 ;
 //TODO
 
-IfHeader     : IF LPAREN Exp { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+IfHeader     : IF LPAREN Exp
+                { rule_Statement__IF_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
 
-WhileHeader  : WHILE LPAREN Exp { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
+WhileHeader  : WHILE LPAREN Exp
+                { rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement((Expr*)$3); }
 
-Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE /*DONE*/
+Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE  
              | Type ID SC { rule_Statement__Type_ID_SC((Type*)$1, (Id*)$2); }
              | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Id*)$2, (NumVal*)$4); }
              | Type ID LBRACK NUM B RBRACK SC { rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC((Type*)$1, (Id*)$2, (NumVal*)$4); }
-             | Type ID ASSIGN Exp SC { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); } /*DONE*/
-             | ID ASSIGN Exp SC { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); } /*DONE*/
-             | ID LBRACK Exp RBRACK ASSIGN Exp SC { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); } /*DONE*/
+             | Type ID ASSIGN Exp SC
+                /* copy the expression register to the id (trgt) register */
+                { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Id*)$2, (Expr*)$4); }
+             | ID ASSIGN Exp SC
+                /* copy the expression register to the id (trgt) register */
+                { rule_Statement__ID_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3); }
+             | ID LBRACK Exp RBRACK ASSIGN Exp SC
+                /* copy the expression register to the location on memory */
+                { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Id*)$1, (Expr*)$3, (Expr*)$6); }
              | Call SC
-             | RETURN SC { rule_Statement__RETURN_SC(); }
-             | RETURN Exp SC { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
+             | RETURN SC
+                { rule_Statement__RETURN_SC(); }
+             | RETURN Exp SC
+                /* copy the expression register to the result (trgt) register */
+                { rule_Statement__RETURN_Exp_SC((Expr*)$2); }
              | IfHeader RPAREN mOpenScope Statement mCloseScope
              | IfHeader RPAREN mOpenScope Statement mCloseScope ELSE mOpenScope Statement mCloseScope
              | WhileHeader RPAREN mOWhileScope Statement mCWhileScope
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
 
-mOpenScope  : { openScope(); } /*DONE*/
-mCloseScope : { closeScope(); } /*DONE*/
+mOpenScope  : { openScope(); }  
+mCloseScope : { closeScope(); }  
 mOWhileScope: { openWhileScope(); }
 mCWhileScope: { closeWhileScope(); }
 
 
-Call         : ID LPAREN ExpList RPAREN { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); } /*DONE*/
-            | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); } /*DONE*/
+Call         : ID LPAREN ExpList RPAREN
+                /* copy registers of expList to the argument registers (or memory if needed) */
+                { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Id*)$1, (ExprList*)$3); }
+            | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Id*)$1); }  
 ;
 
-ExpList      : Exp { $$ = new ExprList(); ((ExprList*)$$)->v.push_back((Expr*)$1); }   /*DONE*/
-             | Exp COMMA ExpList { $$ = $3; ((ExprList*)$$)->v.push_back((Expr*)$1); } /*DONE*/
+ExpList      : Exp { $$ = new ExprList(); ((ExprList*)$$)->v.push_back((Expr*)$1); }    
+             | Exp COMMA ExpList { $$ = $3; ((ExprList*)$$)->v.push_back((Expr*)$1); }  
 ;
-Type         : INT  { $$=$1; } /*DONE*/
-             | BYTE { $$=$1; } /*DONE*/
-             | BOOL { $$=$1; } /*DONE*/
+Type         : INT  { $$=$1; }  
+             | BYTE { $$=$1; }  
+             | BOOL { $$=$1; }  
 ;
-Exp          : LPAREN Exp RPAREN { $$=$2; } /*DONE*/
-             | ID LBRACK Exp RBRACK { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); } /*DONE*/
-             | Exp BINOP Exp { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); } /*DONE*/
-             | ID { $$ = rule_Exp__ID((Id*)$1); } /*DONE*/
-             | Call { $$ = $1; } /*DONE*/
-             | NUM { $$=$1; } /*DONE*/
-             | NUM B { $$ = rule_Exp__NUMB(((NumVal*)$1)); } /*DONE*/
-             | STRING { $$= new Expr(M_STRING); }/*DONE*/
-             | TRUE { $$ = new Expr(M_BOOL); }/*DONE*/
-             | FALSE { $$ = new Expr(M_BOOL); }/*DONE*/
-             | NOT Exp { $$ = rule_Exp__NOT_Exp((Expr*)$2); }/*DONE*/
-             | Exp AND Exp { $$ = rule_Exp__Exp_AND_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
-             | Exp OR Exp { $$ = rule_Exp__Exp_OR_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
-             | Exp RELOP Exp { $$ = rule_Exp__Exp_RELOP_Exp((Expr*)$1, (Expr*)$3); }/*DONE*/
+Exp          : LPAREN Exp RPAREN
+                { $$=$2; }
+             | ID LBRACK Exp RBRACK
+                { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Id*)$1); }
+             | Exp BINOP Exp
+                /* assign result to register */
+                { $$ = rule_Exp__Exp_BINOP_Exp((Expr*)$1, (Expr*)$3); }
+             | ID
+                { $$ = rule_Exp__ID((Id*)$1); }
+             | Call
+                /* store result (if numerical) in register */
+                { $$ = $1; }
+             | NUM
+                { $$=$1; }
+             | NUM B
+                { $$ = rule_Exp__NUMB(((NumVal*)$1)); }
+             | STRING
+                { $$= new Expr(M_STRING); }
+             | TRUE
+                { $$ = new Expr(M_BOOL); }
+             | FALSE
+                { $$ = new Expr(M_BOOL); }
+             | NOT Exp
+                { $$ = rule_Exp__NOT_Exp((Expr*)$2); }
+             | Exp AND Exp
+                { $$ = rule_Exp__Exp_AND_Exp((Expr*)$1, (Expr*)$3); }
+             | Exp OR Exp
+                { $$ = rule_Exp__Exp_OR_Exp((Expr*)$1, (Expr*)$3); }
+             | Exp RELOP Exp
+                { $$ = rule_Exp__Exp_RELOP_Exp((Expr*)$1, (Expr*)$3); }
 ;
 
 
