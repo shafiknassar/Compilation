@@ -35,7 +35,11 @@ void Assembler::emitLoadVar(int varOS, string regName) {
 }
 
 void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
-    
+    codeBuff.emit("sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
+    codeBuff.emit("add " + idxRegName + ", " + idxRegName + ", $fp");
+    stringstream ssArrOs;
+    ssArrOs << arrOS;
+    codeBuff.emit("lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
 
