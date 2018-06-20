@@ -28,8 +28,9 @@ string Assembler::getNextInst() {
     return codeBuff.genLabel();
 }
 
-void Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
+int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
     string mipsOp;
+    int res = -1;
     if (op == ADD_OP) {
         mipsOp = "add ";
     } else if (op == SUB_OP) {
@@ -37,12 +38,23 @@ void Assembler::emitBinOp(string op, string trgPlace, string src1Place, string s
     } else if (op == MUL_OP) {
         mipsOp = "mul ";
     } else if (op == DIV_OP) {
-        codeBuff.emit("beq " + src2Place + ", 0, div_by_zero_handler");
+        res = codeBuff.emit("beq " + src2Place + ", 0, div_by_zero_handler");
         mipsOp = "add ";
     }
-    codeBuff.emit(mipsOp + trgPlace + ", " + src1Place + ", " + src2Place);
+    int tmp = codeBuff.emit(mipsOp + trgPlace + ", " + src1Place + ", " + src2Place);
+    res = (res == -1)? tmp : res;
+    return res;
 }
 
+int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
+    map<string, string> trans = {
+        {"==", "beq "}, {"!=", "bne "}, {"<", "blt "},
+        {">", "bgt "}, {"<=", "ble "}, {">=", "bge "}
+    };
+    string to_emit = trans[op];
+    
+    return codeBuff.emit(to_emit + src1Place + ", " + src2Place +", ");
+};
 /* CodeBuffer APIs */
 void Assembler::bpatch(const vector<int>& address_list, const string &loc) {
     codeBuff.bpatch(address_list, loc);

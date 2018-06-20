@@ -67,10 +67,15 @@ public:
     void emitPrinti();
     
     /*
-     @description: generates code binary operation
+     @description: generates code for binary/relational operation
      @returns none.
      */
-    void emitBinOp(string op, string trgPlace, string src1Place, string src2Place);
+    int emitBinOp(string op, string trgPlace, string src1Place, string src2Place);
+    /*
+     note: relational operation is trnaslated to a conditional jump.
+     the target of the jump need to be backpatched.
+     */
+    int emitRelOp(string op, string src1Place, string src2Place);
 
     /* CodeBuffer APIs */
     void bpatch(const vector<int>& address_list, const string &loc);

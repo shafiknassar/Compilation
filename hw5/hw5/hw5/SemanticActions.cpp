@@ -567,14 +567,9 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
         output::errorMismatch(yylineno);
         exit(0);
     }
-    map<string, string> trans = {
-        {"==", "beq "}, {"!=", "bne "}, {"<", "blt "},
-        {">", "bgt "}, {"<=", "ble "}, {">=", "bge "}
-    };
     int nextinst = -1;
-    string to_emit = trans[relop];
     Expression* exp = new Expression(M_BOOL);
-    nextinst = ass.emitCode(to_emit + exp1->place + ", " + exp2->place + ", ");
+    nextinst = ass.emitRelOp(relop, exp1->place, exp2->place);
     exp->trueList = ass.makelist(nextinst);
     nextinst = ass.emitCode(JUMP);
     exp->falseList = ass.makelist(nextinst);
