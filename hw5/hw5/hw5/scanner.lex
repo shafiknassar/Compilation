@@ -30,7 +30,7 @@ break                               {return BREAK;}
 \[                                  {return LBRACK;}
 \]                                  {return RBRACK;}
 =                                   {return ASSIGN;}
-(\=\=|\!\=|\<|\>|\<\=|\>\=)         {return RELOP;}
+(\=\=|\!\=|\<|\>|\<\=|\>\=)         {yylval = new Node(yytext); return RELOP;}
 [\+\-\*\/]                          {return BINOP;}
 [a-zA-Z][a-zA-Z0-9]*                {yylval = (Node*) new Id(yytext); return ID;}
 0|[1-9][0-9]*                       {yylval = (Node*) new NumVal(atoi(yytext), yytext); return NUM;}
