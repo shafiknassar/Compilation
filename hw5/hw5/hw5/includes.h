@@ -16,10 +16,12 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <map>
 
 #include "Program.hpp"
 #include "SymbolTable.hpp"
 #include "RegistersPool.hpp"
 #include "output.hpp"
+#include "bp.hpp"
 
 #endif /* includes_h */

@@ -2,12 +2,17 @@
 #include "includes.h"
 #include "SemanticActions.hpp"
 
+#define JUMP "j "
+using std::map;
+using std::string;
+
 /*****************************************/
 /* global variables */
 /*****************************************/
 
 vector<Table> tableStack;
 vector<int>   offsetStack;
+Assembler ass;
 bool isMainDef = false;
 
 /*****************************************/
@@ -523,13 +528,23 @@ Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression *exp2)
     return new Expression(M_BOOL);
 }
 
-Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, Expression *exp2)
+Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2)
 {
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    
-    
-    return new Expression(M_BOOL);
+    map<string, string> trans = {
+        {"==", "beq "}, {"!=", "bne "}, {"<", "blt "},
+        {">", "bgt "}, {"<=", "ble "}, {">=", "bge "}
+    };
+    int nextinst = -1;
+    string to_emit = trans[relop];
+    Expression* exp = new Expression(M_BOOL);
+    nextinst = ass.emitCode(to_emit + exp1->place + ", " + exp2->place + ", ");
+    exp->trueList = makelist(nextinst);
+    nextinst = ass.emitCode(JUMP);
+    exp->falseList = makelist(nextinst);
+    exp->place = exp1->place;
+    return exp;
 }

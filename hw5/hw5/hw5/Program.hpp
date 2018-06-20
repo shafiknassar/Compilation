@@ -51,7 +51,11 @@ enum TypeId {
 /* Node structs for terminals */
 /***************************************/
 struct Node {
+    string token;
     virtual ~Node();
+    
+    Node() : token("") {};
+    Node(string s) : token(s) {}
 };
 
 struct Type : public Node {
