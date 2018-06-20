@@ -13,6 +13,7 @@
 		7F94F9D120D91C20000BE43F /* Program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9CA20D91C20000BE43F /* Program.cpp */; };
 		7F94F9D320D92775000BE43F /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9D220D92775000BE43F /* Makefile */; };
 		7F94F9D620D927B0000BE43F /* bp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9D520D927B0000BE43F /* bp.cpp */; };
+		7F94F9EC20DA906A000BE43F /* Assembler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9EA20DA906A000BE43F /* Assembler.cpp */; };
 		8C976F1620D97587009AF23A /* SymbolTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8C976F1420D97587009AF23A /* SymbolTable.cpp */; };
 		8C976F1D20DA3512009AF23A /* RegistersPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8C976F1B20DA3512009AF23A /* RegistersPool.cpp */; };
 		8C976F2020DA5F4D009AF23A /* output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8C976F1F20DA5F4D009AF23A /* output.cpp */; };
@@ -42,6 +43,8 @@
 		7F94F9D220D92775000BE43F /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		7F94F9D420D927B0000BE43F /* bp.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = bp.hpp; sourceTree = "<group>"; };
 		7F94F9D520D927B0000BE43F /* bp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bp.cpp; sourceTree = "<group>"; };
+		7F94F9EA20DA906A000BE43F /* Assembler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Assembler.cpp; sourceTree = "<group>"; };
+		7F94F9EB20DA906A000BE43F /* Assembler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Assembler.hpp; sourceTree = "<group>"; };
 		8C976F1420D97587009AF23A /* SymbolTable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTable.cpp; sourceTree = "<group>"; };
 		8C976F1520D97587009AF23A /* SymbolTable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SymbolTable.hpp; sourceTree = "<group>"; };
 		8C976F1720D975D0009AF23A /* includes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = includes.h; sourceTree = "<group>"; };
@@ -81,6 +84,8 @@
 		7F94F9B820D91BEF000BE43F /* hw5 */ = {
 			isa = PBXGroup;
 			children = (
+				7F94F9EA20DA906A000BE43F /* Assembler.cpp */,
+				7F94F9EB20DA906A000BE43F /* Assembler.hpp */,
 				7F94F9CA20D91C20000BE43F /* Program.cpp */,
 				7F94F9C920D91C20000BE43F /* Program.hpp */,
 				8C976F1420D97587009AF23A /* SymbolTable.cpp */,
@@ -163,6 +168,7 @@
 				7F94F9CD20D91C20000BE43F /* parser.ypp in Sources */,
 				8C976F2020DA5F4D009AF23A /* output.cpp in Sources */,
 				7F94F9D120D91C20000BE43F /* Program.cpp in Sources */,
+				7F94F9EC20DA906A000BE43F /* Assembler.cpp in Sources */,
 				7F94F9D620D927B0000BE43F /* bp.cpp in Sources */,
 				8C976F1620D97587009AF23A /* SymbolTable.cpp in Sources */,
 				7F94F9BA20D91BEF000BE43F /* main.cpp in Sources */,

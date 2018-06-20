@@ -13,6 +13,19 @@
 #include <stdio.h>
 
 using std::string;
+using std::vector;
+
+/***********************************/
+/* defines */
+/***********************************/
+
+#define JUMP      "j "
+#define ADD_OP    "+"
+#define SUB_OP    "-"
+#define MUL_OP    "*"
+#define DIV_OP    "/"
+
+
 
 class Assembler {
 private:
@@ -53,6 +66,21 @@ public:
      @returns none.
      */
     void emitBinOp(string op, string trgPlace, string src1Place, string src2Place);
+    
+    
+
+    /* CodeBuffer APIs */
+    void bpatch(const vector<int>& address_list, const string &loc);
+    
+    static vector<int> makelist(int litem);
+    
+    static vector<int> merge(const vector<int> &l1,const vector<int> &l2);
+
+    //print the content of the data buffer to stdout including a .data header
+    void printDataBuffer();
+    
+    //print the content of the code buffer to stdout including a .text header
+    void printCodeBuffer();
 };
 
 #endif /* Assembler_hpp */
