@@ -13,6 +13,7 @@ using std::string;
 vector<Table> tableStack;
 vector<int>   offsetStack;
 Assembler ass;
+MipsRegisters regsPool;
 bool isMainDef = false;
 
 /*****************************************/
@@ -501,8 +502,14 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *
         exp_type = M_INT;
     
     Expression* exp = new Expression(exp_type);
+    exp->place = exp1->place;
+    regsPool.unbind(exp1->place);
+    regsPool.bind(exp->place, expression);
     ass.emitBinOp(binop, exp->place, exp1->place, exp2->place);
+    regsPool.unbind(exp2->place);
     
+    delete exp1;
+    delete exp2;
     
     return exp;
 }
@@ -544,6 +551,9 @@ Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expressi
     exp->trueList = exp2->trueList;
     exp->falseList = ass.merge(exp1->falseList, exp2->falseList);
     
+    delete exp1;
+    delete exp2;
+    
     return exp;
 }
 Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker,Expression *exp2)
@@ -557,6 +567,9 @@ Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker,Expression
     ass.bpatch(exp1->falseList, marker->quad);
     exp->trueList = ass.merge(exp1->trueList, exp2->trueList);
     exp->falseList = exp2->falseList;
+    
+    delete exp1;
+    delete exp2;
     
     return exp;
 }
@@ -574,6 +587,10 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
     nextinst = ass.emitCode(JUMP);
     exp->falseList = ass.makelist(nextinst);
     exp->place = exp1->place;
+    
+    delete exp1;
+    delete exp2;
+    
     return exp;
 }
 

@@ -9,7 +9,15 @@
 #ifndef RegistersPool_hpp
 #define RegistersPool_hpp
 
+
 #include "includes.h"
+
+/******************************/
+/* defines */
+/******************************/
+
+#define not_found  "not found"
+#define expression "expression"
 #define REGISTERS_NUM 32
 #define WORD_SIZE 4
 
@@ -35,7 +43,7 @@ struct MipsRegisters {
     int pc; //program counter
     
     MipsRegisters();
-    void Bind(string registerName, string var);
+    void bind(string registerName, string var);
     void unbind(string registerName);
     string getVarName(string registerName);
     string registerLookup(string varName);
