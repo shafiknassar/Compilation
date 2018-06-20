@@ -70,6 +70,8 @@ public:
     
     void emitLoadArrElem(int arrOS, string idxRegName, string trgRegName);
     
+    void emitLoadConst(string regName, string val);
+    
     /*
      @description: generates code for binary/relational operation
      @returns none.
