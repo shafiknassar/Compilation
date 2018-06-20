@@ -7,7 +7,6 @@
 //
 
 #include "includes.h"
-#define not_found "not found"
 using std::vector;
 using std::string;
 

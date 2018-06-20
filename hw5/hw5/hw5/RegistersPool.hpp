@@ -10,6 +10,7 @@
 #define RegistersPool_hpp
 
 #include "includes.h"
+#define not_found "not found"
 #define REGISTERS_NUM 32
 #define WORD_SIZE 4
 

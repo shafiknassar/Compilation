@@ -85,30 +85,21 @@ struct Programe : public Node {
 
 struct Expression : public Node {
     TypeId type;
+    string value;
     string place;
     string quad;
     vector<int> trueList;
     vector<int> falseList;
+    
     int size;
+    
     Expression(TypeId type) : type(type), size(typeSize(type)) {}
-    Expression(Type t)      : type(t.id), size(t.size) {}
     Expression(TypeId type, int size) : type(type), size(size) {}
+    Expression(TypeId type, string value) : type(type), value(value) {}
 };
 
 struct ExprList : public Node {
     vector<Expression*> v;
-};
-
-struct NumVal : public Expression {
-    int val;
-    string sVal;
-    NumVal(int i, string sVal) : val(i), Expression(M_INT), sVal(sVal) {}
-};
-
-struct Constant : public Expression {
-    int val;
-    string sVal;
-    Constant(int i, string sVal, Type type) : val(i), Expression(type), sVal(sVal) {}
 };
 
 /* Formal Declaration */
