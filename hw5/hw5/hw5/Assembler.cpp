@@ -28,6 +28,18 @@ string Assembler::getNextInst() {
     return codeBuff.genLabel();
 }
 
+void Assembler::emitLoadVar(int varOS, string regName) {
+    stringstream ssVarOs;
+    ssVarOs << varOS;
+    codeBuff.emit("lw " + regName + ", " + ssVarOs.str() + "($fp)");
+}
+
+void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
+    
+}
+
+
+
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
     string mipsOp;
     int res = -1;

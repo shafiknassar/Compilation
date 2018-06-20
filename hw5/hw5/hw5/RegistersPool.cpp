@@ -33,7 +33,7 @@ string MipsRegisters::getVarName(string registerName) {
     return registers[registerName].varName;
 }
 
-void MipsRegisters::Bind(string registerName, string var) {
+void MipsRegisters::bind(string registerName, string var) {
     // can't use $zero
     if (registerName == "$zero" || registers[registerName].inUse) return;
     Register& reg = registers[registerName];
