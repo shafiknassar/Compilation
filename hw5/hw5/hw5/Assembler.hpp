@@ -66,6 +66,10 @@ public:
     
     void emitPrinti();
     
+    void emitLoadVar(int varOS, string regName);
+    
+    void emitLoadArrElem(int arrOS, string idxRegName, string trgRegName);
+    
     /*
      @description: generates code for binary/relational operation
      @returns none.

@@ -291,18 +291,23 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *id, Expression 
     /* if needed, value of id can be assigned here */
 }
 
-Expression* rule_Exp__ID(Variable *id)
+Expression* rule_Exp__ID(Variable *var)
 {
-    TableEntry *entry = idLookup(tableStack, id);
+    TableEntry *entry = idLookup(tableStack, var);
+
     int size = 1;
     if (NULL == entry) {
-        output::errorUndef(yylineno, id->id);
+        output::errorUndef(yylineno, var->id);
         exit(0);
     }
     if (isArrType(entry->type))
     {
         size = ((ArrTableEntry*)entry)->size;
     }
+    string regName = regsPool.getEmptyRegister();
+    if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
+    regsPool.bind(regName, var->id);
+    ass.emitLoadVar(entry->offset*WORD_SIZE, regName);
     return new Expression(entry->type, size);
 }
 
@@ -488,6 +493,7 @@ Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *id)
         output::errorMismatch(yylineno);
         exit(0);
     }
+    
     return new Expression(type);
 }
 
