@@ -31,6 +31,7 @@ class Assembler {
 private:
     CodeBuffer &codeBuff;
     int stringDataCounter;
+    
 public:
     
     Assembler() :
@@ -59,15 +60,17 @@ public:
      @description: generates code for handling division by zero exception
      @returns none.
      */
-    void emitDivByZero(); /* TODO: implement */
+    void emitDivByZeroHandler(); /* TODO: implement */
+    
+    void emitPrint();
+    
+    void emitPrinti();
     
     /*
      @description: generates code binary operation
      @returns none.
      */
     void emitBinOp(string op, string trgPlace, string src1Place, string src2Place);
-    
-    
 
     /* CodeBuffer APIs */
     void bpatch(const vector<int>& address_list, const string &loc);

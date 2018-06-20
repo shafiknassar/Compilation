@@ -65,3 +65,36 @@ void Assembler::printDataBuffer() {
 void Assembler::printCodeBuffer() {
     codeBuff.printCodeBuffer();
 }
+
+void Assembler::emitDivByZeroHandler() {
+    codeBuff.emit("div_by_zero_handler:");
+    
+    codeBuff.emit("la $a0,str_0");
+    codeBuff.emit("li $v0,4");
+    codeBuff.emit("syscall");
+    
+    codeBuff.emit("la $a0,str_1");
+    codeBuff.emit("li $v0,4");
+    codeBuff.emit("syscall");
+    
+    codeBuff.emit("li $v0,10");
+    codeBuff.emit("syscall");
+    
+}
+
+void Assembler::emitPrinti() {
+    codeBuff.emit("printi:");
+    codeBuff.emit("lw $a0,4($sp)");
+    codeBuff.emit("li $v0,1");
+    codeBuff.emit("syscall");
+    codeBuff.emit("jr $ra");
+}
+
+
+void Assembler::emitPrint() {
+    codeBuff.emit("print:");
+    codeBuff.emit("lw $a0,4($sp)");
+    codeBuff.emit("li $v0,4");
+    codeBuff.emit("syscall");
+    codeBuff.emit("jr $ra");
+}
