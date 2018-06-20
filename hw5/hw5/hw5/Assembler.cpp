@@ -7,3 +7,7 @@
 //
 
 #include "Assembler.hpp"
+
+int Assembler::emitCode(string code) {
+    return codeBuff.emit(code);
+}

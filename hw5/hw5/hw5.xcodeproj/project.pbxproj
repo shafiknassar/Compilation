@@ -8,14 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		7F94F9BA20D91BEF000BE43F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9B920D91BEF000BE43F /* main.cpp */; };
-		7F94F9CC20D91C20000BE43F /* semantic_actions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9C120D91C20000BE43F /* semantic_actions.cpp */; };
 		7F94F9CD20D91C20000BE43F /* parser.ypp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9C320D91C20000BE43F /* parser.ypp */; };
-		7F94F9CE20D91C20000BE43F /* parser.tab.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9C520D91C20000BE43F /* parser.tab.cpp */; };
 		7F94F9CF20D91C20000BE43F /* output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9C720D91C20000BE43F /* output.cpp */; };
-		7F94F9D020D91C20000BE43F /* lex.yy.c in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9C820D91C20000BE43F /* lex.yy.c */; };
-		7F94F9D120D91C20000BE43F /* attributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9CA20D91C20000BE43F /* attributes.cpp */; };
 		7F94F9D320D92775000BE43F /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9D220D92775000BE43F /* Makefile */; };
 		7F94F9D620D927B0000BE43F /* bp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9D520D927B0000BE43F /* bp.cpp */; };
+		7F94F9E320DA7388000BE43F /* SymbolTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9DC20DA7388000BE43F /* SymbolTable.cpp */; };
+		7F94F9E420DA7388000BE43F /* SemanticActions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9DE20DA7388000BE43F /* SemanticActions.cpp */; };
+		7F94F9E520DA7388000BE43F /* RegistersPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9E020DA7388000BE43F /* RegistersPool.cpp */; };
+		7F94F9E620DA7388000BE43F /* Program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9E220DA7388000BE43F /* Program.cpp */; };
+		7F94F9E920DA73D2000BE43F /* Assembler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F94F9E720DA73D2000BE43F /* Assembler.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,21 +34,24 @@
 /* Begin PBXFileReference section */
 		7F94F9B620D91BEF000BE43F /* hw5 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = hw5; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94F9B920D91BEF000BE43F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		7F94F9C020D91C20000BE43F /* semantic_actions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = semantic_actions.hpp; sourceTree = "<group>"; };
-		7F94F9C120D91C20000BE43F /* semantic_actions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = semantic_actions.cpp; sourceTree = "<group>"; };
 		7F94F9C220D91C20000BE43F /* scanner.lex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = scanner.lex; sourceTree = "<group>"; };
 		7F94F9C320D91C20000BE43F /* parser.ypp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.yacc; path = parser.ypp; sourceTree = "<group>"; };
-		7F94F9C420D91C20000BE43F /* parser.tab.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = parser.tab.hpp; sourceTree = "<group>"; };
-		7F94F9C520D91C20000BE43F /* parser.tab.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parser.tab.cpp; sourceTree = "<group>"; };
 		7F94F9C620D91C20000BE43F /* output.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = output.hpp; sourceTree = "<group>"; };
 		7F94F9C720D91C20000BE43F /* output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = output.cpp; sourceTree = "<group>"; };
-		7F94F9C820D91C20000BE43F /* lex.yy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lex.yy.c; sourceTree = "<group>"; };
-		7F94F9C920D91C20000BE43F /* attributes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = attributes.hpp; sourceTree = "<group>"; };
-		7F94F9CA20D91C20000BE43F /* attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attributes.cpp; sourceTree = "<group>"; };
-		7F94F9CB20D91C20000BE43F /* TypeId.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeId.h; sourceTree = "<group>"; };
 		7F94F9D220D92775000BE43F /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		7F94F9D420D927B0000BE43F /* bp.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = bp.hpp; sourceTree = "<group>"; };
 		7F94F9D520D927B0000BE43F /* bp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bp.cpp; sourceTree = "<group>"; };
+		7F94F9DA20DA7388000BE43F /* includes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = includes.h; sourceTree = "<group>"; };
+		7F94F9DB20DA7388000BE43F /* SymbolTable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SymbolTable.hpp; sourceTree = "<group>"; };
+		7F94F9DC20DA7388000BE43F /* SymbolTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTable.cpp; sourceTree = "<group>"; };
+		7F94F9DD20DA7388000BE43F /* SemanticActions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SemanticActions.hpp; sourceTree = "<group>"; };
+		7F94F9DE20DA7388000BE43F /* SemanticActions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SemanticActions.cpp; sourceTree = "<group>"; };
+		7F94F9DF20DA7388000BE43F /* RegistersPool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RegistersPool.hpp; sourceTree = "<group>"; };
+		7F94F9E020DA7388000BE43F /* RegistersPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RegistersPool.cpp; sourceTree = "<group>"; };
+		7F94F9E120DA7388000BE43F /* Program.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Program.hpp; sourceTree = "<group>"; };
+		7F94F9E220DA7388000BE43F /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Program.cpp; sourceTree = "<group>"; };
+		7F94F9E720DA73D2000BE43F /* Assembler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Assembler.cpp; sourceTree = "<group>"; };
+		7F94F9E820DA73D2000BE43F /* Assembler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Assembler.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,20 +86,23 @@
 			children = (
 				7F94F9D420D927B0000BE43F /* bp.hpp */,
 				7F94F9D520D927B0000BE43F /* bp.cpp */,
-				7F94F9C020D91C20000BE43F /* semantic_actions.hpp */,
-				7F94F9C120D91C20000BE43F /* semantic_actions.cpp */,
 				7F94F9C220D91C20000BE43F /* scanner.lex */,
 				7F94F9C320D91C20000BE43F /* parser.ypp */,
-				7F94F9C420D91C20000BE43F /* parser.tab.hpp */,
-				7F94F9C520D91C20000BE43F /* parser.tab.cpp */,
 				7F94F9C620D91C20000BE43F /* output.hpp */,
+				7F94F9DA20DA7388000BE43F /* includes.h */,
+				7F94F9DB20DA7388000BE43F /* SymbolTable.hpp */,
+				7F94F9DC20DA7388000BE43F /* SymbolTable.cpp */,
+				7F94F9DD20DA7388000BE43F /* SemanticActions.hpp */,
+				7F94F9DE20DA7388000BE43F /* SemanticActions.cpp */,
+				7F94F9DF20DA7388000BE43F /* RegistersPool.hpp */,
+				7F94F9E020DA7388000BE43F /* RegistersPool.cpp */,
+				7F94F9E120DA7388000BE43F /* Program.hpp */,
+				7F94F9E220DA7388000BE43F /* Program.cpp */,
 				7F94F9C720D91C20000BE43F /* output.cpp */,
-				7F94F9C820D91C20000BE43F /* lex.yy.c */,
-				7F94F9C920D91C20000BE43F /* attributes.hpp */,
-				7F94F9CA20D91C20000BE43F /* attributes.cpp */,
-				7F94F9CB20D91C20000BE43F /* TypeId.h */,
 				7F94F9B920D91BEF000BE43F /* main.cpp */,
 				7F94F9D220D92775000BE43F /* Makefile */,
+				7F94F9E720DA73D2000BE43F /* Assembler.cpp */,
+				7F94F9E820DA73D2000BE43F /* Assembler.hpp */,
 			);
 			path = hw5;
 			sourceTree = "<group>";
@@ -158,14 +165,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F94F9CD20D91C20000BE43F /* parser.ypp in Sources */,
-				7F94F9D120D91C20000BE43F /* attributes.cpp in Sources */,
 				7F94F9D620D927B0000BE43F /* bp.cpp in Sources */,
-				7F94F9CE20D91C20000BE43F /* parser.tab.cpp in Sources */,
-				7F94F9D020D91C20000BE43F /* lex.yy.c in Sources */,
+				7F94F9E320DA7388000BE43F /* SymbolTable.cpp in Sources */,
+				7F94F9E620DA7388000BE43F /* Program.cpp in Sources */,
+				7F94F9E920DA73D2000BE43F /* Assembler.cpp in Sources */,
 				7F94F9BA20D91BEF000BE43F /* main.cpp in Sources */,
+				7F94F9E520DA7388000BE43F /* RegistersPool.cpp in Sources */,
 				7F94F9CF20D91C20000BE43F /* output.cpp in Sources */,
+				7F94F9E420DA7388000BE43F /* SemanticActions.cpp in Sources */,
 				7F94F9D320D92775000BE43F /* Makefile in Sources */,
-				7F94F9CC20D91C20000BE43F /* semantic_actions.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +300,7 @@
 				7F94F9BF20D91BEF000BE43F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
