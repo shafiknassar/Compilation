@@ -490,7 +490,7 @@ Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *id)
     return new Expression(type);
 }
 
-Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *binop, Expression *exp2)
+Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2)
 {
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
         output::errorMismatch(yylineno);
@@ -501,8 +501,8 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *binop, Express
         exp_type = M_INT;
     
     Expression* exp = new Expression(exp_type);
+    ass.emitBinOp(binop, exp->place, exp1->place, exp2->place);
     
-    ass.emitBinOp(op, exp->place, exp1->place, exp2->place);
     
     return exp;
 }
