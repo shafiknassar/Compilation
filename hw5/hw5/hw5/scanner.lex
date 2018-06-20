@@ -1,12 +1,5 @@
 %{
-    #include "attributes.hpp"
-    #include "parser.tab.hpp"
-    #include "output.hpp"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-    #define YYSTYPE Node*
+    #include "includes.h"
 %}
 
 %option yylineno

@@ -1,30 +1,13 @@
-//
-//  semantic_actions.cpp
-//  hw3
-//
-//  Created by Bilal Tamish on 27/05/2018.
-//  Copyright © 2018 ShafikNassar. All rights reserved.
-//
 
-#include "semantic_actions.hpp"
-#include <iostream>
-
-using namespace output;
-using std::cout;
-using std::endl;
-
-/* it's ok to use those variables when pushing to a vector
- * since the push_back method copies the arg */
-Table            cloningTable;
+#include "includes.h"
+#include "SemanticActions.hpp"
 
 /*****************************************/
 /* global variables */
 /*****************************************/
 
 vector<Table> tableStack;
-
 vector<int>   offsetStack;
-
 bool isMainDef = false;
 
 /*****************************************/
@@ -40,13 +23,13 @@ void printScope()
         if (entry->type == FUNC) {
             FuncTableEntry *func_entry = (FuncTableEntry*)entry;
             vector<string> *args = func_entry->getArgs();
-            type = makeFunctionType(etos(func_entry->retType->id), *args);
+            type = output::makeFunctionType(etos(func_entry->retType->id), *args);
         } else if (isArrType(entry->type)) {
             ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
             TypeId arr_type = convertFromArrType(arr_entry->type);
-            type = makeArrayType(etos(arr_type), arr_entry->size);
+            type = output::makeArrayType(etos(arr_type), arr_entry->size);
         }
-        printID(entry->name, entry->offset, type);
+        output::printID(entry->name, entry->offset, type);
     }
 }
 
@@ -63,7 +46,7 @@ void openScope()
 
 void closeScope()
 {
-    endScope();
+    output::endScope();
     printScope();
     tableStack.pop_back();
     offsetStack.pop_back();
@@ -110,15 +93,15 @@ void closeWhileScope() { closeScope(); }
 
 void rule_Program__end() {
     if (!isMainDef) {
-        errorMainMissing();
+        output::errorMainMissing();
         exit(0);
     }
-    FuncTableEntry *mainEntry = funcLookup(tableStack, new Id("main"));
+    FuncTableEntry *mainEntry = funcLookup(tableStack, new Variable("main"));
     if (mainEntry->retType->id != M_VOID || mainEntry->paramTypes.size() != 0) {
-        errorMainMissing();
+        output::errorMainMissing();
         exit(0);
     }
-    endScope();
+    output::endScope();
     printScope();
 }
 
@@ -138,18 +121,18 @@ void rule_init()
 
 void rule_Funcs__FuncDecl();
 
-void rule_FuncHeader(Type *retType, Id *id, FormList *args)
+void rule_FuncHeader(Type *retType, Variable *id, FormList *args)
 {
     if (!(retType->id == M_INT || retType->id == M_BYTE
           || retType->id == M_BOOL || retType->id == M_VOID))
     {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     
     if (id->id == "main") {
         if (isMainDef) {
-            errorDef(yylineno, id->id);
+            output::errorDef(yylineno, id->id);
             exit(0);
         } else {
             isMainDef = true;
@@ -157,7 +140,7 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
     }
     
     if (isAlreadyDefined(tableStack, id)) {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     
@@ -180,21 +163,21 @@ void rule_FuncHeader(Type *retType, Id *id, FormList *args)
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
                                             FormDec *fd, FormList *fl)
 {
-    Id *decl_id = fd->id;
+    Variable *decl_id = fd->id;
     if(fl->redefined(decl_id)) {
-        errorDef(yylineno, decl_id->id);
+        output::errorDef(yylineno, decl_id->id);
         exit(0);
     }
     fl->add(fd);
     return fl;
 }
 
-FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
+FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *id)
 {
     id->type = type->id;
     id->size = typeSize(id->type);
     if (isAlreadyDefined(tableStack, id)) {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     //tableStack.back().insert(id, offsetStack.back());
@@ -202,11 +185,11 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Id *id)
     return new FormDec(id, type);
 }
 
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *num)
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Variable *id, NumVal *num)
 {
     int arr_size = num->val;
     if (arr_size <= 0 || arr_size >= 256) {
-        errorInvalidArraySize(yylineno, id->id);
+        output::errorInvalidArraySize(yylineno, id->id);
         exit(0);
     }
     id->type = convertToArrType(type->id);
@@ -217,11 +200,11 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
     
     
     if (id->type == ERROR) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     if (isAlreadyDefined(tableStack, id)) {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     //tableStack.back().insertArr(id, offsetStack.back(), arr_size);
@@ -232,69 +215,69 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Id *id, NumVal *
 }
 
 
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(Type *type, Id *id, NumVal *num)
+FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(Type *type, Variable *id, NumVal *num)
 {
     int arr_size = num->val;
     if (arr_size > 255) {
-        errorByteTooLarge(yylineno, num->sVal);
+        output::errorByteTooLarge(yylineno, num->sVal);
         exit(0);
     }
     return rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(type, id, num);
 }
 
-void rule_Statement__Type_ID_SC(Type* type, Id* id)
+void rule_Statement__Type_ID_SC(Type* type, Variable* id)
 {
     if (isAlreadyDefined(tableStack, id)) {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     tableStack.back().insert(id, type->id, offsetStack.back());
     offsetStack.back() += type->size;
 }
-void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Id* id, NumVal* num)
+void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type* type, Variable* id, NumVal* num)
 {
     int arr_size = num->val;
     if (arr_size <= 0 || arr_size >= 256) {
-        errorInvalidArraySize(yylineno, id->id);
+        output::errorInvalidArraySize(yylineno, id->id);
         exit(0);
     }
     id->type = convertToArrType(type->id);
     id->size = arr_size;
     if (id->type == ERROR) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     
     if (isAlreadyDefined(tableStack, id)) {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     tableStack.back().insertArr(id, offsetStack.back(), arr_size);
     type->size = arr_size;
     offsetStack.back() += type->size;
 }
-void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Id* id, NumVal* num)
+void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type* type, Variable* id, NumVal* num)
 {
     int arr_size = num->val;
     if (arr_size > 255) {
-        errorByteTooLarge(yylineno, num->sVal);
+        output::errorByteTooLarge(yylineno, num->sVal);
         exit(0);
     }
     rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(type, id, num);
 }
 
-void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
+void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *id, Expression *exp)
 {
     id->type = type->id;
     id->size = exp->size;
     if (!TYPES_MATCH(id, exp) &&
         !(id->type == M_INT && exp->type == M_BYTE)) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     if (isAlreadyDefined(tableStack, id))
     {
-        errorDef(yylineno, id->id);
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
     tableStack.back().insert(id, type->id, offsetStack.back());
@@ -302,26 +285,26 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Id *id, Expr *exp)
     /* if needed, value of id can be assigned here */
 }
 
-Expr* rule_Exp__ID(Id *id)
+Expression* rule_Exp__ID(Variable *id)
 {
     TableEntry *entry = idLookup(tableStack, id);
     int size = 1;
     if (NULL == entry) {
-        errorUndef(yylineno, id->id);
+        output::errorUndef(yylineno, id->id);
         exit(0);
     }
     if (isArrType(entry->type))
     {
         size = ((ArrTableEntry*)entry)->size;
     }
-    return new Expr(entry->type, size);
+    return new Expression(entry->type, size);
 }
 
-void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
+void rule_Statement__ID_ASSIGN_Exp_SC(Variable *id, Expression *exp)
 {
     TableEntry *entry = idLookup(tableStack, id);
     if (NULL ==  entry || entry->type == FUNC) {
-        errorUndef(yylineno, id->id);
+        output::errorUndef(yylineno, id->id);
         exit(0);
     }
     id->type = entry->type;
@@ -332,31 +315,31 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Id *id, Expr *exp)
 
     if (!TYPES_MATCH(id, (exp)) &&
         !BYTE_TO_INT_MATCH(exp, id)) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     
     if(isArrType(id->type) && id->size != exp->size) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     if (!isAlreadyDefined(tableStack, id)) {
-        errorUndef(yylineno, id->id);
+        output::errorUndef(yylineno, id->id);
         exit(0);
     }
     /* if needed, value of id can be assigned here */
 }
 
-void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Id *arr, Expr *exp, Expr *rval)
+void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
 {
     TableEntry *entry = idLookup(tableStack, arr);
     if (NULL == entry) {
-        errorUndef(yylineno, arr->id);
+        output::errorUndef(yylineno, arr->id);
         exit(0);
     }
     if ((exp->type != M_INT && exp->type != M_BYTE)
         || !ARR_TYPE_MATCH(entry, rval)){
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     /* if needed, value of id can be assigned here */
@@ -366,12 +349,12 @@ void rule_Statement__RETURN_SC()
 {
     if (tableStack.back().retType->id != M_VOID)
     {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
 }
 
-void rule_Statement__RETURN_Exp_SC(Expr *exp)
+void rule_Statement__RETURN_Exp_SC(Expression *exp)
 {
     if (tableStack.back().retType->id == M_INT && exp->type == M_BYTE)
         return;
@@ -379,26 +362,26 @@ void rule_Statement__RETURN_Exp_SC(Expr *exp)
     if (tableStack.back().retType->id != exp->type &&
             tableStack.back().retType->size != exp->size)
     {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
 }
 
-void rule_IF_header(Expr *exp) {
+void rule_IF_header(Expression *exp) {
     if (exp->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
 }
 
-void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expr *exp) {
+void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expression *exp) {
     if (exp->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
 }
 /*
-void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expr *exp)
+void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expression *exp)
 {
     if (exp->type != BOOL) {
         errorMismatch(yylineno);
@@ -406,17 +389,17 @@ void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expr 
     }
 }
  */
-void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement(Expr *exp)
+void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement(Expression *exp)
 {
     if(exp->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
 }
 void rule_Statement__BREAK_SC()
 {
     if (!tableStack.back().isWhile) {
-        errorUnexpectedBreak(yylineno);
+        output::errorUnexpectedBreak(yylineno);
         exit(0);
     }
 }
@@ -426,7 +409,7 @@ void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Stateme
 
 bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
     vector<Type*> &expected = funcData->paramTypes;
-    vector<Expr*> &actual   = expList->v;
+    vector<Expression*> &actual   = expList->v;
     if (actual.size() != expected.size()) {
         return false;
     }
@@ -451,107 +434,102 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
         string name = etos(paramTypes[i]->id);
         if (isArrType(paramTypes[i]->id)) {
             TypeId t = convertFromArrType(paramTypes[i]->id);
-            name = makeArrayType(etos(t), paramTypes[i]->size);
+            name = output::makeArrayType(etos(t), paramTypes[i]->size);
         }
         res->push_back(name);
     }
     return res;
 }
 
-Expr* rule_Call__ID_LPAREN_ExpList_RPAREN(Id *id, ExprList *expList)
+Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *id, ExprList *expList)
 {
     FuncTableEntry *funcData = funcLookup(tableStack, id);
     if (NULL == funcData) {
-        errorUndefFunc(yylineno, id->id);
+        output::errorUndefFunc(yylineno, id->id);
         exit(0);
     }
     if (!paramMatchExpected(funcData, expList)) {
         vector<string> *strs = typeListToStringVector(funcData->paramTypes);
-        errorPrototypeMismatch(yylineno, id->id, *strs);
+        output::errorPrototypeMismatch(yylineno, id->id, *strs);
         exit(0);
     }
-    return new Expr(*(funcData->retType));
+    return new Expression(*(funcData->retType));
 }
-Expr* rule_Call__ID_LPAREN_RPAREN(Id *id) {
+Expression* rule_Call__ID_LPAREN_RPAREN(Variable *id) {
     FuncTableEntry *funcData = funcLookup(tableStack, id);
     if (NULL == funcData) {
-        errorUndefFunc(yylineno, id->id);
+        output::errorUndefFunc(yylineno, id->id);
         exit(0);
     }
     if (funcData->paramTypes.size() != 0)
     {
-        errorPrototypeMismatch(yylineno, id->id, *typeListToStringVector(funcData->paramTypes));
+        output::errorPrototypeMismatch(yylineno, id->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
-    return new Expr(*(funcData->retType));
+    return new Expression(*(funcData->retType));
 }
 
-Expr* rule_Exp__ID_LBRACK_Exp_RBRACK(Id *id)
+Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *id)
 {
     TableEntry *entry = idLookup(tableStack, id);
     if (NULL == entry) {
-        errorUndef(yylineno, id->id);
+        output::errorUndef(yylineno, id->id);
         exit(0);
     }
     TypeId type = convertFromArrType(entry->type);
     if (type == ERROR)
     {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(type);
+    return new Expression(type);
 }
-Expr* rule_Exp__Exp_BINOP_Exp(Expr *exp1, Expr *exp2)
+Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *exp2)
 {
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     if (exp2->type == M_INT || exp1->type == M_INT) {
-        return new Expr(M_INT);
+        return new Expression(M_INT);
     }
-    return new Expr(M_BYTE);
-}
-Expr* rule_Exp__NUMB(NumVal *num)
-{
-    if (num->val > 255) {
-        errorByteTooLarge(yylineno, num->sVal);
-        exit(0);
-    }
-    return new ByteVal(num->val);
+    return new Expression(M_BYTE);
 }
 
-Expr* rule_Exp__NOT_Exp(Expr *exp)
+Expression* rule_Exp__NOT_Exp(Expression *exp)
 {
     if (exp->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
     return exp;
 }
-Expr* rule_Exp__Exp_AND_Exp(Expr *exp1, Expr *exp2)
+Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(M_BOOL);
+    return new Expression(M_BOOL);
 }
-Expr* rule_Exp__Exp_OR_Exp(Expr *exp1, Expr *exp2)
+Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(M_BOOL);
+    return new Expression(M_BOOL);
 }
-Expr* rule_Exp__Exp_RELOP_Exp(Expr *exp1, Expr *exp2)
+
+Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, Expression *exp2)
 {
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
-        errorMismatch(yylineno);
+        output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expr(M_BOOL);
+    
+    
+    return new Expression(M_BOOL);
 }

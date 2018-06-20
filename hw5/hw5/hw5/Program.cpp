@@ -1,12 +1,23 @@
-//
-//  attributes.cpp
-//  hw3
-//
-//  Created by Shafik Nassar on 23/05/2018.
-//  Copyright © 2018 ShafikNassar. All rights reserved.
-//
+#include "includes.h"
 
-#include "attributes.hpp"
+void FormList::add(Variable *id, Type *t) {
+    idList.push_back(id); typeList.push_back(t);
+}
+
+void FormList::add(FormDec *fd) {
+    idList.push_back(fd->id); typeList.push_back(fd->type);
+}
+
+bool FormList::redefined(Variable* id) {
+    for (int i = 0; i < idList.size(); ++i) {
+        if (id->id == idList[i]->id) return true;
+    }
+    return false;
+}
+
+int FormList::size() {
+    return (int)idList.size();
+}
 
 TypeId convertFromArrType(TypeId arr_t) {
     switch (arr_t) {
@@ -36,32 +47,6 @@ TypeId convertToArrType(TypeId arr_t) {
     return ERROR;
 }
 
-bool isAlreadyDefined(vector<Table> scopes, Id *id) {
-    for (int i = (int)scopes.size()-1; i >= 0; --i) {
-        if (scopes[i].isDefinedInScope(id)) return true;
-    }
-    return false;
-}
-
-FuncTableEntry* funcLookup(vector<Table> scopes, Id *id)
-{
-    FuncTableEntry *res = NULL;
-    for (int i = (int)scopes.size()-1; i >= 0; --i) {
-        res = scopes[i].getFuncEntry(id->id);
-        if (NULL != res) return res;
-    }
-    return NULL;
-}
-
-TableEntry *idLookup(vector<Table> scopes, Id *id) {
-    TableEntry *res = NULL;
-    for (int i = (int)scopes.size()-1; i >= 0; --i) {
-        res = scopes[i].getEntry(id->id);
-        if (NULL != res) return res;
-    }
-    return NULL;
-}
-
 int typeSize(TypeId id)
 {
     switch (id) {
@@ -88,9 +73,7 @@ string etos(TypeId type)
         case BOOL_ARR: return string("BARR");
         case FUNC: return string("FUNC");
         case ERROR: return string("error");
-            
-            
-            
+    
         default: return string("ERROR");
     }
 }
