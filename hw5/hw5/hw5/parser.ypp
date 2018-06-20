@@ -161,19 +161,21 @@ Exp          : LPAREN Exp RPAREN
              | STRING
                 { $$= new Expression(M_STRING); }
              | TRUE
-                { $$ = new Expression(M_BOOL); }
+                { $$ = rule_Exp__TRUE(); }
              | FALSE
-                { $$ = new Expression(M_BOOL); }
+                { $$ = rule_Exp__FALSE(); }
              | NOT Exp
                 { $$ = rule_Exp__NOT_Exp((Expression*)$2); }
-             | Exp AND Exp
-                { $$ = rule_Exp__Exp_AND_Exp((Expression*)$1, (Expression*)$3); }
-             | Exp OR Exp
-                { $$ = rule_Exp__Exp_OR_Exp((Expression*)$1, (Expression*)$3); }
+             | Exp AND M Exp
+                { $$ = rule_Exp__Exp_AND_Exp((Expression*)$1, (Expression*)$3, (Expression*)$4); }
+             | Exp OR M Exp
+                { $$ = rule_Exp__Exp_OR_Exp((Expression*)$1, (Expression*)$3, , (Expression*)$4); }
              | Exp RELOP Exp
                 { $$ = rule_Exp__Exp_RELOP_Exp((Expression*)$1, (Expression*)$3); }
 ;
 
+M           : { $$ = marker__M(); }
+N           : { $$ = marker__N(); }
 
 %%
 

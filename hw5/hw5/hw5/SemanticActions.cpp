@@ -489,16 +489,36 @@ Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *id)
     }
     return new Expression(type);
 }
-Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *exp2)
+
+Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *binop, Expression *exp2)
 {
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    if (exp2->type == M_INT || exp1->type == M_INT) {
-        return new Expression(M_INT);
-    }
-    return new Expression(M_BYTE);
+    TypeId exp_type = M_BYTE;
+    if (exp2->type == M_INT || exp1->type == M_INT)
+        exp_type = M_INT;
+    
+    Expression* exp = new Expression(exp_type);
+    
+    ass.emitBinOp(op, exp->place, exp1->place, exp2->place);
+    
+    return exp;
+}
+
+Expression* rule_Exp__TRUE() {
+    Expression* exp = new Expression(M_BOOL);
+    exp->trueList = ass.makelist(ass.getNextInst());
+    ass.emitCode(JUMP);
+    return exp;
+}
+
+Expression* rule_Exp__FALSE() {
+    Expression* exp = new Expression(M_BOOL);
+    exp->falseList = ass.makelist(ass.getNextInst());
+    ass.emitCode(JUMP);
+    return exp;
 }
 
 Expression* rule_Exp__NOT_Exp(Expression *exp)
@@ -507,25 +527,40 @@ Expression* rule_Exp__NOT_Exp(Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
+    vector<int>* tmplist = &exp->trueList;
+    exp->trueList = exp->falseList;
+    exp->falseList = *tmplist;
+    
     return exp;
 }
-Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression *exp2)
+
+Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expression(M_BOOL);
+    Expression* exp = new Expression(M_BOOL);
+    ass.bpatch(exp1->trueList, marker->quad);
+    exp->trueList = exp2->trueList;
+    exp->falseList = ass.merge(exp1->falseList, exp2->falseList);
+    
+    return exp;
 }
-Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression *exp2)
+Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker,Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    return new Expression(M_BOOL);
+    Expression* exp = new Expression(M_BOOL);
+    ass.bpatch(exp1->falseList, marker->quad);
+    exp->trueList = ass.merge(exp1->trueList, exp2->trueList);
+    exp->falseList = exp2->falseList;
+    
+    return exp;
 }
 
 Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2)
@@ -542,9 +577,14 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
     string to_emit = trans[relop];
     Expression* exp = new Expression(M_BOOL);
     nextinst = ass.emitCode(to_emit + exp1->place + ", " + exp2->place + ", ");
-    exp->trueList = makelist(nextinst);
+    exp->trueList = ass.makelist(nextinst);
     nextinst = ass.emitCode(JUMP);
-    exp->falseList = makelist(nextinst);
+    exp->falseList = ass.makelist(nextinst);
     exp->place = exp1->place;
     return exp;
+}
+
+Expression* marker__M() {
+    Expression* exp = new Expression(MARKER);
+    exp->quad = ass.getNextInst();
 }

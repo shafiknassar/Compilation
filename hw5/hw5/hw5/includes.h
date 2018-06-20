@@ -23,5 +23,6 @@
 #include "RegistersPool.hpp"
 #include "output.hpp"
 #include "bp.hpp"
+#include "Assembler.hpp"
 
 #endif /* includes_h */

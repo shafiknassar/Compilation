@@ -44,6 +44,7 @@ enum TypeId {
     BYTE_ARR,
     BOOL_ARR,
     FUNC,
+    MARKER,
     NONE
 };
 

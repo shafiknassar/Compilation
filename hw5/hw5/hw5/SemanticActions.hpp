@@ -81,10 +81,12 @@ Expression* rule_Call__ID_LPAREN_RPAREN(Variable *id);
 Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *id);
 Expression* rule_Exp__ID(Variable *id);
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *exp2);
-Expression* rule_Exp__NUMB(NumVal *num);
+Expression* rule_Exp__TRUE();
+Expression* rule_Exp__FALSE();
 Expression* rule_Exp__NOT_Exp(Expression *exp);
-Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression *exp2);
-Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression *exp2);
+Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expression *exp2);
+Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker, Expression *exp2);
 Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, Expression *exp2);
+Expression* marker__M();
 
 #endif /* SemanticActions_hpp */
