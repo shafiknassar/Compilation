@@ -149,17 +149,17 @@ Exp          : LPAREN Exp RPAREN
                 /* store result (if numerical) in register */
                 { $$ = $1; }
              | NUM
-                { $$ = $1; }
+                { $$ = rule_Exp__NUM((Expression*)$1); }
              | NUM B
                 {
-                    if ($1->val > 255) {
-                        output::errorByteTooLarge(yylineno, $1->sVal);
+                    if (atoi($1->value.c_str()) > 255) {
+                        output::errorByteTooLarge(yylineno, $1->value);
                         exit(0);
                     }
-                    $$ = $1;
+                    $$ = rule_Exp__NUM((Expression*)$1);
                 }
              | STRING
-                { $$= new Expression(M_STRING); }
+                { $$ = rule_Exp__STRING((Expression*)$1); }
              | TRUE
                 { $$ = rule_Exp__TRUE(); }
              | FALSE
