@@ -509,15 +509,13 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *
 
 Expression* rule_Exp__TRUE() {
     Expression* exp = new Expression(M_BOOL);
-    exp->trueList = ass.makelist(ass.getNextInst());
-    ass.emitCode(JUMP);
+    exp->trueList = ass.makelist(ass.emitCode(JUMP));
     return exp;
 }
 
 Expression* rule_Exp__FALSE() {
     Expression* exp = new Expression(M_BOOL);
-    exp->falseList = ass.makelist(ass.getNextInst());
-    ass.emitCode(JUMP);
+    exp->falseList = ass.makelist(ass.emitCode(JUMP));
     return exp;
 }
 
