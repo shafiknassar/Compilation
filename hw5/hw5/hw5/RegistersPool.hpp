@@ -17,7 +17,7 @@
 
 #define not_found  "not found"
 #define expression "expression"
-#define REGISTERS_NUM 32
+#define AVLABLE_REGISTERS_NUM 18
 #define WORD_SIZE 4
 
 using std::string;
@@ -39,7 +39,6 @@ struct MipsRegisters {
     // 16-23=>$s0-$s7; 24,25=>$t8,$t9; 26,27=>$k0,$k1;
     // 28=>$gp; 29=>$sp; 30=>$fp; 31=>$ra;
     map<string, Register> registers; //available registers
-    int pc; //program counter
     
     MipsRegisters();
     void bind(string registerName, string var);
