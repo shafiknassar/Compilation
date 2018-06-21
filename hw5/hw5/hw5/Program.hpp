@@ -63,9 +63,11 @@ TypeId convertToArrType(TypeId arr_t);
 /***************************************/
 struct Node {
     string token;
+    string quad;
+    vector<int> nextList;
     virtual ~Node() {};
     
-    Node() : token("") {};
+    Node() : token(""), quad(""), nextList() {};
     Node(string s) : token(s) {}
 };
 
@@ -97,7 +99,6 @@ struct Expression : public Node {
     TypeId type;
     string value;
     string place;
-    string quad;
     vector<int> trueList;
     vector<int> falseList;
     

@@ -68,13 +68,14 @@ void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *var, Expressio
 void rule_Statement__Call_SC();
 void rule_Statement__RETURN_SC();
 void rule_Statement__RETURN_Exp_SC(Expression *exp);
-void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expression *exp);
-void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expression *exp);
-void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement(Expression *exp);
+Node* rule_Statement__IF_Statement(Expression *exp, Node* marker, Node* stat);
+Node* rule_Statement__IF_ELSE_Statement(Expression *exp, Node* marker_m1,
+                                       Node* stat1, Node* marker_n,
+                                       Node* marker_m2, Node* stat2);
+Node* rule_Statement__WHILE_Statement(Expression *exp, Node* marker1,
+                                     Node* marker2, Node* stat);
 void rule_Statement__BREAK_SC();
 
-void rule_StatementWithElse__epsilon();
-void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_StatementWithElse(Expression *exp);
 Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList);
 Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var);
 
@@ -86,9 +87,10 @@ Expression* rule_Exp__FALSE();
 Expression* rule_Exp__NOT_Exp(Expression *exp);
 Expression* rule_Exp__NUM(Expression *num);
 Expression* rule_Exp__STRING(Expression *str);
-Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expression *exp2);
-Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker, Expression *exp2);
+Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *exp2);
+Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker, Expression *exp2);
 Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2);
-Expression* marker__M();
+Node* marker__M();
+Node* marker__N();
 
 #endif /* SemanticActions_hpp */

@@ -375,35 +375,52 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
     }
 }
 
-void rule_IF_header(Expression *exp) {
-    if (exp->type != M_BOOL) {
+Node* rule_Statement__IF_Statement(Expression *cond, Node* marker, Node* stat1) {
+    if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
+    Node* stat = new Node();
+    ass.bpatch(cond->trueList, marker->quad);
+    stat->nextList = ass.merge(cond->falseList, stat1->nextList);
+    regsPool.unbind(cond->place);
+    delete cond;
+    return stat;
 }
 
-void rule_Statement__IF_LPAREN_Exp_RPAREN_Statement(Expression *exp) {
-    if (exp->type != M_BOOL) {
+Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
+                                        Node* stat1, Node* marker_n,
+                                        Node* marker_m2, Node* stat2) {
+    if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
+    Node* stat = new Node();
+    ass.bpatch(cond->trueList, marker_m1->quad);
+    ass.bpatch(cond->falseList, marker_m2->quad);
+    vector<int> tmp = ass.merge(stat1->nextList, marker_n->nextList);
+    stat->nextList = ass.merge(tmp, stat2->nextList);
+    regsPool.unbind(cond->place);
+    delete cond;
+    return stat;
 }
-/*
-void rule_Statement__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Statement(Expression *exp)
-{
-    if (exp->type != BOOL) {
-        errorMismatch(yylineno);
-        exit(0);
-    }
-}
- */
-void rule_Statement__WHILE_LPAREN_Exp_RPAREN_Statement(Expression *exp)
-{
-    if(exp->type != M_BOOL) {
+
+Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
+                                      Node* marker_m2, Node* stat1) {
+    if(cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
+    Node* stat = new Node();
+    ass.bpatch(stat1->nextList, marker_m1->quad);
+    ass.bpatch(cond->trueList, marker_m2->quad);
+    stat->nextList = cond->falseList;
+    ass.emitCode(JUMP + marker_m1->quad);
+    regsPool.unbind(cond->place);
+    delete cond;
+    return stat;
 }
+
 void rule_Statement__BREAK_SC()
 {
     if (!tableStack.back().isWhile) {
@@ -411,9 +428,6 @@ void rule_Statement__BREAK_SC()
         exit(0);
     }
 }
-
-void rule_StatementWithElse__epsilon();
-void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_StatementWithElse();
 
 bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
     vector<Type*> &expected = funcData->paramTypes;
@@ -586,7 +600,7 @@ Expression* rule_Exp__NOT_Exp(Expression *exp)
     return exp;
 }
 
-Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expression *exp2)
+Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
@@ -603,7 +617,7 @@ Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expressi
     
     return exp;
 }
-Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker,Expression *exp2)
+Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker,Expression *exp2)
 {
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
@@ -641,8 +655,20 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
     return exp;
 }
 
-Expression* marker__M() {
-    Expression* exp = new Expression(MARKER);
-    exp->quad = ass.getNextInst();
-    return exp;
+Node* marker__M() {
+    Node* marker = new Node();
+    marker->quad = ass.getNextInst();
+    return marker;
 }
+
+Node* marker__N() {
+    Node* marker = new Node();
+    int next_inst = ass.emitCode(JUMP);
+    marker->nextList = ass.makelist(next_inst);
+    return marker;
+}
+
+
+
+
+
