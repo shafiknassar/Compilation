@@ -193,7 +193,7 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
     return new FormDec(var, type);
 }
 
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Variable *var, Expression *num)
+FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num)
 {
     int arr_size = atoi(num->value.c_str());
     if (arr_size <= 0 || arr_size >= 256) {
@@ -223,14 +223,22 @@ FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(Type *type, Variable *var, E
 }
 
 
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(Type *type, Variable *var, Expression *num)
+FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num)
 {
     int arr_size = atoi(num->value.c_str());
     if (arr_size > 255) {
         output::errorByteTooLarge(yylineno, num->value);
         exit(0);
     }
-    return rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(type, var, num);
+    return rule_FormalDecl__Type_ID_NUM(type, var, num);
+}
+
+/*****************************************/
+/* Statement Rules */
+/*****************************************/
+
+void rule_Statements(Node* stat, Node* marker) {
+    ass.bpatch(stat->nextList, marker->quad);
 }
 
 void rule_Statement__Type_ID_SC(Type *type, Variable *var)
@@ -243,7 +251,7 @@ void rule_Statement__Type_ID_SC(Type *type, Variable *var)
     offsetStack.back() += type->size;
     ass.allocateLocalVar(WORD_SIZE);
 }
-void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type *type, Variable *var, Expression *num)
+void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
 {
     int arr_size = atoi(num->value.c_str());
     if (arr_size <= 0 || arr_size >= 256) {
@@ -267,14 +275,14 @@ void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type *type, Variable *var, Exp
     
     ass.allocateLocalArr(type->size, WORD_SIZE);
 }
-void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type *type, Variable *var, Expression *num)
+void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num)
 {
     int arr_size = atoi(num->value.c_str());
     if (arr_size > 255) {
         output::errorByteTooLarge(yylineno, num->value);
         exit(0);
     }
-    rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(type, var, num);
+    rule_Statement__Type_ID_NUM_SC(type, var, num);
 }
 
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression *exp)
@@ -337,7 +345,7 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
     }
 }
 
-void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
+void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
 {
     TableEntry *entry = idLookup(tableStack, arr);
     if (NULL == entry) {
@@ -375,14 +383,15 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
     }
 }
 
-Node* rule_Statement__IF_Statement(Expression *cond, Node* marker, Node* stat1) {
+Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1, Node* marker_n) {
     if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
     Node* stat = new Node();
-    ass.bpatch(cond->trueList, marker->quad);
-    stat->nextList = ass.merge(cond->falseList, stat1->nextList);
+    ass.bpatch(cond->trueList, marker_m->quad);
+    vector<int> tmp = ass.merge(cond->falseList, stat1->nextList);
+    stat->nextList = ass.merge(tmp, marker_n->nextList);
     regsPool.unbind(cond->place);
     delete cond;
     return stat;
@@ -429,6 +438,10 @@ void rule_Statement__BREAK_SC()
     }
 }
 
+/*****************************************/
+/* Helper Functions */
+/*****************************************/
+
 bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
     vector<Type*> &expected = funcData->paramTypes;
     vector<Expression*> &actual   = expList->v;
@@ -463,7 +476,10 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
     return res;
 }
 
-Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList)
+/*****************************************/
+/* Call Rules */
+/*****************************************/
+Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 {
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
@@ -477,7 +493,8 @@ Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList
     }
     return new Expression(funcData->retType->id, funcData->retType->size);
 }
-Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var) {
+
+Expression* rule_Call__ID(Variable *var) {
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -490,6 +507,10 @@ Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var) {
     }
     return new Expression(funcData->retType->id, funcData->retType->size);
 }
+
+/*****************************************/
+/* Expression Rules */
+/*****************************************/
 
 Expression* rule_Exp__ID(Variable *var)
 {
@@ -514,7 +535,7 @@ Expression* rule_Exp__ID(Variable *var)
     return res;
 }
 
-Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var, Expression *exp)
+Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
 {
     TableEntry *entry = idLookup(tableStack, var);
     if (NULL == entry) {

@@ -76,40 +76,47 @@ FormalDecl   : Type ID
                 /* assign variable to register */
              | Type ID LBRACK NUM RBRACK
                 /* assign array address to register */
-                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Variable*)$2, (Expression*)$4); }
+                { $$ = rule_FormalDecl__Type_ID_NUM((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | Type ID LBRACK NUM B RBRACK
                 /* assign array address to register */
-                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Variable*)$2, (Expression*)$4); }
+                { $$ = rule_FormalDecl__Type_ID_NUMB((Type*)$1, (Variable*)$2, (Expression*)$4); }
 ;
 
 Statements   : Statement
-             | Statements Statement  
+                {$$ = $1;}
+             | Statements M Statement
+                { rule_Statements($1, $2); $$ = $3; }
 ;
 
 
-Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE  
-             | Type ID SC { rule_Statement__Type_ID_SC((Type*)$1, (Variable*)$2); }
-             | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
-             | Type ID LBRACK NUM B RBRACK SC { rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
+Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
+                { rule_Statements($3, $4); $$ = $3;}
+             | Type ID SC
+                { rule_Statement__Type_ID_SC((Type*)$1, (Variable*)$2); }
+             | Type ID LBRACK NUM RBRACK SC
+                { rule_Statement__Type_ID_NUM_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
+             | Type ID LBRACK NUM B RBRACK SC
+                { rule_Statement__Type_ID_NUMB_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | Type ID ASSIGN Exp SC
                 { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | ID ASSIGN Exp SC
                 { rule_Statement__ID_ASSIGN_Exp_SC((Variable*)$1, (Expression*)$3); }
              | ID LBRACK Exp RBRACK ASSIGN Exp SC
-                { rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC((Variable*)$1, (Expression*)$3, (Expression*)$6); }
+                { rule_Statement__ID_Exp_ASSIGN_Exp_SC((Variable*)$1, (Expression*)$3, (Expression*)$6); }
              | Call SC
              | RETURN SC
                 { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC
                 { rule_Statement__RETURN_Exp_SC((Expression*)$2); }
-                /* S->if(B) { S1 }*/
+
              | IF LPAREN Exp RPAREN mOpenScope M Statement mCloseScope N
-                { $$ = rule_Statement__IF_Statement((Expression*)$3, $6, $7); }
-                /* S->if(B) { S1 } else { S2 }*/
+                /* S->if(B) { S1 }*/
+                { $$ = rule_Statement__IF_Statement((Expression*)$3, $6, $7, $9); }
              | IF LPAREN Exp RPAREN mOpenScope M Statement mCloseScope N ELSE mOpenScope M Statement mCloseScope
+                /* S->if(B) { S1 } else { S2 }*/
                 { $$ = rule_Statement__IF_ELSE_Statement((Expression*)$3, $6, $7, $9, $12, $13); }
-                /* S->while(B) { S1 }*/
              | WHILE M LPAREN Exp RPAREN mOWhileScope M Statement mCWhileScope
+                /* S->while(B) { S1 }*/
                 { $$ = rule_Statement__WHILE_Statement((Expression*)$2, $4, $7, $8); }
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
@@ -122,12 +129,15 @@ mCWhileScope: { closeWhileScope(); }
 
 Call         : ID LPAREN ExpList RPAREN
                 /* copy registers of expList to the argument registers (or memory if needed) */
-                { $$ = rule_Call__ID_LPAREN_ExpList_RPAREN((Variable*)$1, (ExprList*)$3); }
-            | ID LPAREN RPAREN { $$ = rule_Call__ID_LPAREN_RPAREN((Variable*)$1); }  
+                { $$ = rule_Call__ID_ExpList((Variable*)$1, (ExprList*)$3); }
+             | ID LPAREN RPAREN
+                { $$ = rule_Call__ID((Variable*)$1); }
 ;
 
-ExpList      : Exp { $$ = new ExprList(); ((ExprList*)$$)->v.push_back((Expression*)$1); }
-             | Exp COMMA ExpList { $$ = $3; ((ExprList*)$$)->v.push_back((Expression*)$1); }
+ExpList      : Exp
+                { $$ = new ExprList(); ((ExprList*)$$)->v.push_back((Expression*)$1); }
+             | Exp COMMA ExpList
+                { $$ = $3; ((ExprList*)$$)->v.push_back((Expression*)$1); }
 ;
 Type         : INT  { $$=$1; }  
              | BYTE { $$=$1; }  
@@ -136,9 +146,8 @@ Type         : INT  { $$=$1; }
 Exp          : LPAREN Exp RPAREN
                 { $$=$2; }
              | ID LBRACK Exp RBRACK
-                { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Variable*)$1, (Expression*)$3); }
+                { $$ = rule_Exp__ID_Exp((Variable*)$1, (Expression*)$3); }
              | Exp BINOP Exp
-                /* assign result to register */
                 { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, $2->token, (Expression*)$3); }
              | ID
                 { $$ = rule_Exp__ID((Variable*)$1); }
@@ -183,3 +192,4 @@ int main() {
     //yydebug = 1;
     return yyparse();
 }
+

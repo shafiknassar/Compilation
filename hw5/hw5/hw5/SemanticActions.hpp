@@ -36,7 +36,7 @@ void openWhileScope();
 void closeWhileScope();
 
 /*****************************************/
-/* Rule Functions */
+/* Functions Rules */
 /*****************************************/
 
 void rule_Program__end();
@@ -45,30 +45,28 @@ void rule_init();
 
 void rule_Funcs__FuncDecl();
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args);
-void rule_FuncDecl__RetType_ID_LPAREN_Formals_RPAREN_LBRACE_Statements_RBRACE();
+void rule_FuncDecl__RetType_ID_Formals_Statements();
 
-FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
-                                                FormDec *fd, FormList *fl);
+FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(FormDec *fd, FormList *fl);
 FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var);
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK(
-                                                Type *type, Variable *var, Expression *num);
-FormDec* rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK(
-                                                    Type *type, Variable *var, Expression *num);
+FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num);
+FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num);
 
-void rule_Statements__Statement();
-void rule_Statements__Statements_Statement();
+/*****************************************/
+/* Statement Rules */
+/*****************************************/
 
-void rule_Statement__LBRACE_Statements_RBRACE();
+void rule_Statements(Node* stat, Node* marker);
 void rule_Statement__Type_ID_SC(Type *type, Variable *var);
-void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type *type, Variable *var, Expression *num);
-void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type *type, Variable *var, Expression *num);
+void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num);
+void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num);
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type *type, Variable *var, Expression *exp);
 void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp);
-void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *var, Expression *exp1, Expression *exp2);
+void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *var, Expression *exp1, Expression *exp2);
 void rule_Statement__Call_SC();
 void rule_Statement__RETURN_SC();
 void rule_Statement__RETURN_Exp_SC(Expression *exp);
-Node* rule_Statement__IF_Statement(Expression *exp, Node* marker, Node* stat);
+Node* rule_Statement__IF_Statement(Expression *exp, Node* marker_m, Node* stat, Node* marker_n);
 Node* rule_Statement__IF_ELSE_Statement(Expression *exp, Node* marker_m1,
                                        Node* stat1, Node* marker_n,
                                        Node* marker_m2, Node* stat2);
@@ -76,10 +74,17 @@ Node* rule_Statement__WHILE_Statement(Expression *exp, Node* marker1,
                                      Node* marker2, Node* stat);
 void rule_Statement__BREAK_SC();
 
-Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList);
-Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var);
+/*****************************************/
+/* Call Rules */
+/*****************************************/
 
-Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var, Expression *exp);
+Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList);
+Expression* rule_Call__ID(Variable *var);
+
+/*****************************************/
+/* Expression Rules */
+/*****************************************/
+Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp);
 Expression* rule_Exp__ID(Variable *var);
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2);
 Expression* rule_Exp__TRUE();
