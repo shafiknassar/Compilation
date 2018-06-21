@@ -139,7 +139,7 @@ Type         : INT  { $$=$1; }
 Exp          : LPAREN Exp RPAREN
                 { $$=$2; }
              | ID LBRACK Exp RBRACK
-                { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Variable*)$1); }
+                { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Variable*)$1, (Expression*)$3); }
              | Exp BINOP Exp
                 /* assign result to register */
                 { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, (Expression*)$3); }

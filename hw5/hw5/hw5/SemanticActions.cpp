@@ -291,26 +291,6 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
     /* if needed, value of id can be assigned here */
 }
 
-Expression* rule_Exp__ID(Variable *var)
-{
-    TableEntry *entry = idLookup(tableStack, var);
-
-    int size = 1;
-    if (NULL == entry) {
-        output::errorUndef(yylineno, var->id);
-        exit(0);
-    }
-    if (isArrType(entry->type))
-    {
-        size = ((ArrTableEntry*)entry)->size;
-    }
-    string regName = regsPool.getEmptyRegister();
-    if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
-    regsPool.bind(regName, var->id);
-    ass.emitLoadVar(entry->offset*WORD_SIZE, regName);
-    return new Expression(entry->type, size);
-}
-
 void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
 {
     TableEntry *entry = idLookup(tableStack, var);
@@ -480,7 +460,31 @@ Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var) {
     return new Expression(*(funcData->retType));
 }
 
-Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var)
+Expression* rule_Exp__ID(Variable *var)
+{
+    TableEntry *entry = idLookup(tableStack, var);
+    
+    int size = 1;
+    if (NULL == entry) {
+        output::errorUndef(yylineno, var->id);
+        exit(0);
+    }
+    
+    Expression *res = new Expression(entry->type, size);
+    
+    if (isArrType(entry->type))
+    {
+        size = ((ArrTableEntry*)entry)->size;
+    }
+    string regName = regsPool.getEmptyRegister();
+    if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
+    regsPool.bind(regName, var->id);
+    res->place = regName;
+    ass.emitLoadVar(entry->offset*WORD_SIZE, regName);
+    return res;
+}
+
+Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var, Expression *exp)
 {
     TableEntry *entry = idLookup(tableStack, var);
     if (NULL == entry) {
@@ -492,8 +496,16 @@ Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var)
         output::errorMismatch(yylineno);
         exit(0);
     }
+    Expression *res = new Expression(type);
+    string regName = regsPool.getEmptyRegister();
+    if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
+    regsPool.bind(regName, var->id);
+    res->place = regName;
+    ass.emitLoadArrElem(entry->offset*WORD_SIZE, exp->place, regName);
+    regsPool.unbind(exp->place);
+    delete exp;
     
-    return new Expression(type);
+    return res;
 }
 
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2)

@@ -78,7 +78,7 @@ void rule_StatementWithElse__IF_LPAREN_Exp_RPAREN_StatementWithElse_ELSE_Stateme
 Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList);
 Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var);
 
-Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var);
+Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var, Expression *exp);
 Expression* rule_Exp__ID(Variable *var);
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *exp2);
 Expression* rule_Exp__TRUE();

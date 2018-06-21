@@ -42,8 +42,8 @@ void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName)
     codeBuff.emit("lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
-void Assembler::emitLoadConst(string regName, string val) {
-    codeBuff.emit("li " + regName + ", " + val);
+
+codeBuff.emit("li " + regName + ", " + val);
 }
 
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
