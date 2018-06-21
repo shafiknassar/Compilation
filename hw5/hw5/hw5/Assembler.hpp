@@ -66,11 +66,18 @@ public:
     
     void emitPrinti();
     
-    void emitLoadVar(int varOS, string regName);
+    void emitLoadVar(int varOS, string regName, bool isArr);
     
     void emitLoadArrElem(int arrOS, string idxRegName, string trgRegName);
     
     void emitLoadConst(string regName, string val);
+    
+    void allocateLocalVar(int size);
+    void allocateLocalArr(int numOfElems, int elemSize);
+    
+    void assignValToVar(int varOS, string regName);
+    void assignValToArrElem(int arrOS, string idxRegName, string trgRegName);
+    void assignArrToArr(int srcOs, string trgOsReg, int size, string tmpReg);
     
     /*
      @description: generates code for binary/relational operation

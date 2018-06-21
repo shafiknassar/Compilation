@@ -107,8 +107,10 @@ void rule_Program__end() {
         output::errorMainMissing();
         exit(0);
     }
-    output::endScope();
-    printScope();
+    /*output::endScope();
+    printScope();*/
+    ass.printDataBuffer();
+    ass.printCodeBuffer();
 }
 
 void rule_init()
@@ -239,6 +241,7 @@ void rule_Statement__Type_ID_SC(Type *type, Variable *var)
     }
     tableStack.back().insert(var, type->id, offsetStack.back());
     offsetStack.back() += type->size;
+    ass.allocateLocalVar(WORD_SIZE);
 }
 void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type *type, Variable *var, Expression *num)
 {
@@ -261,6 +264,8 @@ void rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC(Type *type, Variable *var, Exp
     tableStack.back().insertArr(var, offsetStack.back(), arr_size);
     type->size = arr_size;
     offsetStack.back() += type->size;
+    
+    ass.allocateLocalArr(type->size, WORD_SIZE);
 }
 void rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC(Type *type, Variable *var, Expression *num)
 {
@@ -289,6 +294,8 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
     tableStack.back().insert(var, type->id, offsetStack.back());
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
+    ass.allocateLocalVar(WORD_SIZE);
+    ass.assignValToVar(offsetStack.back()*WORD_SIZE, exp->place);
 }
 
 void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
@@ -309,7 +316,7 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
-    
+    //cout << size << " | " << var->size << " | " << exp->size << endl;
     if(isArrType(var->type) && var->size != exp->size) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -319,6 +326,15 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
         exit(0);
     }
     /* if needed, value of id can be assigned here */
+    if (isArrType(var->type)) {
+        ass.assignArrToArr(
+                           entry->offset*WORD_SIZE,
+                           exp->place,
+                           size,
+                           regsPool.getEmptyRegister());
+    } else {
+        ass.assignValToVar(entry->offset*WORD_SIZE, exp->place);
+    }
 }
 
 void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
@@ -334,6 +350,7 @@ void rule_Statement__ID_LBRACK_Exp_RBRACK_ASSIGN_Exp_SC(Variable *arr, Expressio
         exit(0);
     }
     /* if needed, value of id can be assigned here */
+    ass.assignValToArrElem(entry->offset*WORD_SIZE, exp->place, rval->place);
 }
 
 void rule_Statement__RETURN_SC()
@@ -421,7 +438,7 @@ bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
 vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
 {
     vector<string> *res = new vector<string>();
-    for (int i = paramTypes.size() - 1 ; i >= 0 ; i--) {
+    for (int i = (int)paramTypes.size() - 1 ; i >= 0 ; i--) {
         string name = etos(paramTypes[i]->id);
         if (isArrType(paramTypes[i]->id)) {
             TypeId t = convertFromArrType(paramTypes[i]->id);
@@ -470,17 +487,16 @@ Expression* rule_Exp__ID(Variable *var)
         exit(0);
     }
     
-    Expression *res = new Expression(entry->type, size);
-    
     if (isArrType(entry->type))
     {
         size = ((ArrTableEntry*)entry)->size;
     }
+    Expression *res = new Expression(entry->type, size);
     string regName = regsPool.getEmptyRegister();
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
     regsPool.bind(regName, var->id);
     res->place = regName;
-    ass.emitLoadVar(entry->offset*WORD_SIZE, regName);
+    ass.emitLoadVar(entry->offset*WORD_SIZE, regName, isArrType(entry->type));
     return res;
 }
 

@@ -156,6 +156,7 @@ Exp          : LPAREN Exp RPAREN
                         output::errorByteTooLarge(yylineno, ((Expression*)$1)->value);
                         exit(0);
                     }
+                    ((Expression*)$1)->type = M_BYTE;
                     $$ = rule_Exp__NUM((Expression*)$1);
                 }
              | STRING
