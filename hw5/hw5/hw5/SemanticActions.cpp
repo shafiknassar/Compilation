@@ -76,7 +76,7 @@ void extractTypesFromFormList(FormList &src, vector<TypeId> &dst)
         dst.push_back(src.idList[i]->type);
     }
 }
-/* TODO: delete and fix usage */
+
 void calculateArgOffsets(FormList &src, vector<int> &dst)
 {
     int curr = 0;
@@ -115,6 +115,7 @@ void rule_Program__end() {
 
 void rule_init()
 {
+    //TODO: TODO
     vector<Type*> *args = new vector<Type*>();
     args->push_back(new Type(M_STRING, 1));
     tableStack.push_back(*new Table());
@@ -131,6 +132,7 @@ void rule_Funcs__FuncDecl();
 
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
+    //TODO: TO-FUCKING-DO
     if (!(retType->id == M_INT || retType->id == M_BYTE
           || retType->id == M_BOOL || retType->id == M_VOID))
     {
@@ -171,6 +173,7 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
                                             FormDec *fd, FormList *fl)
 {
+    //TODO: TODO
     Variable *decl_id = fd->id;
     if(fl->redefined(decl_id)) {
         output::errorDef(yylineno, decl_id->id);
@@ -182,6 +185,7 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
 
 FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 {
+    //TODO: TODO
     var->type = type->id;
     var->size = typeSize(var->type);
     if (isAlreadyDefined(tableStack, var)) {
@@ -195,6 +199,7 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 
 FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num)
 {
+    //TODO: TODO
     int arr_size = atoi(num->value.c_str());
     if (arr_size <= 0 || arr_size >= 256) {
         output::errorInvalidArraySize(yylineno, var->id);
@@ -225,6 +230,7 @@ FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num
 
 FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num)
 {
+    //TODO: TODO
     int arr_size = atoi(num->value.c_str());
     if (arr_size > 255) {
         output::errorByteTooLarge(yylineno, num->value);
@@ -238,11 +244,13 @@ FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *nu
 /*****************************************/
 
 void rule_Statements(Node* stat, Node* marker) {
+    //MARK: DONE
     ass.bpatch(stat->nextList, marker->quad);
 }
 
 void rule_Statement__Type_ID_SC(Type *type, Variable *var)
 {
+    //MARK: DONE
     if (isAlreadyDefined(tableStack, var)) {
         output::errorDef(yylineno, var->id);
         exit(0);
@@ -253,6 +261,7 @@ void rule_Statement__Type_ID_SC(Type *type, Variable *var)
 }
 void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
 {
+    //MARK: DONE
     int arr_size = atoi(num->value.c_str());
     if (arr_size <= 0 || arr_size >= 256) {
         output::errorInvalidArraySize(yylineno, var->id);
@@ -277,6 +286,7 @@ void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
 }
 void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num)
 {
+    //MARK: DONE
     int arr_size = atoi(num->value.c_str());
     if (arr_size > 255) {
         output::errorByteTooLarge(yylineno, num->value);
@@ -287,6 +297,7 @@ void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num)
 
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression *exp)
 {
+    //MARK: DONE
     var->type = type->id;
     var->size = exp->size;
     if (!TYPES_MATCH(var, exp) &&
@@ -308,6 +319,7 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
 
 void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
 {
+    //MARK: DONE
     TableEntry *entry = idLookup(tableStack, var);
     if (NULL ==  entry || entry->type == FUNC) {
         output::errorUndef(yylineno, var->id);
@@ -347,13 +359,14 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
 
 void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
 {
+    //MARK: DONE
     TableEntry *entry = idLookup(tableStack, arr);
     if (NULL == entry) {
         output::errorUndef(yylineno, arr->id);
         exit(0);
     }
     if ((exp->type != M_INT && exp->type != M_BYTE)
-        || !ARR_TYPE_MATCH(entry, rval)){
+        || !ARR_TYPE_MATCH(entry, rval)) {
         output::errorMismatch(yylineno);
         exit(0);
     }
@@ -363,15 +376,18 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
 
 void rule_Statement__RETURN_SC()
 {
+    //MARK: DONE
     if (tableStack.back().retType->id != M_VOID)
     {
         output::errorMismatch(yylineno);
         exit(0);
     }
+    ass.emitFunctionReturn();
 }
 
 void rule_Statement__RETURN_Exp_SC(Expression *exp)
 {
+    //MARK: DONE
     if (tableStack.back().retType->id == M_INT && exp->type == M_BYTE)
         return;
     
@@ -381,9 +397,12 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
+    ass.emitFunctionReturn(exp->place);
+    regsPool.unbind(exp->place);
 }
 
 Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1, Node* marker_n) {
+    //MARK: DONE
     if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -400,6 +419,7 @@ Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1
 Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
                                         Node* stat1, Node* marker_n,
                                         Node* marker_m2, Node* stat2) {
+    //MARK: DONE
     if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -416,6 +436,7 @@ Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
 
 Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
                                       Node* marker_m2, Node* stat1) {
+    //MARK: DONE
     if(cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -432,6 +453,7 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
 
 void rule_Statement__BREAK_SC()
 {
+    //MARK: PROBABLY DONE
     if (!tableStack.back().isWhile) {
         output::errorUnexpectedBreak(yylineno);
         exit(0);
@@ -481,6 +503,7 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
 /*****************************************/
 Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 {
+    //TODO
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -495,6 +518,7 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 }
 
 Expression* rule_Call__ID(Variable *var) {
+    //TODO
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -514,6 +538,7 @@ Expression* rule_Call__ID(Variable *var) {
 
 Expression* rule_Exp__ID(Variable *var)
 {
+    //MARK: DONE
     TableEntry *entry = idLookup(tableStack, var);
     
     int size = 1;
@@ -537,6 +562,7 @@ Expression* rule_Exp__ID(Variable *var)
 
 Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
 {
+    //MARK: DONE
     TableEntry *entry = idLookup(tableStack, var);
     if (NULL == entry) {
         output::errorUndef(yylineno, var->id);
@@ -561,6 +587,7 @@ Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
 
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2)
 {
+    //MARK: DONE
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -583,6 +610,7 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *
 }
 
 Expression* rule_Exp__NUM(Expression *num) {
+    //MARK: DONE
     string reg = regsPool.getEmptyRegister();
     if (reg == not_found) {/*???*/}
     regsPool.bind(reg, expression);
@@ -592,17 +620,20 @@ Expression* rule_Exp__NUM(Expression *num) {
 }
 
 Expression* rule_Exp__STRING(Expression *str) {
+    //MARK: DONE
     ass.addStringLiteral(str->value);
     return str;
 }
 
 Expression* rule_Exp__TRUE() {
+    //MARK: DONE
     Expression* exp = new Expression(M_BOOL);
     exp->trueList = ass.makelist(ass.emitCode(JUMP));
     return exp;
 }
 
 Expression* rule_Exp__FALSE() {
+    //MARK: DONE
     Expression* exp = new Expression(M_BOOL);
     exp->falseList = ass.makelist(ass.emitCode(JUMP));
     return exp;
@@ -610,6 +641,7 @@ Expression* rule_Exp__FALSE() {
 
 Expression* rule_Exp__NOT_Exp(Expression *exp)
 {
+    //MARK: DONE
     if (exp->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -623,6 +655,7 @@ Expression* rule_Exp__NOT_Exp(Expression *exp)
 
 Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *exp2)
 {
+    //MARK: DONE
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
         output::errorMismatch(yylineno);
@@ -640,6 +673,7 @@ Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *ex
 }
 Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker,Expression *exp2)
 {
+    //MARK: DONE
     if (exp1->type != M_BOOL ||
         exp2->type != M_BOOL) {
         output::errorMismatch(yylineno);
@@ -656,8 +690,10 @@ Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker,Expression *exp2
     return exp;
 }
 
+
 Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2)
 {
+    //MARK: DONE
     if (!IS_NUM_TYPE(exp2) || !IS_NUM_TYPE(exp1)) {
         output::errorMismatch(yylineno);
         exit(0);

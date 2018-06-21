@@ -71,6 +71,7 @@ int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string sr
     return res;
 }
 
+
 int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
     map<string, string> trans;
     string arr[6][2] =
@@ -85,6 +86,17 @@ int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
     
     return codeBuff.emit(to_emit + src1Place + ", " + src2Place +", ");
 };
+
+void Assembler::emitFunctionReturn(string resRegName) {
+    if (resRegName != "") {
+        codeBuff.emit("move $v0, " + resRegName);
+    }
+    codeBuff.emit("move $sp,$fp");
+    codeBuff.emit("sub $sp,$sp,4");
+    codeBuff.emit("lw $fp,($sp)");
+    codeBuff.emit("add $sp,$sp,4");
+    codeBuff.emit("jr $ra");
+}
 
 void Assembler::allocateLocalVar(int size) {
     stringstream ssSize;
