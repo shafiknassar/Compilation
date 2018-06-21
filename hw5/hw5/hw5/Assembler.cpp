@@ -8,6 +8,7 @@
 
 #include "Assembler.hpp"
 #include "includes.h"
+using std::pair;
 
 int Assembler::emitCode(string code) {
     return codeBuff.emit(code);
@@ -42,8 +43,8 @@ void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName)
     codeBuff.emit("lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
-
-codeBuff.emit("li " + regName + ", " + val);
+void Assembler::emitLoadConst(string regName, string val) {
+    codeBuff.emit("li " + regName + ", " + val);
 }
 
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
@@ -65,10 +66,12 @@ int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string sr
 }
 
 int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
-    map<string, string> trans = {
+    map<string, string> trans;
+    /* {
         {"==", "beq "}, {"!=", "bne "}, {"<", "blt "},
         {">", "bgt "}, {"<=", "ble "}, {">=", "bge "}
-    };
+    };*/
+    trans.insert(pair<string, string>("==", "beq "));
     string to_emit = trans[op];
     
     return codeBuff.emit(to_emit + src1Place + ", " + src2Place +", ");

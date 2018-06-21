@@ -80,7 +80,7 @@ Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var);
 
 Expression* rule_Exp__ID_LBRACK_Exp_RBRACK(Variable *var, Expression *exp);
 Expression* rule_Exp__ID(Variable *var);
-Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, Expression *exp2);
+Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2);
 Expression* rule_Exp__TRUE();
 Expression* rule_Exp__FALSE();
 Expression* rule_Exp__NOT_Exp(Expression *exp);
@@ -88,7 +88,7 @@ Expression* rule_Exp__NUM(Expression *num);
 Expression* rule_Exp__STRING(Expression *str);
 Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Expression* marker, Expression *exp2);
 Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Expression* marker, Expression *exp2);
-Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, Expression *exp2);
+Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2);
 Expression* marker__M();
 
 #endif /* SemanticActions_hpp */

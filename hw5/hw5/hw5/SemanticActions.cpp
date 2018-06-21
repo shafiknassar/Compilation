@@ -444,7 +444,7 @@ Expression* rule_Call__ID_LPAREN_ExpList_RPAREN(Variable *var, ExprList *expList
         output::errorPrototypeMismatch(yylineno, var->id, *strs);
         exit(0);
     }
-    return new Expression(*(funcData->retType));
+    return new Expression(funcData->retType->id, funcData->retType->size);
 }
 Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var) {
     FuncTableEntry *funcData = funcLookup(tableStack, var);
@@ -457,7 +457,7 @@ Expression* rule_Call__ID_LPAREN_RPAREN(Variable *var) {
         output::errorPrototypeMismatch(yylineno, var->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
-    return new Expression(*(funcData->retType));
+    return new Expression(funcData->retType->id, funcData->retType->size);
 }
 
 Expression* rule_Exp__ID(Variable *var)
@@ -628,4 +628,5 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
 Expression* marker__M() {
     Expression* exp = new Expression(MARKER);
     exp->quad = ass.getNextInst();
+    return exp;
 }

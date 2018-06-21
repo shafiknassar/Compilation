@@ -24,5 +24,9 @@
 #include "output.hpp"
 #include "bp.hpp"
 #include "Assembler.hpp"
+#include "parser.tab.hpp"
+#include "SemanticActions.hpp"
+
+extern YYSTYPE yylval;
 
 #endif /* includes_h */

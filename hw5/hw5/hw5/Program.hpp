@@ -49,11 +49,21 @@ enum TypeId {
 };
 
 /***************************************/
+/* Helper functions */
+/***************************************/
+
+int typeSize(TypeId id);
+bool isArrType(TypeId t);
+string etos(TypeId type);
+TypeId convertFromArrType(TypeId arr_t);
+TypeId convertToArrType(TypeId arr_t);
+
+/***************************************/
 /* Node structs for terminals */
 /***************************************/
 struct Node {
     string token;
-    virtual ~Node();
+    virtual ~Node() {};
     
     Node() : token("") {};
     Node(string s) : token(s) {}
@@ -122,15 +132,6 @@ struct FormList : public Node {
 };
 
 
-/***************************************/
-/* Enums & Helper functions */
-/***************************************/
-
-int typeSize(TypeId id);
-bool isArrType(TypeId t);
-string etos(TypeId type);
-TypeId convertFromArrType(TypeId arr_t);
-TypeId convertToArrType(TypeId arr_t);
 
 #endif /* program_hpp */
 

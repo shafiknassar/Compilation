@@ -76,10 +76,10 @@ FormalDecl   : Type ID
                 /* assign variable to register */
              | Type ID LBRACK NUM RBRACK
                 /* assign array address to register */
-                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Variable*)$2, (NumVal*)$4); }
+                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUM_RBRACK((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | Type ID LBRACK NUM B RBRACK
                 /* assign array address to register */
-                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Variable*)$2, (NumVal*)$4); }
+                { $$ = rule_FormalDecl__Type_ID_LBRACK_NUMB_RBRACK((Type*)$1, (Variable*)$2, (Expression*)$4); }
 ;
 
 Statements   : Statement
@@ -94,8 +94,8 @@ WhileHeader  : WHILE LPAREN Exp
 
 Statement    : LBRACE mOpenScope Statements mCloseScope RBRACE  
              | Type ID SC { rule_Statement__Type_ID_SC((Type*)$1, (Variable*)$2); }
-             | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Variable*)$2, (NumVal*)$4); }
-             | Type ID LBRACK NUM B RBRACK SC { rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC((Type*)$1, (Variable*)$2, (NumVal*)$4); }
+             | Type ID LBRACK NUM RBRACK SC { rule_Statement__Type_ID_LBRACK_NUM_RBRACK_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
+             | Type ID LBRACK NUM B RBRACK SC { rule_Statement__Type_ID_LBRACK_NUMB_RBRACK_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | Type ID ASSIGN Exp SC
                 /* copy the expression register to the id (trgt) register */
                 { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)$1, (Variable*)$2, (Expression*)$4); }
@@ -142,7 +142,7 @@ Exp          : LPAREN Exp RPAREN
                 { $$ = rule_Exp__ID_LBRACK_Exp_RBRACK((Variable*)$1, (Expression*)$3); }
              | Exp BINOP Exp
                 /* assign result to register */
-                { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, (Expression*)$3); }
+                { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, $2->token, (Expression*)$3); }
              | ID
                 { $$ = rule_Exp__ID((Variable*)$1); }
              | Call
@@ -152,8 +152,8 @@ Exp          : LPAREN Exp RPAREN
                 { $$ = rule_Exp__NUM((Expression*)$1); }
              | NUM B
                 {
-                    if (atoi($1->value.c_str()) > 255) {
-                        output::errorByteTooLarge(yylineno, $1->value);
+                    if (atoi(((Expression*)$1)->value.c_str()) > 255) {
+                        output::errorByteTooLarge(yylineno, ((Expression*)$1)->value);
                         exit(0);
                     }
                     $$ = rule_Exp__NUM((Expression*)$1);
@@ -169,9 +169,9 @@ Exp          : LPAREN Exp RPAREN
              | Exp AND M Exp
                 { $$ = rule_Exp__Exp_AND_Exp((Expression*)$1, (Expression*)$3, (Expression*)$4); }
              | Exp OR M Exp
-                { $$ = rule_Exp__Exp_OR_Exp((Expression*)$1, (Expression*)$3, , (Expression*)$4); }
+                { $$ = rule_Exp__Exp_OR_Exp((Expression*)$1, (Expression*)$3, (Expression*)$4); }
              | Exp RELOP Exp
-                { $$ = rule_Exp__Exp_RELOP_Exp((Expression*)$1, (Expression*)$3); }
+                { $$ = rule_Exp__Exp_RELOP_Exp((Expression*)$1, $2->token, (Expression*)$3); }
 ;
 
 M           : { $$ = marker__M(); }
@@ -179,7 +179,7 @@ N           : { $$ = marker__N(); }
 
 %%
 
-void yyerror(const char*) { errorSyn(yylineno); }
+void yyerror(const char*) { output::errorSyn(yylineno); }
 
 int main() {
     //yydebug = 1;

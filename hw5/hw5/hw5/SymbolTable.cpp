@@ -14,7 +14,7 @@ vector<string>* FuncTableEntry::getArgs() {
         string typeStr = etos(paramTypes.at(i)->id);
         if (isArrType(paramTypes.at(i)->id)) {
             TypeId type = convertFromArrType(paramTypes.at(i)->id);
-            typeStr = makeArrayType(etos(type), paramTypes.at(i)->size);
+            typeStr = output::makeArrayType(etos(type), paramTypes.at(i)->size);
         }
         args->push_back(typeStr);
     }
