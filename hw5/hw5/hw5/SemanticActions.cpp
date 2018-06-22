@@ -210,8 +210,6 @@ FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num
     type->id = convertToArrType(type->id);
     type->size = var->size;
     
-    
-    
     if (var->type == ERROR) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -503,7 +501,7 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
 /*****************************************/
 Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 {
-    //TODO
+    //TODO: TODO
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -518,7 +516,7 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 }
 
 Expression* rule_Call__ID(Variable *var) {
-    //TODO
+    //TODO: TODO
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -526,10 +524,13 @@ Expression* rule_Call__ID(Variable *var) {
     }
     if (funcData->paramTypes.size() != 0)
     {
+        
         output::errorPrototypeMismatch(yylineno, var->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
-    return new Expression(funcData->retType->id, funcData->retType->size);
+    Expression* exp = new Expression(funcData->retType->id, funcData->retType->size);
+    
+    return exp;
 }
 
 /*****************************************/
