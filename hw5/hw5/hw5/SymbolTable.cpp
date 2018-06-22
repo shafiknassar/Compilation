@@ -42,7 +42,7 @@ void Table::insertArr(Variable *id, int offset, int size) {
     entryStack.push_back(tmp);
 }
 
-void Table::insertFunc(string name, Type *retType, vector<Type*> &paramTypes) {
+void Table::insertFunc(string name, Type *retType, vector<Variable*> &paramTypes) {
     FuncTableEntry *tmp = new FuncTableEntry();
     tmp->name       = name;
     tmp->type       = FUNC;
@@ -53,7 +53,9 @@ void Table::insertFunc(string name, Type *retType, vector<Type*> &paramTypes) {
      most easily acquired from a struct
      specificaly created to FormalDecls
      */
-    tmp->paramTypes = paramTypes;
+    for (int i = 0; i < paramTypes.size(); ++i) {
+        tmp->paramTypes.push_back(new Type(paramTypes[i]->type, paramTypes[i]->size));
+    }
     entryStack.push_back(tmp);
 }
 

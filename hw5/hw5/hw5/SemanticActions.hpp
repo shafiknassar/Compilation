@@ -47,10 +47,10 @@ void rule_Funcs__FuncDecl();
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args);
 void rule_FuncDecl__RetType_ID_Formals_Statements();
 
-FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(FormDec *fd, FormList *fl);
-FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var);
-FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num);
-FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num);
+FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(Variable *fd, FormList *fl);
+Variable* rule_FormalDecl__Type_ID(Type *type, Variable *var);
+Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num);
+Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num);
 
 /*****************************************/
 /* Statement Rules */

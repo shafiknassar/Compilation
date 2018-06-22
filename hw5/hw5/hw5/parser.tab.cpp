@@ -1533,12 +1533,12 @@ yyreduce:
 
   case 12:
 #line 71 "parser.ypp"
-    { (yyval) = new FormList(); ((FormList*)(yyval))->add((FormDec*)(yyvsp[(1) - (1)])); ;}
+    { (yyval) = new FormList(); ((FormList*)(yyval))->add((Variable*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 13:
 #line 72 "parser.ypp"
-    { (yyval) = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)(yyvsp[(1) - (3)]), (FormList*)(yyvsp[(3) - (3)])); ;}
+    { (yyval) = rule_FormalsList__FormalDecl_COMMA_FormalsList((Variable*)(yyvsp[(1) - (3)]), (FormList*)(yyvsp[(3) - (3)])); ;}
     break;
 
   case 14:

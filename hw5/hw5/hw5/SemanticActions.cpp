@@ -82,7 +82,7 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
     int curr = 0;
     vector<int> tmp;
     for (int i = src.size()-1; i >= 0; --i) {
-        curr -= src.typeList[i]->size;
+        curr -= src.idList[i]->size;
         tmp.push_back(curr);
     }
     for (int i = src.size()-1; i >= 0; --i) {
@@ -116,15 +116,15 @@ void rule_Program__end() {
 void rule_init()
 {
     //TODO: TODO
-    vector<Type*> *args = new vector<Type*>();
-    args->push_back(new Type(M_STRING, 1));
+    vector<Variable*> *args = new vector<Variable*>();
+    args->push_back(new Variable(M_STRING));
     tableStack.push_back(*new Table());
     tableStack.back().isFunc  = false;
     tableStack.back().isWhile = false;
     offsetStack.push_back(0);
     tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
-    args = new vector<Type*>();
-    args->push_back(new Type(M_INT, 1));
+    args = new vector<Variable*>();
+    args->push_back(new Variable(M_INT));
     tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
 }
 
@@ -158,32 +158,31 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     /* Declare function in scope (global) */
     //vector<TypeId> argTypes;
     //extractTypesFromFormList(*args, argTypes);
-    tableStack.back().insertFunc(var->id, retType, args->typeList);
+    tableStack.back().insertFunc(var->id, retType, args->idList);
     /* create function scope - openScope */
     Table &currScope = openFuncScope(var->id, retType);
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
     for (int i = args->size()-1; i >= 0 ; i--) {
-        currScope.insert(args->idList[i], args->typeList[i]->type, argOffsets[i]);
+        currScope.insert(args->idList[i], args->idList[i]->type, argOffsets[i]);
     }
     
 }
 
 
 FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
-                                            FormDec *fd, FormList *fl)
+                                            Variable *id, FormList *fl)
 {
     //TODO: TODO
-    Variable *decl_id = fd->id;
-    if(fl->redefined(decl_id)) {
-        output::errorDef(yylineno, decl_id->id);
+    if(fl->redefined(id)) {
+        output::errorDef(yylineno, id->id);
         exit(0);
     }
-    fl->add(fd);
+    fl->add(id);
     return fl;
 }
 
-FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
+Variable* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 {
     //TODO: TODO
     var->type = type->type;
@@ -194,10 +193,10 @@ FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
     }
     //tableStack.back().insert(id, offsetStack.back());
     //offsetStack.back() += type->size;
-    return new FormDec(var, type);
+    return var;
 }
 
-FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num)
+Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num)
 {
     //TODO: TODO
     int arr_size = atoi(num->value.c_str());
@@ -207,10 +206,6 @@ FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num
     }
     var->type = convertToArrType(type->type);
     var->size = arr_size;
-    type->type = convertToArrType(type->type);
-    type->size = var->size;
-    
-    
     
     if (var->type == ERROR) {
         output::errorMismatch(yylineno);
@@ -224,11 +219,11 @@ FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num
     //type->size *= arr_size;
     //offsetStack.back() += type->size;
     
-    return new FormDec(var, type);
+    return var;
 }
 
 
-FormDec* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num)
+Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num)
 {
     //TODO: TODO
     int arr_size = atoi(num->value.c_str());

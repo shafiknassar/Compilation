@@ -84,6 +84,7 @@ struct Type : public Node {
 
 struct Variable : public Node {
     string id;
+    Variable(TypeId t) : Node(t), id("none") {}
     Variable(string id) : id(id) {}
     Variable(string id, TypeId type) : id(id), Node(type) {}
 };
@@ -113,18 +114,11 @@ struct ExprList : public Node {
 
 /* Formal Declaration */
 
-struct FormDec : public Node {
-    Variable *id;
-    Type *type;
-    FormDec(Variable *id, Type *t) : id(id), type(t) {};
-};
-
 struct FormList : public Node {
     vector<Variable*> idList;
-    vector<Type*> typeList;
     
     void add(Variable *id, Type *t);
-    void add(FormDec *fd);
+    void add(Variable *id);
     bool redefined(Variable* id);
     int size();
     

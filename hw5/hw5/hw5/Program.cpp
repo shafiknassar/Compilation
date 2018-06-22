@@ -1,11 +1,12 @@
 #include "includes.h"
 
 void FormList::add(Variable *id, Type *t) {
-    idList.push_back(id); typeList.push_back(t);
+    idList.push_back(id);
+    idList.back()->size = t->size;
 }
 
-void FormList::add(FormDec *fd) {
-    idList.push_back(fd->id); typeList.push_back(fd->type);
+void FormList::add(Variable *id) {
+    idList.push_back(id);
 }
 
 bool FormList::redefined(Variable* id) {

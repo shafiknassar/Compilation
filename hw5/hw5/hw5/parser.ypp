@@ -68,8 +68,8 @@ RetType      : Type { $$=$1; }
 Formals      : FormalsList { $$ = $1;}  
              | /*epsilon*/ { $$ = new FormList(); /*empty list*/}  
 ;
-FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((FormDec*)$1); }  
-             | FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((FormDec*)$1, (FormList*)$3); }  
+FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((Variable*)$1); }
+| FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((Variable*)$1, (FormList*)$3); }
 ;
 FormalDecl   : Type ID
                 { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Variable*)$2); }

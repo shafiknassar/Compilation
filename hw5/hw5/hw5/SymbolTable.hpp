@@ -72,7 +72,7 @@ struct Table {
     void insert(string name, TypeId type, int offset);
     void insert(Variable *id, TypeId type, int offset);
     void insertArr(Variable *id, int offset, int size);
-    void insertFunc(string name, Type *retType, vector<Type*> &paramTypes);
+    void insertFunc(string name, Type *retType, vector<Variable*> &paramTypes);
 
     FuncTableEntry* getFuncEntry(string name);
     TableEntry* getEntry(string name);
