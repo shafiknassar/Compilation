@@ -14,6 +14,7 @@
 
 using std::string;
 using std::vector;
+using std::pair;
 
 /***********************************/
 /* defines */
@@ -36,31 +37,35 @@ public:
     
     Assembler() :
         codeBuff(CodeBuffer::instance()),
-        stringDataCounter(0)
-    {
-        
-    }
+        stringDataCounter(3) {}
     /*
      @description: emits code to text section.
      @returns the location in code buffer.
      */
     int emitCode(string code);
+    
     /* 
      @description: adds a string literal to the data section.
      @returns the label assigned to string.
      */
     string addStringLiteral(string value);
+    string getLastStringLiteral();
     
     /*
      @description: generates a label for the next intsruction
      @returns the label assigned.
      */
     string getNextInst();
+    
     /*
      @description: generates code for handling division by zero exception
+                   and index out of bounds.
      @returns none.
      */
-    void emitDivByZeroHandler(); /* TODO: implement */
+    void emitDivByZeroHandler();
+    void emitIndexOutOfBoundsHandler();
+    
+    void emitProgramInit();
     
     void emiFunctionHeader(string funName);
     
@@ -74,14 +79,18 @@ public:
     
     void emitLoadConst(string regName, string val);
     
-    void emitFunctionReturn(string resRegName = "");
-    void emitFunctionCall(vector<string> usedRegisters, string funcName, vector<string> args);
+    void emitBeforCall(vector<string> usedRegs, string funcName,
+                       vector<pair<string, int> > args);
+    void emitAfterCall(vector<string> usedRegs, vector<pair<string, int> > args);
+    void emitFunctionReturn(string funcName, string resRegName = "");
+    void emitFunctionCall(vector<string> usedRegisters, string funcName,
+                          vector<pair<string, int> > args);
     
     void allocateLocalVar(int size);
     void allocateLocalArr(int numOfElems, int elemSize);
     
     void assignValToVar(int varOS, string regName);
-    void assignValToArrElem(int arrOS, string idxRegName, string trgRegName);
+    void assignValToArrElem(int arrOS, string arrSizeReg, string idxRegName, string trgRegName);
     void assignArrToArr(int srcOs, string trgOsReg, int size, string tmpReg);
     
     /*

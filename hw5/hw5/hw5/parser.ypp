@@ -50,35 +50,41 @@
 Program      : mInit Funcs { rule_Program__end();}
      
 ;
+
 mInit         : { rule_init(); }
 Funcs        : FuncDecl Funcs  
              | /*epsilon*/
 ;
-FuncDecl     : FuncHeader LBRACE Statements RBRACE { closeScope(); }
+
+FuncDecl     : FuncHeader LBRACE Statements RBRACE
+                { rule_FuncBody($3); closeScope(); }
 ;
 
 FuncHeader   : RetType ID LPAREN Formals RPAREN  
-             { rule_FuncHeader((Type*)$1, (Variable*)$2, (FormList*)$4);
-             /* map variables to registers */}
+                { rule_FuncHeader((Type*)$1, (Variable*)$2, (FormList*)$4); }
 
 
-RetType      : Type { $$=$1; }  
-             | VOID { $$=$1; }  
+RetType      : Type
+                { $$=$1; }
+             | VOID
+                { $$=$1; }
 ;
-Formals      : FormalsList { $$ = $1;}  
-             | /*epsilon*/ { $$ = new FormList(); /*empty list*/}  
+Formals      : FormalsList
+                { $$ = $1;}
+             | /*epsilon*/
+                { $$ = new FormList(); /*empty list*/}
 ;
-FormalsList  : FormalDecl { $$ = new FormList(); ((FormList*)$$)->add((Variable*)$1); }
-| FormalDecl COMMA FormalsList { $$ = rule_FormalsList__FormalDecl_COMMA_FormalsList((Variable*)$1, (FormList*)$3); }
+FormalsList  : FormalDecl
+                { $$ = new FormList(); ((FormList*)$$)->add((Variable*)$1); }
+             | FormalDecl COMMA FormalsList
+                { $$ = rule_FormalsList((Variable*)$1, (FormList*)$3); }
 ;
+
 FormalDecl   : Type ID
                 { $$ = rule_FormalDecl__Type_ID((Type*)$1, (Variable*)$2); }
-                /* assign variable to register */
              | Type ID LBRACK NUM RBRACK
-                /* assign array address to register */
                 { $$ = rule_FormalDecl__Type_ID_NUM((Type*)$1, (Variable*)$2, (Expression*)$4); }
              | Type ID LBRACK NUM B RBRACK
-                /* assign array address to register */
                 { $$ = rule_FormalDecl__Type_ID_NUMB((Type*)$1, (Variable*)$2, (Expression*)$4); }
 ;
 
@@ -108,7 +114,6 @@ Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
                 { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC
                 { rule_Statement__RETURN_Exp_SC((Expression*)$2); }
-
              | IF LPAREN Exp RPAREN mOpenScope M Statement mCloseScope N
                 /* S->if(B) { S1 }*/
                 { $$ = rule_Statement__IF_Statement((Expression*)$3, $6, $7, $9); }
@@ -128,7 +133,6 @@ mCWhileScope: { closeWhileScope(); }
 
 
 Call         : ID LPAREN ExpList RPAREN
-                /* copy registers of expList to the argument registers (or memory if needed) */
                 { $$ = rule_Call__ID_ExpList((Variable*)$1, (ExprList*)$3); }
              | ID LPAREN RPAREN
                 { $$ = rule_Call__ID((Variable*)$1); }
@@ -139,9 +143,12 @@ ExpList      : Exp
              | Exp COMMA ExpList
                 { $$ = $3; ((ExprList*)$$)->v.push_back((Expression*)$1); }
 ;
-Type         : INT  { $$=$1; }  
-             | BYTE { $$=$1; }  
-             | BOOL { $$=$1; }  
+Type         : INT
+                { $$=$1; }
+             | BYTE
+                { $$=$1; }
+             | BOOL
+                { $$=$1; }
 ;
 Exp          : LPAREN Exp RPAREN
                 { $$=$2; }

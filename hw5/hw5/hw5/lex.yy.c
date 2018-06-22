@@ -810,27 +810,27 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 9 "scanner.lex"
-{yylval = (Node*) new Type(M_VOID, 0); return VOID;}
+{yylval = (Node*) new Type(M_VOID); return VOID;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 10 "scanner.lex"
-{yylval = (Node*) new Type(M_INT, 1); return INT;}
+{yylval = (Node*) new Type(M_INT); return INT;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 11 "scanner.lex"
-{yylval = (Node*) new Type(M_BYTE, 1); return BYTE;}
+{yylval = (Node*) new Type(M_BYTE); return BYTE;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 12 "scanner.lex"
-{/*(Expression*)->type = N_BYTE; TODO: ask bilal */ return B;}
+{return B;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 13 "scanner.lex"
-{yylval = (Node*) new Type(M_BOOL, 1); return BOOL;}
+{yylval = (Node*) new Type(M_BOOL); return BOOL;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP

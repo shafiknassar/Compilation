@@ -6,11 +6,11 @@
 %option noyywrap
 
 %%
-void                                {yylval = (Node*) new Type(M_VOID, 0); return VOID;}
-int                                 {yylval = (Node*) new Type(M_INT, 1); return INT;}
-byte                                {yylval = (Node*) new Type(M_BYTE, 1); return BYTE;}
-b                                   {/*(Expression*)->type = N_BYTE; TODO: ask bilal */ return B;}
-bool                                {yylval = (Node*) new Type(M_BOOL, 1); return BOOL;}
+void                                {yylval = (Node*) new Type(M_VOID); return VOID;}
+int                                 {yylval = (Node*) new Type(M_INT); return INT;}
+byte                                {yylval = (Node*) new Type(M_BYTE); return BYTE;}
+b                                   {return B;}
+bool                                {yylval = (Node*) new Type(M_BOOL); return BOOL;}
 and                                 {return AND;}
 or                                  {return OR;}
 not                                 {return NOT;}

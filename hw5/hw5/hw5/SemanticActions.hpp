@@ -43,11 +43,10 @@ void rule_Program__end();
 
 void rule_init();
 
-void rule_Funcs__FuncDecl();
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args);
-void rule_FuncDecl__RetType_ID_Formals_Statements();
+void rule_FuncBody(Node* stat);
 
-FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(Variable *fd, FormList *fl);
+FormList* rule_FormalsList(Variable *fd, FormList *fl);
 Variable* rule_FormalDecl__Type_ID(Type *type, Variable *var);
 Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num);
 Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num);

@@ -491,12 +491,12 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    50,    50,    53,    54,    55,    57,    60,    65,    66,
-      68,    69,    71,    72,    74,    77,    80,    85,    87,    92,
-      94,    96,    98,   100,   102,   104,   106,   107,   109,   112,
-     115,   118,   121,   124,   125,   126,   127,   130,   133,   137,
-     139,   142,   143,   144,   146,   148,   150,   152,   154,   157,
-     159,   168,   170,   172,   174,   176,   178,   180,   184,   185
+       0,    50,    50,    54,    55,    56,    59,    63,    67,    69,
+      72,    75,    77,    79,    83,    85,    87,    91,    93,    98,
+     100,   102,   104,   106,   108,   110,   112,   113,   115,   117,
+     120,   123,   126,   129,   130,   131,   132,   135,   137,   141,
+     143,   146,   148,   150,   153,   155,   157,   159,   161,   164,
+     166,   175,   177,   179,   181,   183,   185,   187,   191,   192
 };
 #endif
 
@@ -1496,228 +1496,227 @@ yyreduce:
     break;
 
   case 3:
-#line 53 "parser.ypp"
+#line 54 "parser.ypp"
     { rule_init(); ;}
     break;
 
   case 6:
-#line 57 "parser.ypp"
-    { closeScope(); ;}
+#line 60 "parser.ypp"
+    { rule_FuncBody((yyvsp[(3) - (4)])); closeScope(); ;}
     break;
 
   case 7:
-#line 61 "parser.ypp"
-    { rule_FuncHeader((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (FormList*)(yyvsp[(4) - (5)]));
-             /* map variables to registers */;}
+#line 64 "parser.ypp"
+    { rule_FuncHeader((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (FormList*)(yyvsp[(4) - (5)])); ;}
     break;
 
   case 8:
-#line 65 "parser.ypp"
+#line 68 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
   case 9:
-#line 66 "parser.ypp"
+#line 70 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
   case 10:
-#line 68 "parser.ypp"
+#line 73 "parser.ypp"
     { (yyval) = (yyvsp[(1) - (1)]);;}
     break;
 
   case 11:
-#line 69 "parser.ypp"
+#line 75 "parser.ypp"
     { (yyval) = new FormList(); /*empty list*/;}
     break;
 
   case 12:
-#line 71 "parser.ypp"
+#line 78 "parser.ypp"
     { (yyval) = new FormList(); ((FormList*)(yyval))->add((Variable*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 13:
-#line 72 "parser.ypp"
-    { (yyval) = rule_FormalsList__FormalDecl_COMMA_FormalsList((Variable*)(yyvsp[(1) - (3)]), (FormList*)(yyvsp[(3) - (3)])); ;}
+#line 80 "parser.ypp"
+    { (yyval) = rule_FormalsList((Variable*)(yyvsp[(1) - (3)]), (FormList*)(yyvsp[(3) - (3)])); ;}
     break;
 
   case 14:
-#line 75 "parser.ypp"
+#line 84 "parser.ypp"
     { (yyval) = rule_FormalDecl__Type_ID((Type*)(yyvsp[(1) - (2)]), (Variable*)(yyvsp[(2) - (2)])); ;}
     break;
 
   case 15:
-#line 79 "parser.ypp"
+#line 86 "parser.ypp"
     { (yyval) = rule_FormalDecl__Type_ID_NUM((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (Expression*)(yyvsp[(4) - (5)])); ;}
     break;
 
   case 16:
-#line 82 "parser.ypp"
+#line 88 "parser.ypp"
     { (yyval) = rule_FormalDecl__Type_ID_NUMB((Type*)(yyvsp[(1) - (6)]), (Variable*)(yyvsp[(2) - (6)]), (Expression*)(yyvsp[(4) - (6)])); ;}
     break;
 
   case 17:
-#line 86 "parser.ypp"
+#line 92 "parser.ypp"
     {(yyval) = (yyvsp[(1) - (1)]);;}
     break;
 
   case 18:
-#line 88 "parser.ypp"
+#line 94 "parser.ypp"
     { rule_Statements((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])); (yyval) = (yyvsp[(3) - (3)]); ;}
     break;
 
   case 19:
-#line 93 "parser.ypp"
+#line 99 "parser.ypp"
     { rule_Statements((yyvsp[(3) - (6)]), (yyvsp[(4) - (6)])); (yyval) = (yyvsp[(3) - (6)]);;}
     break;
 
   case 20:
-#line 95 "parser.ypp"
+#line 101 "parser.ypp"
     { rule_Statement__Type_ID_SC((Type*)(yyvsp[(1) - (3)]), (Variable*)(yyvsp[(2) - (3)])); ;}
     break;
 
   case 21:
-#line 97 "parser.ypp"
+#line 103 "parser.ypp"
     { rule_Statement__Type_ID_NUM_SC((Type*)(yyvsp[(1) - (6)]), (Variable*)(yyvsp[(2) - (6)]), (Expression*)(yyvsp[(4) - (6)])); ;}
     break;
 
   case 22:
-#line 99 "parser.ypp"
+#line 105 "parser.ypp"
     { rule_Statement__Type_ID_NUMB_SC((Type*)(yyvsp[(1) - (7)]), (Variable*)(yyvsp[(2) - (7)]), (Expression*)(yyvsp[(4) - (7)])); ;}
     break;
 
   case 23:
-#line 101 "parser.ypp"
+#line 107 "parser.ypp"
     { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (Expression*)(yyvsp[(4) - (5)])); ;}
     break;
 
   case 24:
-#line 103 "parser.ypp"
+#line 109 "parser.ypp"
     { rule_Statement__ID_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (4)]), (Expression*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 25:
-#line 105 "parser.ypp"
+#line 111 "parser.ypp"
     { rule_Statement__ID_Exp_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (7)]), (Expression*)(yyvsp[(3) - (7)]), (Expression*)(yyvsp[(6) - (7)])); ;}
     break;
 
   case 27:
-#line 108 "parser.ypp"
+#line 114 "parser.ypp"
     { rule_Statement__RETURN_SC(); ;}
     break;
 
   case 28:
-#line 110 "parser.ypp"
+#line 116 "parser.ypp"
     { rule_Statement__RETURN_Exp_SC((Expression*)(yyvsp[(2) - (3)])); ;}
     break;
 
   case 29:
-#line 114 "parser.ypp"
+#line 119 "parser.ypp"
     { (yyval) = rule_Statement__IF_Statement((Expression*)(yyvsp[(3) - (9)]), (yyvsp[(6) - (9)]), (yyvsp[(7) - (9)]), (yyvsp[(9) - (9)])); ;}
     break;
 
   case 30:
-#line 117 "parser.ypp"
+#line 122 "parser.ypp"
     { (yyval) = rule_Statement__IF_ELSE_Statement((Expression*)(yyvsp[(3) - (14)]), (yyvsp[(6) - (14)]), (yyvsp[(7) - (14)]), (yyvsp[(9) - (14)]), (yyvsp[(12) - (14)]), (yyvsp[(13) - (14)])); ;}
     break;
 
   case 31:
-#line 120 "parser.ypp"
+#line 125 "parser.ypp"
     { (yyval) = rule_Statement__WHILE_Statement((Expression*)(yyvsp[(2) - (9)]), (yyvsp[(4) - (9)]), (yyvsp[(7) - (9)]), (yyvsp[(8) - (9)])); ;}
     break;
 
   case 32:
-#line 121 "parser.ypp"
+#line 126 "parser.ypp"
     { rule_Statement__BREAK_SC(); ;}
     break;
 
   case 33:
-#line 124 "parser.ypp"
+#line 129 "parser.ypp"
     { openScope(); ;}
     break;
 
   case 34:
-#line 125 "parser.ypp"
+#line 130 "parser.ypp"
     { closeScope(); ;}
     break;
 
   case 35:
-#line 126 "parser.ypp"
+#line 131 "parser.ypp"
     { openWhileScope(); ;}
     break;
 
   case 36:
-#line 127 "parser.ypp"
+#line 132 "parser.ypp"
     { closeWhileScope(); ;}
     break;
 
   case 37:
-#line 132 "parser.ypp"
+#line 136 "parser.ypp"
     { (yyval) = rule_Call__ID_ExpList((Variable*)(yyvsp[(1) - (4)]), (ExprList*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 38:
-#line 134 "parser.ypp"
+#line 138 "parser.ypp"
     { (yyval) = rule_Call__ID((Variable*)(yyvsp[(1) - (3)])); ;}
     break;
 
   case 39:
-#line 138 "parser.ypp"
+#line 142 "parser.ypp"
     { (yyval) = new ExprList(); ((ExprList*)(yyval))->v.push_back((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 40:
-#line 140 "parser.ypp"
+#line 144 "parser.ypp"
     { (yyval) = (yyvsp[(3) - (3)]); ((ExprList*)(yyval))->v.push_back((Expression*)(yyvsp[(1) - (3)])); ;}
     break;
 
   case 41:
-#line 142 "parser.ypp"
+#line 147 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
   case 42:
-#line 143 "parser.ypp"
+#line 149 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
   case 43:
-#line 144 "parser.ypp"
+#line 151 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
   case 44:
-#line 147 "parser.ypp"
+#line 154 "parser.ypp"
     { (yyval)=(yyvsp[(2) - (3)]); ;}
     break;
 
   case 45:
-#line 149 "parser.ypp"
+#line 156 "parser.ypp"
     { (yyval) = rule_Exp__ID_Exp((Variable*)(yyvsp[(1) - (4)]), (Expression*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 46:
-#line 151 "parser.ypp"
+#line 158 "parser.ypp"
     { (yyval) = rule_Exp__Exp_BINOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
     break;
 
   case 47:
-#line 153 "parser.ypp"
+#line 160 "parser.ypp"
     { (yyval) = rule_Exp__ID((Variable*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 48:
-#line 156 "parser.ypp"
+#line 163 "parser.ypp"
     { (yyval) = (yyvsp[(1) - (1)]); ;}
     break;
 
   case 49:
-#line 158 "parser.ypp"
+#line 165 "parser.ypp"
     { (yyval) = rule_Exp__NUM((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 50:
-#line 160 "parser.ypp"
+#line 167 "parser.ypp"
     {
                     if (atoi(((Expression*)(yyvsp[(1) - (2)]))->value.c_str()) > 255) {
                         output::errorByteTooLarge(yylineno, ((Expression*)(yyvsp[(1) - (2)]))->value);
@@ -1729,53 +1728,53 @@ yyreduce:
     break;
 
   case 51:
-#line 169 "parser.ypp"
+#line 176 "parser.ypp"
     { (yyval) = rule_Exp__STRING((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 52:
-#line 171 "parser.ypp"
+#line 178 "parser.ypp"
     { (yyval) = rule_Exp__TRUE(); ;}
     break;
 
   case 53:
-#line 173 "parser.ypp"
+#line 180 "parser.ypp"
     { (yyval) = rule_Exp__FALSE(); ;}
     break;
 
   case 54:
-#line 175 "parser.ypp"
+#line 182 "parser.ypp"
     { (yyval) = rule_Exp__NOT_Exp((Expression*)(yyvsp[(2) - (2)])); ;}
     break;
 
   case 55:
-#line 177 "parser.ypp"
+#line 184 "parser.ypp"
     { (yyval) = rule_Exp__Exp_AND_Exp((Expression*)(yyvsp[(1) - (4)]), (yyvsp[(3) - (4)]), (Expression*)(yyvsp[(4) - (4)])); ;}
     break;
 
   case 56:
-#line 179 "parser.ypp"
+#line 186 "parser.ypp"
     { (yyval) = rule_Exp__Exp_OR_Exp((Expression*)(yyvsp[(1) - (4)]), (yyvsp[(3) - (4)]), (Expression*)(yyvsp[(4) - (4)])); ;}
     break;
 
   case 57:
-#line 181 "parser.ypp"
+#line 188 "parser.ypp"
     { (yyval) = rule_Exp__Exp_RELOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
     break;
 
   case 58:
-#line 184 "parser.ypp"
+#line 191 "parser.ypp"
     { (yyval) = marker__M(); ;}
     break;
 
   case 59:
-#line 185 "parser.ypp"
+#line 192 "parser.ypp"
     { (yyval) = marker__N(); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 1779 "parser.tab.cpp"
+#line 1778 "parser.tab.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1989,7 +1988,7 @@ yyreturn:
 }
 
 
-#line 187 "parser.ypp"
+#line 194 "parser.ypp"
 
 
 void yyerror(const char*) { output::errorSyn(yylineno); }

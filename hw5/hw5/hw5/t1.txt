@@ -1,4 +1,7 @@
-void main() {
-	if(1==1) return;
+int foo(int x) {
+	return x+1;
+}
 
+void main() {
+	foo(1);
 }

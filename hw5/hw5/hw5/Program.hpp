@@ -69,7 +69,7 @@ struct Node {
     vector<int> nextList;
     virtual ~Node() {};
     
-    Node() : token(""), quad(""), nextList() {};
+    Node() : token(""), quad(""), size(1), nextList() {};
     Node(string s) : token(s) {}
     Node(TypeId tId) : type(tId), size(typeSize(tId)) {};
     Node(TypeId tId, int sz) : type(tId), size(sz) {};
@@ -89,14 +89,6 @@ struct Variable : public Node {
     Variable(string id, TypeId type) : id(id), Node(type) {}
 };
 
-struct Function : public Node {
-    Function(){};
-};
-
-struct Programe : public Node {
-    Programe(){};
-};
-
 struct Expression : public Node {
     string value;
     string place;
@@ -111,8 +103,6 @@ struct Expression : public Node {
 struct ExprList : public Node {
     vector<Expression*> v;
 };
-
-/* Formal Declaration */
 
 struct FormList : public Node {
     vector<Variable*> idList;

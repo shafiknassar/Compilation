@@ -23,6 +23,7 @@
 using std::string;
 using std::vector;
 using std::map;
+using std::make_pair;
 
 struct Register {
     string regName;
@@ -47,6 +48,5 @@ struct MipsRegisters {
     string registerLookup(string varName);
     string getEmptyRegister();
     vector<string> getUsedRegisters();
-    
 };
 #endif /* RegisterPool_hpp */

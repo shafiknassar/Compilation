@@ -6,6 +6,7 @@
 #define FUNC_RES_REG "$v0"
 using std::map;
 using std::string;
+using std::make_pair;
 
 /*****************************************/
 /* global variables */
@@ -99,10 +100,6 @@ void closeWhileScope() { closeScope(); }
 /*****************************************/
 
 void rule_Program__end() {
-    if (!isMainDef) {
-        output::errorMainMissing();
-        exit(0);
-    }
     FuncTableEntry *mainEntry = funcLookup(tableStack, new Variable("main"));
     if (mainEntry->retType->type != M_VOID || mainEntry->paramTypes.size() != 0) {
         output::errorMainMissing();
@@ -114,26 +111,28 @@ void rule_Program__end() {
     ass.printCodeBuffer();
 }
 
-void rule_init()
-{
-    //TODO: TODO
-    vector<Variable*> *args = new vector<Variable*>();
-    args->push_back(new Variable(M_STRING));
+void rule_init() {
+    //MARK: DONE
     tableStack.push_back(*new Table());
     tableStack.back().isFunc  = false;
     tableStack.back().isWhile = false;
     offsetStack.push_back(0);
+    regsPool = MipsRegisters();
+    
+    vector<Variable*> *args = new vector<Variable*>();
+    args->push_back(new Variable(M_STRING));
     tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
-    args = new vector<Variable*>();
+    args->clear();
     args->push_back(new Variable(M_INT));
     tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
+    
+    ass.emitProgramInit();
 }
-
-void rule_Funcs__FuncDecl();
 
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
-    //TODO: TO-FUCKING-DO
+    //MARK: DONE
+    cout << "func header" << endl;
     if (!(retType->type == M_INT || retType->type == M_BYTE
           || retType->type == M_BOOL || retType->type == M_VOID))
     {
@@ -141,24 +140,12 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
         exit(0);
     }
     
-    if (var->id == "main") {
-        if (isMainDef) {
-            output::errorDef(yylineno, var->id);
-            exit(0);
-        } else {
-            isMainDef = true;
-        }
-    }
-    
     if (isAlreadyDefined(tableStack, var)) {
         output::errorDef(yylineno, var->id);
         exit(0);
     }
     
-    
     /* Declare function in scope (global) */
-    //vector<TypeId> argTypes;
-    //extractTypesFromFormList(*args, argTypes);
     tableStack.back().insertFunc(var->id, retType, args->idList);
     /* create function scope - openScope */
     Table &currScope = openFuncScope(var->id, retType);
@@ -170,11 +157,18 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     ass.emiFunctionHeader(var->id);
 }
 
+void rule_FuncBody(Node* stat) {
+    ass.bpatch(stat->nextList, ass.getNextInst());
+}
 
-FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
-                                            Variable *id, FormList *fl)
+/*****************************************/
+/* Formal Decleration Rules */
+/*****************************************/
+
+FormList* rule_FormalsList(Variable *id, FormList *fl)
 {
-    //TODO: TODO
+    //MARK: DONE
+    cout << "formal list" << endl;
     if(fl->redefined(id)) {
         output::errorDef(yylineno, id->id);
         exit(0);
@@ -185,21 +179,21 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
 
 Variable* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 {
-    //TODO: TODO
+    //MARK: DONE
+    cout << "formal dec" << endl;
     var->type = type->type;
     var->size = typeSize(var->type);
     if (isAlreadyDefined(tableStack, var)) {
         output::errorDef(yylineno, var->id);
         exit(0);
     }
-    //tableStack.back().insert(id, offsetStack.back());
-    //offsetStack.back() += type->size;
+
     return var;
 }
 
 Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num)
 {
-    //TODO: TODO
+    //MARK: DONE
     int arr_size = atoi(num->value.c_str());
     if (arr_size <= 0 || arr_size >= 256) {
         output::errorInvalidArraySize(yylineno, var->id);
@@ -216,9 +210,6 @@ Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *nu
         output::errorDef(yylineno, var->id);
         exit(0);
     }
-    //tableStack.back().insertArr(id, offsetStack.back(), arr_size);
-    //type->size *= arr_size;
-    //offsetStack.back() += type->size;
     
     return var;
 }
@@ -226,7 +217,7 @@ Variable* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *nu
 
 Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *num)
 {
-    //TODO: TODO
+    //MARK: DONE
     int arr_size = atoi(num->value.c_str());
     if (arr_size > 255) {
         output::errorByteTooLarge(yylineno, num->value);
@@ -332,7 +323,6 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
-    //cout << size << " | " << var->size << " | " << exp->size << endl;
     if(isArrType(var->type) && var->size != exp->size) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -366,8 +356,14 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
         output::errorMismatch(yylineno);
         exit(0);
     }
+    int size = 0;
+    string sizeReg = regsPool.getEmptyRegister();
+    stringstream ss;
+    if (isArrType(entry->type)) size = ((ArrTableEntry*)entry)->size;
     /* if needed, value of id can be assigned here */
-    ass.assignValToArrElem(entry->offset*WORD_SIZE, exp->place, rval->place);
+    ss << size;
+    ass.emitCode("li " + sizeReg + ", " + ss.str());
+    ass.assignValToArrElem(entry->offset*WORD_SIZE, sizeReg, exp->place, rval->place);
 }
 
 void rule_Statement__RETURN_SC()
@@ -378,7 +374,8 @@ void rule_Statement__RETURN_SC()
         output::errorMismatch(yylineno);
         exit(0);
     }
-    ass.emitFunctionReturn();
+    string funcName = tableStack.back().getEntryName();
+    ass.emitFunctionReturn(funcName);
 }
 
 void rule_Statement__RETURN_Exp_SC(Expression *exp)
@@ -393,7 +390,8 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
-    ass.emitFunctionReturn(exp->place);
+    string funcName = tableStack.back().getEntryName();
+    ass.emitFunctionReturn(funcName, exp->place);
     regsPool.unbind(exp->place);
 }
 
@@ -494,10 +492,11 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
     return res;
 }
 
-vector<string> getPlacesFromList(vector<Expression*> list) {
-    vector<string> res;
+vector<pair<string, int> > getPlacesFromList(vector<Expression*> list) {
+    vector<pair<string, int> > res;
     for (int i = 0; i< list.size(); i++) {
-        res.push_back(list[i]->place);
+        int ifArr = list[i]->size;
+        res.push_back(make_pair(list[i]->place, ifArr));
     }
     return res;
 }
@@ -507,7 +506,7 @@ vector<string> getPlacesFromList(vector<Expression*> list) {
 /*****************************************/
 Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 {
-    //TODO: TODO
+    //MARK: DONE
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -521,18 +520,21 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
     Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
     vector<int> usedRegistersIndices;
     vector<string> usedRegisters = regsPool.getUsedRegisters();
-    vector<string> argsPlaces = getPlacesFromList(expList->v);
+    vector<pair<string, int> > argsPlaces = getPlacesFromList(expList->v);
     regsPool.unbindAll(usedRegisters);
     ass.emitFunctionCall(usedRegisters, funcData->name, argsPlaces);
     regsPool.bindAll(usedRegisters);
-    regsPool.unbindAll(argsPlaces);
+    for (int i = 0; i < argsPlaces.size(); i++) {
+        regsPool.unbind(string(argsPlaces[i].first));
+    }
+    
     exp->place = FUNC_RES_REG;
     
     return exp;
 }
 
 Expression* rule_Call__ID(Variable *var) {
-    //TODO: TODO
+    //MARK: DONE
     FuncTableEntry *funcData = funcLookup(tableStack, var);
     if (NULL == funcData) {
         output::errorUndefFunc(yylineno, var->id);
@@ -548,7 +550,7 @@ Expression* rule_Call__ID(Variable *var) {
     Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
     vector<string> usedRegisters = regsPool.getUsedRegisters();
     regsPool.unbindAll(usedRegisters);
-    ass.emitFunctionCall(usedRegisters, funcData->name, vector<string>());
+    ass.emitFunctionCall(usedRegisters, funcData->name, vector<pair<string, int> >());
     regsPool.bindAll(usedRegisters);
     exp->place = FUNC_RES_REG;
     

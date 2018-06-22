@@ -77,6 +77,7 @@ struct Table {
     FuncTableEntry* getFuncEntry(string name);
     TableEntry* getEntry(string name);
     TableEntry* getEntry(Variable *id);
+    string getEntryName();
     
     bool isDefinedInScope(Variable *id);
 };
