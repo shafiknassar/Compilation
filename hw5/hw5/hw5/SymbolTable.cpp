@@ -11,9 +11,9 @@
 vector<string>* FuncTableEntry::getArgs() {
     vector<string> *args = new vector<string>();
     for (int i = (int)paramTypes.size()-1; i >= 0; i--) {
-        string typeStr = etos(paramTypes.at(i)->id);
-        if (isArrType(paramTypes.at(i)->id)) {
-            TypeId type = convertFromArrType(paramTypes.at(i)->id);
+        string typeStr = etos(paramTypes.at(i)->type);
+        if (isArrType(paramTypes.at(i)->type)) {
+            TypeId type = convertFromArrType(paramTypes.at(i)->type);
             typeStr = output::makeArrayType(etos(type), paramTypes.at(i)->size);
         }
         args->push_back(typeStr);
@@ -42,7 +42,7 @@ void Table::insertArr(Variable *id, int offset, int size) {
     entryStack.push_back(tmp);
 }
 
-void Table::insertFunc(string name, Type *retType, vector<Type*> &paramTypes) {
+void Table::insertFunc(string name, Type *retType, vector<Variable*> &paramTypes) {
     FuncTableEntry *tmp = new FuncTableEntry();
     tmp->name       = name;
     tmp->type       = FUNC;
@@ -53,7 +53,9 @@ void Table::insertFunc(string name, Type *retType, vector<Type*> &paramTypes) {
      most easily acquired from a struct
      specificaly created to FormalDecls
      */
-    tmp->paramTypes = paramTypes;
+    for (int i = 0; i < paramTypes.size(); ++i) {
+        tmp->paramTypes.push_back(new Type(paramTypes[i]->type, paramTypes[i]->size));
+    }
     entryStack.push_back(tmp);
 }
 
