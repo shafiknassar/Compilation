@@ -525,13 +525,8 @@ Expression* rule_Call__ID(Variable *var) {
         output::errorPrototypeMismatch(yylineno, var->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
-<<<<<<< HEAD
-    Expression* exp = new Expression(funcData->retType->id, funcData->retType->size);
-    
-    return exp;
-=======
+
     return new Expression(funcData->retType->type, funcData->retType->size);
->>>>>>> 2cdf7f46b14a69f4860001f86910f104b287435e
 }
 
 /*****************************************/
