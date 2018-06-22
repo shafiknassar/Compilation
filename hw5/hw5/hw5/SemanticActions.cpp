@@ -29,7 +29,7 @@ void printScope()
         if (entry->type == FUNC) {
             FuncTableEntry *func_entry = (FuncTableEntry*)entry;
             vector<string> *args = func_entry->getArgs();
-            type = output::makeFunctionType(etos(func_entry->retType->id), *args);
+            type = output::makeFunctionType(etos(func_entry->retType->type), *args);
         } else if (isArrType(entry->type)) {
             ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
             TypeId arr_type = convertFromArrType(arr_entry->type);
@@ -103,7 +103,7 @@ void rule_Program__end() {
         exit(0);
     }
     FuncTableEntry *mainEntry = funcLookup(tableStack, new Variable("main"));
-    if (mainEntry->retType->id != M_VOID || mainEntry->paramTypes.size() != 0) {
+    if (mainEntry->retType->type != M_VOID || mainEntry->paramTypes.size() != 0) {
         output::errorMainMissing();
         exit(0);
     }
@@ -133,8 +133,8 @@ void rule_Funcs__FuncDecl();
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
     //TODO: TO-FUCKING-DO
-    if (!(retType->id == M_INT || retType->id == M_BYTE
-          || retType->id == M_BOOL || retType->id == M_VOID))
+    if (!(retType->type == M_INT || retType->type == M_BYTE
+          || retType->type == M_BOOL || retType->type == M_VOID))
     {
         output::errorMismatch(yylineno);
         exit(0);
@@ -164,7 +164,7 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
     for (int i = args->size()-1; i >= 0 ; i--) {
-        currScope.insert(args->idList[i], args->typeList[i]->id, argOffsets[i]);
+        currScope.insert(args->idList[i], args->typeList[i]->type, argOffsets[i]);
     }
     
 }
@@ -186,7 +186,7 @@ FormList* rule_FormalsList__FormalDecl_COMMA_FormalsList(
 FormDec* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 {
     //TODO: TODO
-    var->type = type->id;
+    var->type = type->type;
     var->size = typeSize(var->type);
     if (isAlreadyDefined(tableStack, var)) {
         output::errorDef(yylineno, var->id);
@@ -205,9 +205,9 @@ FormDec* rule_FormalDecl__Type_ID_NUM(Type *type, Variable *var, Expression *num
         output::errorInvalidArraySize(yylineno, var->id);
         exit(0);
     }
-    var->type = convertToArrType(type->id);
+    var->type = convertToArrType(type->type);
     var->size = arr_size;
-    type->id = convertToArrType(type->id);
+    type->type = convertToArrType(type->type);
     type->size = var->size;
     
     
@@ -255,7 +255,7 @@ void rule_Statement__Type_ID_SC(Type *type, Variable *var)
         output::errorDef(yylineno, var->id);
         exit(0);
     }
-    tableStack.back().insert(var, type->id, offsetStack.back());
+    tableStack.back().insert(var, type->type, offsetStack.back());
     offsetStack.back() += type->size;
     ass.allocateLocalVar(WORD_SIZE);
 }
@@ -267,7 +267,7 @@ void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
         output::errorInvalidArraySize(yylineno, var->id);
         exit(0);
     }
-    var->type = convertToArrType(type->id);
+    var->type = convertToArrType(type->type);
     var->size = arr_size;
     if (var->type == ERROR) {
         output::errorMismatch(yylineno);
@@ -298,7 +298,7 @@ void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num)
 void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression *exp)
 {
     //MARK: DONE
-    var->type = type->id;
+    var->type = type->type;
     var->size = exp->size;
     if (!TYPES_MATCH(var, exp) &&
         !(var->type == M_INT && exp->type == M_BYTE)) {
@@ -310,7 +310,7 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
         output::errorDef(yylineno, var->id);
         exit(0);
     }
-    tableStack.back().insert(var, type->id, offsetStack.back());
+    tableStack.back().insert(var, type->type, offsetStack.back());
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
     ass.allocateLocalVar(WORD_SIZE);
@@ -377,7 +377,7 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
 void rule_Statement__RETURN_SC()
 {
     //MARK: DONE
-    if (tableStack.back().retType->id != M_VOID)
+    if (tableStack.back().retType->type != M_VOID)
     {
         output::errorMismatch(yylineno);
         exit(0);
@@ -388,10 +388,10 @@ void rule_Statement__RETURN_SC()
 void rule_Statement__RETURN_Exp_SC(Expression *exp)
 {
     //MARK: DONE
-    if (tableStack.back().retType->id == M_INT && exp->type == M_BYTE)
+    if (tableStack.back().retType->type == M_INT && exp->type == M_BYTE)
         return;
     
-    if (tableStack.back().retType->id != exp->type &&
+    if (tableStack.back().retType->type != exp->type &&
             tableStack.back().retType->size != exp->size)
     {
         output::errorMismatch(yylineno);
@@ -471,11 +471,11 @@ bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
         return false;
     }
     for (int i = 0; i < actual.size(); ++i) {
-        if (expected[i]->id == M_INT && actual[i]->type == M_BYTE)
+        if (expected[i]->type == M_INT && actual[i]->type == M_BYTE)
         {
             continue;
         }
-        if (expected[i]->id != actual[i]->type ||
+        if (expected[i]->type != actual[i]->type ||
                 expected[i]->size != actual[i]->size)
         {
             return false;
@@ -488,9 +488,9 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
 {
     vector<string> *res = new vector<string>();
     for (int i = (int)paramTypes.size() - 1 ; i >= 0 ; i--) {
-        string name = etos(paramTypes[i]->id);
-        if (isArrType(paramTypes[i]->id)) {
-            TypeId t = convertFromArrType(paramTypes[i]->id);
+        string name = etos(paramTypes[i]->type);
+        if (isArrType(paramTypes[i]->type)) {
+            TypeId t = convertFromArrType(paramTypes[i]->type);
             name = output::makeArrayType(etos(t), paramTypes[i]->size);
         }
         res->push_back(name);
@@ -514,7 +514,7 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
         output::errorPrototypeMismatch(yylineno, var->id, *strs);
         exit(0);
     }
-    return new Expression(funcData->retType->id, funcData->retType->size);
+    return new Expression(funcData->retType->type, funcData->retType->size);
 }
 
 Expression* rule_Call__ID(Variable *var) {
@@ -529,7 +529,7 @@ Expression* rule_Call__ID(Variable *var) {
         output::errorPrototypeMismatch(yylineno, var->id, *typeListToStringVector(funcData->paramTypes));
         exit(0);
     }
-    return new Expression(funcData->retType->id, funcData->retType->size);
+    return new Expression(funcData->retType->type, funcData->retType->size);
 }
 
 /*****************************************/

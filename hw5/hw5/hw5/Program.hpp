@@ -64,27 +64,28 @@ TypeId convertToArrType(TypeId arr_t);
 struct Node {
     string token;
     string quad;
+    TypeId type;
+    int size;
     vector<int> nextList;
     virtual ~Node() {};
     
     Node() : token(""), quad(""), nextList() {};
     Node(string s) : token(s) {}
+    Node(TypeId tId) : type(tId), size(typeSize(tId)) {};
+    Node(TypeId tId, int sz) : type(tId), size(sz) {};
 };
 
 struct Type : public Node {
-    TypeId id;
-    int size;
-    Type(TypeId id, int size) : id(id), size(size) {};
-    Type(Type const &t)       : id(t.id), size(t.size) {};
-    Type()                    : id(NONE), size(-1) {}
+    Type(TypeId tId) : Node(tId) {};
+    Type(TypeId tId, int size) : Node(tId, size) {};
+    Type(Type const &t)       : Node(t.type, t.size) {};
+    Type()                    : Node(NONE) {}
 };
 
 struct Variable : public Node {
     string id;
-    TypeId type;
-    int size;
     Variable(string id) : id(id) {}
-    Variable(string id, TypeId type) : id(id), type(type) {}
+    Variable(string id, TypeId type) : id(id), Node(type) {}
 };
 
 struct Function : public Node {
@@ -96,17 +97,14 @@ struct Programe : public Node {
 };
 
 struct Expression : public Node {
-    TypeId type;
     string value;
     string place;
     vector<int> trueList;
     vector<int> falseList;
     
-    int size;
-    
-    Expression(TypeId type) : type(type), size(typeSize(type)) {}
-    Expression(TypeId type, int size) : type(type), size(size) {}
-    Expression(TypeId type, string value) : type(type), value(value) {}
+    Expression(TypeId type) : Node(type) {}
+    Expression(TypeId type, int size) : Node(type, size) {}
+    Expression(TypeId type, string value) : Node(type), value(value) {}
 };
 
 struct ExprList : public Node {
