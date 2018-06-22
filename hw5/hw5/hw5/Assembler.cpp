@@ -239,3 +239,10 @@ void Assembler::emitPrint() {
     codeBuff.emit("syscall");
     codeBuff.emit("jr $ra");
 }
+
+void Assembler::emiFunctionHeader(string funName) {
+    codeBuff.emit(funName + string(":"));
+    codeBuff.emit("addu $sp, $sp, -4");
+    codeBuff.emit("sw   $fp, ($sp)");
+    codeBuff.emit("addu $fp, $sp, 4");
+}

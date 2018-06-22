@@ -62,6 +62,8 @@ public:
      */
     void emitDivByZeroHandler(); /* TODO: implement */
     
+    void emiFunctionHeader(string funName);
+    
     void emitPrint();
     
     void emitPrinti();
