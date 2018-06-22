@@ -166,7 +166,7 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     for (int i = args->size()-1; i >= 0 ; i--) {
         currScope.insert(args->idList[i], args->idList[i]->type, argOffsets[i]);
     }
-    
+    ass.emiFunctionHeader(var->id);
 }
 
 
