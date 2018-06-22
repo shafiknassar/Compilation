@@ -143,6 +143,7 @@ ExpList      : Exp
              | Exp COMMA ExpList
                 { $$ = $3; ((ExprList*)$$)->v.push_back((Expression*)$1); }
 ;
+
 Type         : INT
                 { $$=$1; }
              | BYTE
@@ -150,6 +151,7 @@ Type         : INT
              | BOOL
                 { $$=$1; }
 ;
+
 Exp          : LPAREN Exp RPAREN
                 { $$=$2; }
              | ID LBRACK Exp RBRACK

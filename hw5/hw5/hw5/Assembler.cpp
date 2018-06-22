@@ -41,23 +41,23 @@ void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
     ssVarOs << varOS;
     if (isArr) { /* reference semantics */
         //reg <- fp + varOS
-        codeBuff.emit("move " + regName + ", $fp");
-        codeBuff.emit("addu " + regName + ", " + regName + ", " + ssVarOs.str());
+        codeBuff.emit("    move " + regName + ", $fp");
+        codeBuff.emit("    addu " + regName + ", " + regName + ", " + ssVarOs.str());
     } else {
-        codeBuff.emit("lw " + regName + ", " + ssVarOs.str() + "($fp)");
+        codeBuff.emit("    lw " + regName + ", " + ssVarOs.str() + "($fp)");
     }
 }
 
 void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
-    codeBuff.emit("sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
+    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
     stringstream ssArrOs;
     ssArrOs << arrOS;
-    codeBuff.emit("lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
+    codeBuff.emit("    lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
 void Assembler::emitLoadConst(string regName, string val) {
-    codeBuff.emit("li " + regName + ", " + val);
+    codeBuff.emit("    li " + regName + ", " + val);
 }
 
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place) {
@@ -70,10 +70,10 @@ int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string sr
     } else if (op == MUL_OP) {
         mipsOp = "mul ";
     } else if (op == DIV_OP) {
-        res = codeBuff.emit("beq " + src2Place + ", 0, div_by_zero_handler");
+        res = codeBuff.emit("    beq " + src2Place + ", 0, div_by_zero_handler");
         mipsOp = "div ";
     }
-    int tmp = codeBuff.emit(mipsOp + trgPlace + ", " + src1Place + ", " + src2Place);
+    int tmp = codeBuff.emit("    " + mipsOp + trgPlace + ", " + src1Place + ", " + src2Place);
     res = (res == -1)? tmp : res;
     return res;
 }
@@ -91,57 +91,63 @@ int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
     }
     string to_emit = trans[op];
     
-    return codeBuff.emit(to_emit + src1Place + ", " + src2Place +", ");
+    return codeBuff.emit("    " + to_emit + src1Place + ", " + src2Place +", ");
 };
 
 void Assembler::emitFunctionReturn(string funcName, string resRegName) {
     if (resRegName != "") {
-        codeBuff.emit("move $v0, " + resRegName);
+        codeBuff.emit("    move $v0, " + resRegName);
     }
     if (funcName == "main") {
-        codeBuff.emit("li $v0,0");
-        codeBuff.emit("syscall");
+        codeBuff.emit("    li $v0,10");
+        codeBuff.emit("    syscall");
     } else {
-        codeBuff.emit("move $sp,$fp");
-        codeBuff.emit("sub $sp,$sp,4");
-        codeBuff.emit("lw $fp,($sp)");
-        codeBuff.emit("add $sp,$sp,4");
-        codeBuff.emit("jr $ra");
+        codeBuff.emit("    move $sp,$fp");
+        codeBuff.emit("    sub $sp,$sp,4");
+        codeBuff.emit("    lw $fp,($sp)");
+        codeBuff.emit("    addu $sp,$sp,4");
+        codeBuff.emit("    jr $ra");
     }
-    codeBuff.emit(".end " + funcName);
+    codeBuff.emit(".end " + funcName + "\n");
 }
 
 void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<pair<string, int> > args) {
     //save used registers
+    DBUG("usedRegs: " << usedRegs.size())
     for (int i = 0; i < usedRegs.size(); i++) {
         string regName = usedRegs[i];
-        codeBuff.emit("sub $sp,$sp,4");
-        codeBuff.emit("sw " + regName + ",0($sp)");
+        
+        codeBuff.emit("    sub $sp,$sp,4");
+        codeBuff.emit("    sw " + regName + ",0($sp)");
     }
     
     //save return addr ($ra)
-    codeBuff.emit("sub $sp, $sp, 4");
-    codeBuff.emit("sw $ra, 0($sp)");
+    codeBuff.emit("    sub $sp, $sp, 4");
+    codeBuff.emit("    sw $ra, 0($sp)");
     
     //print("str") take string as param
+    DBUG("check if print")
     if(funcName == "print") {
         string last_label = getLastStringLiteral();
-        codeBuff.emit("la  $t0, " + last_label);
-        codeBuff.emit("sub $sp, $sp, 4");
-        codeBuff.emit("sw $t0, 0($sp)");
+        codeBuff.emit("    la  $t0, " + last_label);
+        codeBuff.emit("    sub $sp, $sp, 4");
+        codeBuff.emit("    sw $t0, 0($sp)");
     } else {
         //pass args on stack
+        DBUG("pass arg")
         for (int i = 0; i < args.size(); i++) {
             string reg = string(args[i].first);
             int size = args[i].second;
-            
+            DBUG("reg name: " << reg << " reg type size: " << size)
             //pass array by value!
-            for (int j = 0; i < size; j++) {
-                stringstream ss("");
+            for (int j = 0; j < size; j++) {
+                stringstream ss;
                 ss << j*WORD_SIZE;
-                codeBuff.emit("lw $t0, " + ss.str() + "("+reg+")");
-                codeBuff.emit("sub $sp, $sp, 4");
-                codeBuff.emit("sw $t0, 0($sp)");
+                DBUG(ss.str())
+                codeBuff.emit("    lw $t0, " + ss.str() + "("+reg+")");
+                codeBuff.emit("    sub $sp, $sp, 4");
+                codeBuff.emit("    sw $t0, 0($sp)");
+                ss.str("");
             }
         }
     }
@@ -153,31 +159,33 @@ void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> 
     for (int i = 0; i < args.size(); i++) {
         int size = args[i].second;
         for (int j = 0; j < size; j++) {
-            codeBuff.emit("add $sp, $sp, 4");
+            codeBuff.emit("    addu $sp, $sp, 4");
         }
     }
     
     //restore return addr ($ra)
-    codeBuff.emit("lw $ra, 0($sp)");
-    codeBuff.emit("add $sp, $sp, 4");
+    codeBuff.emit("    lw $ra, 0($sp)");
+    codeBuff.emit("    addu $sp, $sp, 4");
     
     //restore used registers
     for (int i = (int)usedRegs.size() - 1; i >= 0; --i) {
         string regName = usedRegs[i];
-        codeBuff.emit("lw " + regName + ",0($sp)");
-        codeBuff.emit("add $sp, $sp, 4");
+        codeBuff.emit("    lw " + regName + ",0($sp)");
+        codeBuff.emit("    addu $sp, $sp, 4");
     }
 }
 
 void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
                                  vector<pair<string, int> > args) {
     //save used registers, $ra and push args to stack
+    DBUG("befor call")
     emitBeforCall(usedRegs, funcName, args);
     
     //call func
-    codeBuff.emit("jal " + funcName);
+    codeBuff.emit("    jal " + funcName);
     
     //restore used registers, $ra and pop args from stack
+    DBUG("after call")
     emitAfterCall(usedRegs, args);
     
 }
@@ -185,8 +193,8 @@ void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
 void Assembler::allocateLocalVar(int size) {
     stringstream ssSize;
     ssSize << size;
-    codeBuff.emit("sw $zero, ($sp)"); /* inits numerical values as 0, booleans as false */
-    codeBuff.emit("addu $sp, $sp, " + ssSize.str());
+    codeBuff.emit("    sw $zero, ($sp)"); /* inits numerical values as 0, booleans as false */
+    codeBuff.emit("    addu $sp, $sp, " + ssSize.str());
 }
 
 void Assembler::allocateLocalArr(int numOfElems, int elemSize) {
@@ -201,10 +209,10 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size, string t
         // sw $tmp, trgOf+i*4($fp)
         stringstream ss;
         ss << i*WORD_SIZE;
-        codeBuff.emit("lw " + tmpReg + ", " + ss.str() + "("+srcAddrsReg+")");
+        codeBuff.emit("    lw " + tmpReg + ", " + ss.str() + "("+srcAddrsReg+")");
         ss.str(""); /* clear stream */
         ss << i*WORD_SIZE + trgOs;
-        codeBuff.emit("sw " + tmpReg + ", " + ss.str() + "($fp)");
+        codeBuff.emit("    sw " + tmpReg + ", " + ss.str() + "($fp)");
     }
 }
 
@@ -212,18 +220,18 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size, string t
 void Assembler::assignValToVar(int varOS, string regName) {
     stringstream ssVarOs;
     ssVarOs << varOS;
-    codeBuff.emit("sw " + regName + ", " + ssVarOs.str() + "($fp)");
+    codeBuff.emit("    sw " + regName + ", " + ssVarOs.str() + "($fp)");
 }
 
 void Assembler::assignValToArrElem(int arrOS, string arrSizeReg,
                                    string idxRegName, string srcRegName)
 {
-    codeBuff.emit("bge " + idxRegName + ", " + arrSizeReg + ", " + "index_out_of_bound");
-    codeBuff.emit("sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "index_out_of_bound");
+    codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
+    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
     stringstream ssArrOs;
     ssArrOs << arrOS;
-    codeBuff.emit("sw " + srcRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
+    codeBuff.emit("    sw " + srcRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
 /* CodeBuffer APIs */
@@ -252,56 +260,60 @@ void Assembler::printCodeBuffer() {
 void Assembler::emitDivByZeroHandler() {
     codeBuff.emit("div_by_zero_handler:");
     
-    codeBuff.emit("la $a0,str_0");
-    codeBuff.emit("li $v0,4");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    la $a0,str_0");
+    codeBuff.emit("    li $v0,4");
+    codeBuff.emit("    syscall");
     
-    codeBuff.emit("la $a0,str_2");
-    codeBuff.emit("li $v0,4");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    la $a0,str_2");
+    codeBuff.emit("    li $v0,4");
+    codeBuff.emit("    syscall");
     
-    codeBuff.emit("li $v0,10");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    li $v0,10");
+    codeBuff.emit("    syscall");
+    codeBuff.emit(".end div_by_zero_handler\n");
     
 }
 
 void Assembler::emitIndexOutOfBoundsHandler() {
     codeBuff.emit("index_out_of_bounds_handler:");
     
-    codeBuff.emit("la $a0,str_1");
-    codeBuff.emit("li $v0,4");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    la $a0,str_1");
+    codeBuff.emit("    li $v0,4");
+    codeBuff.emit("    syscall");
     
-    codeBuff.emit("la $a0,str_2");
-    codeBuff.emit("li $v0,4");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    la $a0,str_2");
+    codeBuff.emit("    li $v0,4");
+    codeBuff.emit("    syscall");
     
-    codeBuff.emit("li $v0,10");
-    codeBuff.emit("syscall");
+    codeBuff.emit("    li $v0,10");
+    codeBuff.emit("    syscall");
+    codeBuff.emit(".end index_out_of_bounds_handler\n");
 }
 
 void Assembler::emitPrinti() {
     codeBuff.emit("printi:");
-    codeBuff.emit("lw $a0,4($sp)");
-    codeBuff.emit("li $v0,1");
-    codeBuff.emit("syscall");
-    codeBuff.emit("jr $ra");
+    codeBuff.emit("    lw $a0,4($sp)");
+    codeBuff.emit("    li $v0,1");
+    codeBuff.emit("    syscall");
+    codeBuff.emit("    jr $ra");
+    codeBuff.emit(".end printi\n");
 }
 
 
 void Assembler::emitPrint() {
     codeBuff.emit("print:");
-    codeBuff.emit("lw $a0,4($sp)");
-    codeBuff.emit("li $v0,4");
-    codeBuff.emit("syscall");
-    codeBuff.emit("jr $ra");
+    codeBuff.emit("    lw $a0,4($sp)");
+    codeBuff.emit("    li $v0,4");
+    codeBuff.emit("    syscall");
+    codeBuff.emit("    jr $ra");
+    codeBuff.emit(".end print\n");
 }
 
 void Assembler::emiFunctionHeader(string funName) {
     codeBuff.emit(funName + string(":"));
-    codeBuff.emit("addu $sp, $sp, -4");
-    codeBuff.emit("sw   $fp, ($sp)");
-    codeBuff.emit("addu $fp, $sp, 4");
+    codeBuff.emit("    addu $sp, $sp, -4");
+    codeBuff.emit("    sw   $fp, ($sp)");
+    codeBuff.emit("    addu $fp, $sp, 4");
 }
 
 void Assembler::emitProgramInit() {

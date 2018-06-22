@@ -20,7 +20,7 @@ using std::pair;
 /* defines */
 /***********************************/
 
-#define JUMP      "j "
+#define JUMP      "    j "
 #define ADD_OP    "+"
 #define SUB_OP    "-"
 #define MUL_OP    "*"

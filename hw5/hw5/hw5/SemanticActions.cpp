@@ -2,7 +2,7 @@
 #include "includes.h"
 #include "SemanticActions.hpp"
 
-#define JUMP "j "
+#define JUMP "    j "
 #define FUNC_RES_REG "$v0"
 using std::map;
 using std::string;
@@ -14,6 +14,8 @@ using std::make_pair;
 
 vector<Table> tableStack;
 vector<int>   offsetStack;
+vector<string> functionsStack;
+
 Assembler ass;
 MipsRegisters regsPool;
 bool isMainDef = false;
@@ -131,8 +133,8 @@ void rule_init() {
 
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
+    DBUG("func header")
     //MARK: DONE
-    cout << "func header" << endl;
     if (!(retType->type == M_INT || retType->type == M_BYTE
           || retType->type == M_BOOL || retType->type == M_VOID))
     {
@@ -147,18 +149,25 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     
     /* Declare function in scope (global) */
     tableStack.back().insertFunc(var->id, retType, args->idList);
+    
     /* create function scope - openScope */
     Table &currScope = openFuncScope(var->id, retType);
+    
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
     for (int i = args->size()-1; i >= 0 ; i--) {
         currScope.insert(args->idList[i], args->idList[i]->type, argOffsets[i]);
     }
+    
+    functionsStack.push_back(var->id);
     ass.emiFunctionHeader(var->id);
 }
 
 void rule_FuncBody(Node* stat) {
-    ass.bpatch(stat->nextList, ass.getNextInst());
+    string func_name = functionsStack.back();
+    if (tableStack.back().haveReturn) return;
+    ass.emitFunctionReturn(func_name);
+    //ass.bpatch(stat->nextList, ass.getNextInst());
 }
 
 /*****************************************/
@@ -168,7 +177,6 @@ void rule_FuncBody(Node* stat) {
 FormList* rule_FormalsList(Variable *id, FormList *fl)
 {
     //MARK: DONE
-    cout << "formal list" << endl;
     if(fl->redefined(id)) {
         output::errorDef(yylineno, id->id);
         exit(0);
@@ -180,7 +188,6 @@ FormList* rule_FormalsList(Variable *id, FormList *fl)
 Variable* rule_FormalDecl__Type_ID(Type *type, Variable *var)
 {
     //MARK: DONE
-    cout << "formal dec" << endl;
     var->type = type->type;
     var->size = typeSize(var->type);
     if (isAlreadyDefined(tableStack, var)) {
@@ -362,7 +369,7 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
     if (isArrType(entry->type)) size = ((ArrTableEntry*)entry)->size;
     /* if needed, value of id can be assigned here */
     ss << size;
-    ass.emitCode("li " + sizeReg + ", " + ss.str());
+    ass.emitCode("    li " + sizeReg + ", " + ss.str());
     ass.assignValToArrElem(entry->offset*WORD_SIZE, sizeReg, exp->place, rval->place);
 }
 
@@ -374,7 +381,9 @@ void rule_Statement__RETURN_SC()
         output::errorMismatch(yylineno);
         exit(0);
     }
-    string funcName = tableStack.back().getEntryName();
+    string funcName = functionsStack.back();
+    DBUG("func name: " << funcName)
+    if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName);
 }
 
@@ -390,7 +399,9 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
-    string funcName = tableStack.back().getEntryName();
+    string funcName = functionsStack.back();
+    DBUG("func name: " << funcName)
+    if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName, exp->place);
     regsPool.unbind(exp->place);
 }
@@ -579,7 +590,7 @@ Expression* rule_Exp__ID(Variable *var)
     Expression *res = new Expression(entry->type, size);
     string regName = regsPool.getEmptyRegister();
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
-    regsPool.bind(regName, var->id);
+    regsPool.bind(regName);
     res->place = regName;
     ass.emitLoadVar(entry->offset*WORD_SIZE, regName, isArrType(entry->type));
     return res;
@@ -601,13 +612,25 @@ Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
     Expression *res = new Expression(type);
     string regName = regsPool.getEmptyRegister();
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
-    regsPool.bind(regName, var->id);
+    regsPool.bind(regName);
     res->place = regName;
     ass.emitLoadArrElem(entry->offset*WORD_SIZE, exp->place, regName);
     regsPool.unbind(exp->place);
     delete exp;
     
     return res;
+}
+
+Expression* rule_Exp__Call(Expression* exp) {
+    string regName = regsPool.getEmptyRegister();
+    ass.emitCode("    move " + regName + ", $v0");
+    if(exp->type == M_BOOL){
+        exp->trueList = ass.makelist(ass.emitCode("    beq " + regName + ", " + "1, "));
+        exp->falseList = ass.makelist(ass.emitCode(JUMP));
+    }
+    regsPool.bind(regName);
+    exp->place = regName;
+    return exp;
 }
 
 Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *exp2)
@@ -624,7 +647,7 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *
     Expression* exp = new Expression(exp_type);
     exp->place = exp1->place;
     regsPool.unbind(exp1->place);
-    regsPool.bind(exp->place, expression);
+    regsPool.bind(exp->place);
     ass.emitBinOp(binop, exp->place, exp1->place, exp2->place);
     regsPool.unbind(exp2->place);
     
@@ -638,7 +661,7 @@ Expression* rule_Exp__NUM(Expression *num) {
     //MARK: DONE
     string reg = regsPool.getEmptyRegister();
     if (reg == not_found) {/*???*/}
-    regsPool.bind(reg, expression);
+    regsPool.bind(reg);
     num->place = reg;
     ass.emitLoadConst(reg, num->value);
     return num;

@@ -25,7 +25,7 @@ MipsRegisters::MipsRegisters() {
     }
 }
 
-void MipsRegisters::bind(string registerName, string var) {
+void MipsRegisters::bind(string registerName) {
     for (int i = 0; i < AVAILABLE_REGISTERS_NUM; i++) {
         if(registers[i].regName == registerName) registers[i].inUse = true;
     }

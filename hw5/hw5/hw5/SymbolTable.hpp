@@ -61,13 +61,14 @@ struct Table {
     vector<TableEntry*> entryStack;
     bool isWhile;
     bool isFunc;
+    bool haveReturn;
     Type *retType;
     
     /* Virtual D'tor */
     virtual ~Table() {};
     
     /*default C'tor*/
-    Table() : isWhile(false), isFunc(false), retType(new Type()) {}
+    Table() : isWhile(false), isFunc(false), haveReturn(false), retType(new Type()) {}
     
     void insert(string name, TypeId type, int offset);
     void insert(Variable *id, TypeId type, int offset);
@@ -77,7 +78,6 @@ struct Table {
     FuncTableEntry* getFuncEntry(string name);
     TableEntry* getEntry(string name);
     TableEntry* getEntry(Variable *id);
-    string getEntryName();
     
     bool isDefinedInScope(Variable *id);
 };

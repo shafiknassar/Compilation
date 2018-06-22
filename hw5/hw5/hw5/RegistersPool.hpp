@@ -16,7 +16,6 @@
 /******************************/
 
 #define not_found  "not found"
-#define expression "expression"
 #define AVAILABLE_REGISTERS_NUM 18
 #define WORD_SIZE 4
 
@@ -40,12 +39,11 @@ struct MipsRegisters {
     vector<Register> registers;//available registers
     
     MipsRegisters();
-    void bind(string registerName, string var);
+    void bind(string registerName);
     void bindAll(vector<string>& registersNames);
     void unbind(string registerName);
     void unbindAll(vector<string>& registersNames);
     string getVarName(string registerName);
-    string registerLookup(string varName);
     string getEmptyRegister();
     vector<string> getUsedRegisters();
 };

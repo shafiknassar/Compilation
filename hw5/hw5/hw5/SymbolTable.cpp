@@ -82,10 +82,6 @@ TableEntry* Table::getEntry(Variable *id) {
     return getEntry(id->id);
 }
 
-string Table::getEntryName() {
-    return entryStack.back()->name;
-}
-
 bool Table::isDefinedInScope(Variable *id) {
     for (int i = 0; i < entryStack.size(); ++i) {
         if (entryStack[i]->name == id->id) return true;

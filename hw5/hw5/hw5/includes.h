@@ -9,6 +9,9 @@
 #ifndef includes_h
 #define includes_h
 
+#define DBUG(...) \
+    cout << "DEBUG: " << __VA_ARGS__ << endl; \
+
 #include <stdio.h>
 #include <sstream>
 #include <stdlib.h>
