@@ -3,6 +3,7 @@
 #include "SemanticActions.hpp"
 
 #define JUMP "j "
+#define FUNC_RES_REG "$v0"
 using std::map;
 using std::string;
 
@@ -493,6 +494,14 @@ vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
     return res;
 }
 
+vector<string> getPlacesFromList(vector<Expression*> list) {
+    vector<string> res;
+    for (int i = 0; i< list.size(); i++) {
+        res.push_back(list[i]->place);
+    }
+    return res;
+}
+
 /*****************************************/
 /* Call Rules */
 /*****************************************/
@@ -509,7 +518,17 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
         output::errorPrototypeMismatch(yylineno, var->id, *strs);
         exit(0);
     }
-    return new Expression(funcData->retType->type, funcData->retType->size);
+    Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
+    vector<int> usedRegistersIndices;
+    vector<string> usedRegisters = regsPool.getUsedRegisters();
+    vector<string> argsPlaces = getPlacesFromList(expList->v);
+    regsPool.unbindAll(usedRegisters);
+    ass.emitFunctionCall(usedRegisters, funcData->name, argsPlaces);
+    regsPool.bindAll(usedRegisters);
+    regsPool.unbindAll(argsPlaces);
+    exp->place = FUNC_RES_REG;
+    
+    return exp;
 }
 
 Expression* rule_Call__ID(Variable *var) {
@@ -521,12 +540,19 @@ Expression* rule_Call__ID(Variable *var) {
     }
     if (funcData->paramTypes.size() != 0)
     {
-        
-        output::errorPrototypeMismatch(yylineno, var->id, *typeListToStringVector(funcData->paramTypes));
+        vector<string> *strs = typeListToStringVector(funcData->paramTypes);
+        output::errorPrototypeMismatch(yylineno, var->id, *strs);
         exit(0);
     }
-
-    return new Expression(funcData->retType->type, funcData->retType->size);
+    
+    Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
+    vector<string> usedRegisters = regsPool.getUsedRegisters();
+    regsPool.unbindAll(usedRegisters);
+    ass.emitFunctionCall(usedRegisters, funcData->name, vector<string>());
+    regsPool.bindAll(usedRegisters);
+    exp->place = FUNC_RES_REG;
+    
+    return exp;
 }
 
 /*****************************************/

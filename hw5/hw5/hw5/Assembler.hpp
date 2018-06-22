@@ -73,6 +73,7 @@ public:
     void emitLoadConst(string regName, string val);
     
     void emitFunctionReturn(string resRegName = "");
+    void emitFunctionCall(vector<string> usedRegisters, string funcName, vector<string> args);
     
     void allocateLocalVar(int size);
     void allocateLocalArr(int numOfElems, int elemSize);

@@ -98,6 +98,47 @@ void Assembler::emitFunctionReturn(string resRegName) {
     codeBuff.emit("jr $ra");
 }
 
+void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName, vector<string> args) {
+    //save used registers
+    for (int i = 0; i < usedRegs.size(); i++) {
+        string regName = usedRegs[i];
+        codeBuff.emit("sub $sp,$sp,4");
+        codeBuff.emit("sw " + regName + ",0($sp)");
+    }
+    
+    //save return addr ($ra)
+    codeBuff.emit("sub $sp,$sp,4");
+    codeBuff.emit("sw $ra,0($sp)");
+    
+    //pass args on stack
+    for (int i = 0; i < args.size(); i++) {
+        string place = args[i];
+        codeBuff.emit("sub $sp,$sp,4");
+        codeBuff.emit("sw " + place + ",0($sp)");
+    }
+    
+    //call func
+    codeBuff.emit("jal " + funcName);
+    
+    //clean args from stack
+    for (int i = 0; i < args.size(); i++) {
+        codeBuff.emit("add $sp,$sp,4");
+    }
+    
+    //restore return addr ($ra)
+    codeBuff.emit("lw $ra,0($sp)");
+    codeBuff.emit("add $sp,$sp,4");
+    
+    
+    //restore used registers
+    for (int i = usedRegs.size() - 1; i >= 0; --i) {
+        string regName = usedRegs[i];
+        codeBuff.emit("lw " + regName + ",0($sp)");
+        codeBuff.emit("add $sp,$sp,4");
+    }
+    
+}
+
 void Assembler::allocateLocalVar(int size) {
     stringstream ssSize;
     ssSize << size;

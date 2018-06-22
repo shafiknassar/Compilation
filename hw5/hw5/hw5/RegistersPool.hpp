@@ -17,7 +17,7 @@
 
 #define not_found  "not found"
 #define expression "expression"
-#define AVLABLE_REGISTERS_NUM 18
+#define AVAILABLE_REGISTERS_NUM 18
 #define WORD_SIZE 4
 
 using std::string;
@@ -25,11 +25,10 @@ using std::vector;
 using std::map;
 
 struct Register {
-    string varName;
+    string regName;
     bool inUse;
     
-    Register() : varName(""), inUse(false) {}
-    Register(string var, bool t): varName(var),inUse(t) {}
+    Register(string regName) : regName(regName), inUse(false) {}
     
     void free();
 };
@@ -37,15 +36,17 @@ struct Register {
 struct MipsRegisters {
     // 8-15=>$t0-$t7;
     // 16-23=>$s0-$s7; 24,25=>$t8,$t9;
-    vector<string> regs_names;
-    map<string, Register> registers; //available registers
+    vector<Register> registers;//available registers
     
     MipsRegisters();
     void bind(string registerName, string var);
+    void bindAll(vector<string>& registersNames);
     void unbind(string registerName);
+    void unbindAll(vector<string>& registersNames);
     string getVarName(string registerName);
     string registerLookup(string varName);
     string getEmptyRegister();
+    vector<string> getUsedRegisters();
     
 };
 #endif /* RegisterPool_hpp */
