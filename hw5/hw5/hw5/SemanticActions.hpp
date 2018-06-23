@@ -65,6 +65,7 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *var, Expression *exp1, Expre
 void rule_Statement__Call_SC();
 void rule_Statement__RETURN_SC();
 void rule_Statement__RETURN_Exp_SC(Expression *exp);
+Expression* checkType(Expression* cond);
 Node* rule_Statement__IF_Statement(Expression *exp, Node* marker_m, Node* stat, Node* marker_n);
 Node* rule_Statement__IF_ELSE_Statement(Expression *exp, Node* marker_m1,
                                        Node* stat1, Node* marker_n,

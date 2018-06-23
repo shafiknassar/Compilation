@@ -1,6 +1,5 @@
 
 #include "includes.h"
-#include "SemanticActions.hpp"
 
 #define JUMP "    j "
 #define FUNC_RES_REG "$v0"
@@ -24,24 +23,24 @@ bool isMainDef = false;
 /* 5ara 3arasak */
 /*****************************************/
 
-void printScope()
-{
-    Table curr_scope = tableStack.back();
-    for (int i = 0; i < curr_scope.entryStack.size(); i++) {
-        TableEntry *entry = (curr_scope.entryStack[i]);
-        string type(etos(entry->type));
-        if (entry->type == FUNC) {
-            FuncTableEntry *func_entry = (FuncTableEntry*)entry;
-            vector<string> *args = func_entry->getArgs();
-            type = output::makeFunctionType(etos(func_entry->retType->type), *args);
-        } else if (isArrType(entry->type)) {
-            ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
-            TypeId arr_type = convertFromArrType(arr_entry->type);
-            type = output::makeArrayType(etos(arr_type), arr_entry->size);
-        }
-        output::printID(entry->name, entry->offset, type);
-    }
-}
+//void printScope()
+//{
+//    Table curr_scope = tableStack.back();
+//    for (int i = 0; i < curr_scope.entryStack.size(); i++) {
+//        TableEntry *entry = (curr_scope.entryStack[i]);
+//        string type(etos(entry->type));
+//        if (entry->type == FUNC) {
+//            FuncTableEntry *func_entry = (FuncTableEntry*)entry;
+//            vector<string> *args = func_entry->getArgs();
+//            type = output::makeFunctionType(etos(func_entry->retType->type), *args);
+//        } else if (isArrType(entry->type)) {
+//            ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
+//            TypeId arr_type = convertFromArrType(arr_entry->type);
+//            type = output::makeArrayType(etos(arr_type), arr_entry->size);
+//        }
+//        output::printID(entry->name, entry->offset, type);
+//    }
+//}
 
 void openScope()
 {
@@ -56,8 +55,8 @@ void openScope()
 
 void closeScope()
 {
-    output::endScope();
-    printScope();
+    //output::endScope();
+    //printScope();
     tableStack.pop_back();
     offsetStack.pop_back();
 }
@@ -103,12 +102,11 @@ void closeWhileScope() { closeScope(); }
 
 void rule_Program__end() {
     FuncTableEntry *mainEntry = funcLookup(tableStack, new Variable("main"));
-    if (mainEntry->retType->type != M_VOID || mainEntry->paramTypes.size() != 0) {
+    if (!mainEntry ||
+        mainEntry->retType->type != M_VOID || mainEntry->paramTypes.size() != 0) {
         output::errorMainMissing();
         exit(0);
     }
-    /*output::endScope();
-    printScope();*/
     ass.printDataBuffer();
     ass.printCodeBuffer();
 }
@@ -133,7 +131,6 @@ void rule_init() {
 
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
-    DBUG("func header")
     //MARK: DONE
     if (!(retType->type == M_INT || retType->type == M_BYTE
           || retType->type == M_BOOL || retType->type == M_VOID))
@@ -156,6 +153,10 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
     for (int i = args->size()-1; i >= 0 ; i--) {
+        if (var->id == args->idList[i]->id) {
+            output::errorDef(yylineno, var->id);
+            exit(0);
+        }
         currScope.insert(args->idList[i], args->idList[i]->type, argOffsets[i]);
     }
     
@@ -367,7 +368,6 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
     string sizeReg = regsPool.getEmptyRegister();
     stringstream ss;
     if (isArrType(entry->type)) size = ((ArrTableEntry*)entry)->size;
-    /* if needed, value of id can be assigned here */
     ss << size;
     ass.emitCode("    li " + sizeReg + ", " + ss.str());
     ass.assignValToArrElem(entry->offset*WORD_SIZE, sizeReg, exp->place, rval->place);
@@ -382,7 +382,6 @@ void rule_Statement__RETURN_SC()
         exit(0);
     }
     string funcName = functionsStack.back();
-    DBUG("func name: " << funcName)
     if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName);
 }
@@ -392,26 +391,29 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
     //MARK: DONE
     if (tableStack.back().retType->type == M_INT && exp->type == M_BYTE)
         return;
-    
-    if (tableStack.back().retType->type != exp->type &&
-            tableStack.back().retType->size != exp->size)
+    TypeId func_ret_type = tableStack.back().retType->type;
+    if (func_ret_type == M_VOID ||
+       (func_ret_type != exp->type && func_ret_type != exp->size))
     {
         output::errorMismatch(yylineno);
         exit(0);
     }
     string funcName = functionsStack.back();
-    DBUG("func name: " << funcName)
     if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName, exp->place);
     regsPool.unbind(exp->place);
 }
 
-Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1, Node* marker_n) {
-    //MARK: DONE
+Expression* checkType(Expression* cond) {
     if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
+    return cond;
+}
+
+Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1, Node* marker_n) {
+    //MARK: DONE
     Node* stat = new Node();
     ass.bpatch(cond->trueList, marker_m->quad);
     vector<int> tmp = ass.merge(cond->falseList, stat1->nextList);
@@ -560,8 +562,9 @@ Expression* rule_Call__ID(Variable *var) {
     
     Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
     vector<string> usedRegisters = regsPool.getUsedRegisters();
+    vector<pair<string, int> > empty;
     regsPool.unbindAll(usedRegisters);
-    ass.emitFunctionCall(usedRegisters, funcData->name, vector<pair<string, int> >());
+    ass.emitFunctionCall(usedRegisters, funcData->name, empty);
     regsPool.bindAll(usedRegisters);
     exp->place = FUNC_RES_REG;
     
@@ -576,13 +579,12 @@ Expression* rule_Exp__ID(Variable *var)
 {
     //MARK: DONE
     TableEntry *entry = idLookup(tableStack, var);
-    
+    //DBUG("from ID " << entry->name << " " << etos(entry->type))
     int size = 1;
     if (NULL == entry) {
         output::errorUndef(yylineno, var->id);
         exit(0);
     }
-    
     if (isArrType(entry->type))
     {
         size = ((ArrTableEntry*)entry)->size;

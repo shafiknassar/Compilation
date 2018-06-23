@@ -10,9 +10,9 @@
 using std::vector;
 using std::string;
 using std::map;
-map<string, int> rtoi;
+using std::pair;
 
-MipsRegisters::MipsRegisters() {
+MipsRegisters::MipsRegisters() : rtoi() {
     string reg_names[] = {"$t0", "$t1", "$t2", "$t3",
                           "$t4", "$t5", "$t6", "$t7",
                           "$s0", "$s1", "$s2", "$s3",

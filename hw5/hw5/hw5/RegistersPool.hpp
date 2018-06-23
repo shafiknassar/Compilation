@@ -46,5 +46,8 @@ struct MipsRegisters {
     string getVarName(string registerName);
     string getEmptyRegister();
     vector<string> getUsedRegisters();
+    
+private:
+    map<string, int> rtoi;
 };
 #endif /* RegisterPool_hpp */

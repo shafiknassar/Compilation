@@ -113,7 +113,7 @@ void Assembler::emitFunctionReturn(string funcName, string resRegName) {
 
 void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<pair<string, int> > args) {
     //save used registers
-    DBUG("usedRegs: " << usedRegs.size())
+    //DBUG("usedRegs: " << usedRegs.size())
     for (int i = 0; i < usedRegs.size(); i++) {
         string regName = usedRegs[i];
         
@@ -126,7 +126,7 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
     codeBuff.emit("    sw $ra, 0($sp)");
     
     //print("str") take string as param
-    DBUG("check if print")
+    //DBUG("check if print")
     if(funcName == "print") {
         string last_label = getLastStringLiteral();
         codeBuff.emit("    la  $t0, " + last_label);
@@ -134,16 +134,16 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
         codeBuff.emit("    sw $t0, 0($sp)");
     } else {
         //pass args on stack
-        DBUG("pass arg")
+        //DBUG("pass arg")
         for (int i = 0; i < args.size(); i++) {
             string reg = string(args[i].first);
             int size = args[i].second;
-            DBUG("reg name: " << reg << " reg type size: " << size)
+            //DBUG("reg name: " << reg << " reg type size: " << size)
             //pass array by value!
             for (int j = 0; j < size; j++) {
                 stringstream ss;
                 ss << j*WORD_SIZE;
-                DBUG(ss.str())
+                //DBUG(ss.str())
                 codeBuff.emit("    lw $t0, " + ss.str() + "("+reg+")");
                 codeBuff.emit("    sub $sp, $sp, 4");
                 codeBuff.emit("    sw $t0, 0($sp)");
@@ -178,14 +178,14 @@ void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> 
 void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
                                  vector<pair<string, int> > args) {
     //save used registers, $ra and push args to stack
-    DBUG("befor call")
+    //DBUG("befor call")
     emitBeforCall(usedRegs, funcName, args);
     
     //call func
     codeBuff.emit("    jal " + funcName);
     
     //restore used registers, $ra and pop args from stack
-    DBUG("after call")
+    //DBUG("after call")
     emitAfterCall(usedRegs, args);
     
 }

@@ -94,6 +94,8 @@ Statements   : Statement
                 { rule_Statements($1, $2); $$ = $3; }
 ;
 
+IfHeader     : IF LPAREN Exp
+                { $$ = $3; checkType((Expression*)$3); }
 
 Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
                 { rule_Statements($3, $4); $$ = $3;}
@@ -114,15 +116,17 @@ Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
                 { rule_Statement__RETURN_SC(); }
              | RETURN Exp SC
                 { rule_Statement__RETURN_Exp_SC((Expression*)$2); }
-             | IF LPAREN Exp RPAREN mOpenScope M Statement mCloseScope N
+             | IfHeader RPAREN mOpenScope M Statement mCloseScope N
                 /* S->if(B) { S1 }*/
-                { $$ = rule_Statement__IF_Statement((Expression*)$3, $6, $7, $9); }
-             | IF LPAREN Exp RPAREN mOpenScope M Statement mCloseScope N ELSE mOpenScope M Statement mCloseScope
+                { $$ = rule_Statement__IF_Statement((Expression*)$1, $4, $5, $7); }
+             | IfHeader RPAREN mOpenScope M Statement mCloseScope N ELSE mOpenScope M Statement mCloseScope
                 /* S->if(B) { S1 } else { S2 }*/
-                { $$ = rule_Statement__IF_ELSE_Statement((Expression*)$3, $6, $7, $9, $12, $13); }
-             | WHILE M LPAREN Exp RPAREN mOWhileScope M Statement mCWhileScope
+                { $$ = rule_Statement__IF_ELSE_Statement((Expression*)$1, $4, $5, $7, $10, $11); }
+             | WHILE LPAREN M Exp RPAREN
                 /* S->while(B) { S1 }*/
-                { $$ = rule_Statement__WHILE_Statement((Expression*)$2, $4, $7, $8); }
+                { checkType((Expression*)$4); }
+               M mOWhileScope Statement mCWhileScope
+                { $$ = rule_Statement__WHILE_Statement((Expression*)$4, $3, $7, $9); }
              | BREAK SC { rule_Statement__BREAK_SC(); }
 ;
 
