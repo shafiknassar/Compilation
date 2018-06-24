@@ -52,6 +52,12 @@ void MipsRegisters::unbindAll(vector<string>& registersNames) {
     }
 }
 
+void MipsRegisters::unbindAll() {
+    for (int i = 0; i < registers.size(); i++) {
+        registers[i].inUse = false;
+    }
+}
+
 string MipsRegisters::getEmptyRegister() {
     //we can use: $t0-$t7, $s0-$s7, $t8-$t9
     for (int i = 0; i < AVAILABLE_REGISTERS_NUM; i++) {

@@ -59,6 +59,13 @@ void Assembler::emitLoadConst(string regName, string val) {
     codeBuff.emit("    li " + regName + ", " + val);
 }
 
+void Assembler::emitBool(string regName, bool value) {
+    string val = "0";
+    if (value) val = "1";
+    codeBuff.emit("    li " + regName + ", " + val);
+    //return codeBuff.emit(JUMP);
+}
+
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place, bool needMask) {
     string mipsOp;
     int res = -1;
@@ -138,15 +145,20 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
         for (int i = 0; i < args.size(); i++) {
             string reg = string(args[i].first);
             int size = args[i].second;
-            //pass array by value!
-            for (int j = 0; j < size; j++) {
-                stringstream ss;
-                ss << j*WORD_SIZE;
-                //DBUG(ss.str())
-                codeBuff.emit("    lw $t0, " + ss.str() + "("+reg+")");
+            if (size == NOT_ARR) {
                 codeBuff.emit(DEC_SP);
-                codeBuff.emit("    sw $t0, 0($sp)");
-                ss.str("");
+                codeBuff.emit("    sw " + reg + ", 0($sp)");
+            } else {
+            //pass array by value!
+                for (int j = 0; j < size; j++) {
+                    stringstream ss;
+                    ss << j*WORD_SIZE;
+                    //DBUG(ss.str())
+                    codeBuff.emit("    lw $t0, " + ss.str() + "("+reg+")");
+                    codeBuff.emit(DEC_SP);
+                    codeBuff.emit("    sw $t0, 0($sp)");
+                    ss.str("");
+                }
             }
         }
     }
@@ -157,8 +169,12 @@ void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> 
     //clean args from stack
     for (int i = 0; i < args.size(); i++) {
         int size = args[i].second;
-        for (int j = 0; j < size; j++) {
+        if (size == NOT_ARR) {
             codeBuff.emit(INC_SP);
+        } else {
+            for (int j = 0; j < size; j++) {
+                codeBuff.emit(INC_SP);
+            }
         }
     }
     
@@ -296,7 +312,7 @@ void Assembler::emitIndexOutOfBoundsHandler() {
 
 void Assembler::emitPrinti() {
     codeBuff.emit("printi:");
-    codeBuff.emit("    lw $a0,4($sp)");
+    codeBuff.emit("    lw $a0,0($sp)");
     codeBuff.emit("    li $v0,1");
     codeBuff.emit("    syscall");
     codeBuff.emit("    jr $ra");
@@ -306,7 +322,7 @@ void Assembler::emitPrinti() {
 
 void Assembler::emitPrint() {
     codeBuff.emit("print:");
-    codeBuff.emit("    lw $a0,4($sp)");
+    codeBuff.emit("    lw $a0,0($sp)");
     codeBuff.emit("    li $v0,4");
     codeBuff.emit("    syscall");
     codeBuff.emit("    jr $ra");

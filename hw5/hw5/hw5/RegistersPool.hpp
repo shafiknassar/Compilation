@@ -43,6 +43,7 @@ struct MipsRegisters {
     void bindAll(vector<string>& registersNames);
     void unbind(string registerName);
     void unbindAll(vector<string>& registersNames);
+    void unbindAll();
     string getVarName(string registerName);
     string getEmptyRegister();
     vector<string> getUsedRegisters();

@@ -1,8 +1,7 @@
 
 #include "includes.h"
-
-#define JUMP "    j "
 #define FUNC_RES_REG "$v0"
+
 using std::map;
 using std::string;
 using std::make_pair;
@@ -20,27 +19,51 @@ MipsRegisters regsPool;
 bool isMainDef = false;
 
 /*****************************************/
-/* 5ara 3arasak */
+/* Helper Functions */
 /*****************************************/
 
-//void printScope()
-//{
-//    Table curr_scope = tableStack.back();
-//    for (int i = 0; i < curr_scope.entryStack.size(); i++) {
-//        TableEntry *entry = (curr_scope.entryStack[i]);
-//        string type(etos(entry->type));
-//        if (entry->type == FUNC) {
-//            FuncTableEntry *func_entry = (FuncTableEntry*)entry;
-//            vector<string> *args = func_entry->getArgs();
-//            type = output::makeFunctionType(etos(func_entry->retType->type), *args);
-//        } else if (isArrType(entry->type)) {
-//            ArrTableEntry* arr_entry = (ArrTableEntry*)entry;
-//            TypeId arr_type = convertFromArrType(arr_entry->type);
-//            type = output::makeArrayType(etos(arr_type), arr_entry->size);
-//        }
-//        output::printID(entry->name, entry->offset, type);
-//    }
-//}
+bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
+    vector<Type*> &expected = funcData->paramTypes;
+    vector<Expression*> &actual   = expList->v;
+    if (actual.size() != expected.size()) {
+        return false;
+    }
+    for (int i = 0; i < actual.size(); ++i) {
+        if (expected[i]->type == M_INT && actual[i]->type == M_BYTE)
+        {
+            continue;
+        }
+        if (expected[i]->type != actual[i]->type ||
+            expected[i]->size != actual[i]->size)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
+{
+    vector<string> *res = new vector<string>();
+    for (int i = (int)paramTypes.size() - 1 ; i >= 0 ; i--) {
+        string name = etos(paramTypes[i]->type);
+        if (isArrType(paramTypes[i]->type)) {
+            TypeId t = convertFromArrType(paramTypes[i]->type);
+            name = output::makeArrayType(etos(t), paramTypes[i]->size);
+        }
+        res->push_back(name);
+    }
+    return res;
+}
+
+vector<pair<string, int> > getPlacesFromList(vector<Expression*> list) {
+    vector<pair<string, int> > res;
+    for (int i = 0; i< list.size(); i++) {
+        int ifArr = isArrType(list[i]->type) ? list[i]->size : NOT_ARR;
+        res.push_back(make_pair(list[i]->place, ifArr));
+    }
+    return res;
+}
 
 void openScope()
 {
@@ -56,6 +79,21 @@ void closeScope()
 {
     //output::endScope();
     //printScope();
+    Table tbl = tableStack.back();
+    /* clearing scope's local vars */
+    int total_sz = 0;
+    for (int i = 0; i < tbl.entryStack.size(); ++i) {
+        int sz = 1;
+        if (isArrType(tbl.entryStack[i]->type)) {
+            sz = ((ArrTableEntry*)tbl.entryStack[i])->size;
+        }
+        total_sz += sz;
+    }
+    if (total_sz != 0) {
+        stringstream ss;
+        ss << total_sz * WORD_SIZE;
+        ass.emitCode("    addu $sp, $sp, " + ss.str());
+    }
     tableStack.pop_back();
     offsetStack.pop_back();
 }
@@ -93,6 +131,22 @@ void calculateArgOffsets(FormList &src, vector<int> &dst)
 
 void openWhileScope()  { openScope(); tableStack.back().isWhile = true; }
 void closeWhileScope() { closeScope(); }
+
+void handleBoolExp(Expression* exp) {
+    string next = ass.getNextInst();
+    //DBUG(__FUNCTION__ << __LINE__ << " " <<next)
+    ass.bpatch(exp->trueList, next);
+    ass.emitBool(exp->place, true);
+    int true_line = ass.emitCode(JUMP);
+    vector<int> true_inst = ass.makelist(true_line);
+    next = ass.getNextInst();
+    //DBUG(__FUNCTION__ << __LINE__ << " " <<next)
+    ass.bpatch(exp->falseList, next);
+    ass.emitBool(exp->place, false);
+    next = ass.getNextInst();
+    //DBUG(__FUNCTION__ << __LINE__ << " " <<next)
+    ass.bpatch(true_inst, next);
+}
 
 /*****************************************/
 /* Rule Functions */
@@ -162,8 +216,8 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 void rule_FuncBody(Node* stat) {
     string func_name = functionsStack.back();
     if (tableStack.back().haveReturn) return;
+    ass.bpatch(stat->nextList, ass.getNextInst());
     ass.emitFunctionReturn(func_name);
-    //ass.bpatch(stat->nextList, ass.getNextInst());
 }
 
 /*****************************************/
@@ -235,6 +289,7 @@ Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *n
 
 void rule_Statements(Node* stat, Node* marker) {
     //MARK: DONE
+    //DBUG(__FUNCTION__ << __LINE__ << marker->quad)
     ass.bpatch(stat->nextList, marker->quad);
 }
 
@@ -303,6 +358,9 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
         output::errorDef(yylineno, var->id);
         exit(0);
     }
+    if (exp->type == M_BOOL) {
+        handleBoolExp(exp);
+    }
     tableStack.back().insert(var, type->type, offsetStack.back());
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
@@ -337,15 +395,18 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
         output::errorUndef(yylineno, var->id);
         exit(0);
     }
+    if (exp->type == M_BOOL) {
+        handleBoolExp(exp);
+    }
     /* if needed, value of id can be assigned here */
     if (isArrType(var->type)) {
         ass.assignArrToArr(
-                           entry->offset*WORD_SIZE,
+                           (-1)*entry->offset*WORD_SIZE,
                            exp->place,
                            size,
                            regsPool.getEmptyRegister());
     } else {
-        ass.assignValToVar(entry->offset*WORD_SIZE, exp->place);
+        ass.assignValToVar((-1)*entry->offset*WORD_SIZE, exp->place);
     }
     regsPool.unbind(exp->place);
 }
@@ -383,6 +444,7 @@ void rule_Statement__RETURN_SC()
     string funcName = functionsStack.back();
     if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName);
+    regsPool.unbindAll();
 }
 
 void rule_Statement__RETURN_Exp_SC(Expression *exp)
@@ -397,10 +459,14 @@ void rule_Statement__RETURN_Exp_SC(Expression *exp)
         output::errorMismatch(yylineno);
         exit(0);
     }
+    if (exp->type == M_BOOL) {
+        handleBoolExp(exp);
+    }
     string funcName = functionsStack.back();
     if (tableStack.back().isFunc) tableStack.back().haveReturn = true;
     ass.emitFunctionReturn(funcName, exp->place);
     regsPool.unbind(exp->place);
+    regsPool.unbindAll();
 }
 
 Expression* checkType(Expression* cond) {
@@ -413,12 +479,18 @@ Expression* checkType(Expression* cond) {
 
 Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1, Node* marker_n) {
     //MARK: DONE
+    //DBUG("rule_Statement__IF_Statement " <<  marker_m->quad)
     Node* stat = new Node();
     ass.bpatch(cond->trueList, marker_m->quad);
-    vector<int> tmp = ass.merge(cond->falseList, stat1->nextList);
-    stat->nextList = ass.merge(tmp, marker_n->nextList);
+    stat->nextList = ass.merge(ass.merge(cond->falseList, stat1->nextList), marker_n->nextList);
+//    vector<int> tmp =
+//    string next = ass.getNextInst();
+//    tmp = ass.merge(tmp, marker_n->nextList);
+//    DBUG(__FUNCTION__ << __LINE__ << " " <<next)
+//    ass.bpatch(tmp, next);
     regsPool.unbind(cond->place);
     delete cond;
+    
     return stat;
 }
 
@@ -426,6 +498,7 @@ Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
                                         Node* stat1, Node* marker_n,
                                         Node* marker_m2, Node* stat2) {
     //MARK: DONE
+    //DBUG("rule_Statement__IF_ELSE_Statement " << marker_m1->quad << " " << marker_m2->quad)
     if (cond->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
@@ -435,6 +508,9 @@ Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
     ass.bpatch(cond->falseList, marker_m2->quad);
     vector<int> tmp = ass.merge(stat1->nextList, marker_n->nextList);
     stat->nextList = ass.merge(tmp, stat2->nextList);
+//    string next = ass.getNextInst();
+//    DBUG(__FUNCTION__ << __LINE__ << " " <<next)
+//    ass.bpatch(stat->nextList, next);
     regsPool.unbind(cond->place);
     delete cond;
     return stat;
@@ -448,7 +524,7 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
         exit(0);
     }
     Node* stat = new Node();
-    ass.bpatch(stat1->nextList, marker_m1->quad);
+    //ass.bpatch(stat1->nextList, marker_m1->quad);
     ass.bpatch(cond->trueList, marker_m2->quad);
     stat->nextList = cond->falseList;
     ass.emitCode(JUMP + marker_m1->quad);
@@ -467,55 +543,9 @@ void rule_Statement__BREAK_SC()
 }
 
 /*****************************************/
-/* Helper Functions */
-/*****************************************/
-
-bool paramMatchExpected(FuncTableEntry *funcData, ExprList *expList) {
-    vector<Type*> &expected = funcData->paramTypes;
-    vector<Expression*> &actual   = expList->v;
-    if (actual.size() != expected.size()) {
-        return false;
-    }
-    for (int i = 0; i < actual.size(); ++i) {
-        if (expected[i]->type == M_INT && actual[i]->type == M_BYTE)
-        {
-            continue;
-        }
-        if (expected[i]->type != actual[i]->type ||
-                expected[i]->size != actual[i]->size)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-vector<string>* typeListToStringVector(vector<Type*> &paramTypes)
-{
-    vector<string> *res = new vector<string>();
-    for (int i = (int)paramTypes.size() - 1 ; i >= 0 ; i--) {
-        string name = etos(paramTypes[i]->type);
-        if (isArrType(paramTypes[i]->type)) {
-            TypeId t = convertFromArrType(paramTypes[i]->type);
-            name = output::makeArrayType(etos(t), paramTypes[i]->size);
-        }
-        res->push_back(name);
-    }
-    return res;
-}
-
-vector<pair<string, int> > getPlacesFromList(vector<Expression*> list) {
-    vector<pair<string, int> > res;
-    for (int i = 0; i< list.size(); i++) {
-        int ifArr = list[i]->size;
-        res.push_back(make_pair(list[i]->place, ifArr));
-    }
-    return res;
-}
-
-/*****************************************/
 /* Call Rules */
 /*****************************************/
+
 Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
 {
     //MARK: DONE
@@ -539,6 +569,7 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
     for (int i = 0; i < argsPlaces.size(); i++) {
         regsPool.unbind(string(argsPlaces[i].first));
     }
+    //DBUG("rule_Call__ID_ExpList")
     exp->place = FUNC_RES_REG;
     
     return exp;
@@ -577,7 +608,6 @@ Expression* rule_Exp__ID(Variable *var)
 {
     //MARK: DONE
     TableEntry *entry = idLookup(tableStack, var);
-    //DBUG("from ID " << entry->name << " " << etos(entry->type))
     int size = 1;
     if (NULL == entry) {
         output::errorUndef(yylineno, var->id);
@@ -587,12 +617,17 @@ Expression* rule_Exp__ID(Variable *var)
     {
         size = ((ArrTableEntry*)entry)->size;
     }
+    
     Expression *res = new Expression(entry->type, size);
     string regName = regsPool.getEmptyRegister();
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
     regsPool.bind(regName);
     res->place = regName;
     ass.emitLoadVar(-1*entry->offset*WORD_SIZE, regName, isArrType(entry->type));
+    if (entry->type == M_BOOL) {
+        res->trueList = ass.makelist(ass.emitCode("    beq " + regName + ", " + "1, "));
+        res->falseList = ass.makelist(ass.emitCode(JUMP));
+    }
     return res;
 }
 
@@ -623,6 +658,7 @@ Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
 
 Expression* rule_Exp__Call(Expression* exp) {
     string regName = regsPool.getEmptyRegister();
+    //DBUG("rule_Exp__Call")
     ass.emitCode("    move " + regName + ", $v0");
     if(exp->type == M_BOOL){
         exp->trueList = ass.makelist(ass.emitCode("    beq " + regName + ", " + "1, "));
@@ -676,6 +712,8 @@ Expression* rule_Exp__STRING(Expression *str) {
 Expression* rule_Exp__TRUE() {
     //MARK: DONE
     Expression* exp = new Expression(M_BOOL);
+    exp->place = regsPool.getEmptyRegister();
+    regsPool.bind(exp->place);
     exp->trueList = ass.makelist(ass.emitCode(JUMP));
     return exp;
 }
@@ -683,20 +721,24 @@ Expression* rule_Exp__TRUE() {
 Expression* rule_Exp__FALSE() {
     //MARK: DONE
     Expression* exp = new Expression(M_BOOL);
+    exp->place = regsPool.getEmptyRegister();
+    regsPool.bind(exp->place);
     exp->falseList = ass.makelist(ass.emitCode(JUMP));
     return exp;
 }
 
-Expression* rule_Exp__NOT_Exp(Expression *exp)
+Expression* rule_Exp__NOT_Exp(Expression *exp1)
 {
     //MARK: DONE
-    if (exp->type != M_BOOL) {
+    if (exp1->type != M_BOOL) {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    vector<int>* tmplist = &exp->trueList;
-    exp->trueList = exp->falseList;
-    exp->falseList = *tmplist;
+    Expression* exp = new Expression(M_BOOL);
+    exp->place = exp1->place;
+    exp->trueList = exp1->falseList;
+    exp->falseList = exp1->trueList;
+    delete exp1;
     
     return exp;
 }
@@ -713,7 +755,8 @@ Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *ex
     ass.bpatch(exp1->trueList, marker->quad);
     exp->trueList = exp2->trueList;
     exp->falseList = ass.merge(exp1->falseList, exp2->falseList);
-    
+    exp->place = exp1->place;
+    regsPool.unbind(exp2->place);
     delete exp1;
     delete exp2;
     
@@ -731,7 +774,8 @@ Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker,Expression *exp2
     ass.bpatch(exp1->falseList, marker->quad);
     exp->trueList = ass.merge(exp1->trueList, exp2->trueList);
     exp->falseList = exp2->falseList;
-    
+    exp->place = exp1->place;
+    regsPool.unbind(exp2->place);
     delete exp1;
     delete exp2;
     
@@ -753,7 +797,7 @@ Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *
     nextinst = ass.emitCode(JUMP);
     exp->falseList = ass.makelist(nextinst);
     exp->place = exp1->place;
-    
+    regsPool.unbind(exp2->place);
     delete exp1;
     delete exp2;
     
@@ -774,6 +818,10 @@ Node* marker__N() {
 }
 
 
-
+ExprList* rule_ExprList(ExprList *l, Expression *e) {
+    if (e->type == M_BOOL) handleBoolExp(e);
+    l->v.push_back(e);
+    return l;
+}
 
 

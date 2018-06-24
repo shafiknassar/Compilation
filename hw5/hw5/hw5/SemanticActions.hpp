@@ -10,6 +10,7 @@
 #define SemanticActions_hpp
 
 #include "includes.h"
+#define NOT_ARR -1
 
 /*****************************************/
 /* External Declarations */
@@ -92,10 +93,17 @@ Expression* rule_Exp__FALSE();
 Expression* rule_Exp__NOT_Exp(Expression *exp);
 Expression* rule_Exp__NUM(Expression *num);
 Expression* rule_Exp__STRING(Expression *str);
+Expression* rule_Exp__Call(Expression* exp);
 Expression* rule_Exp__Exp_AND_Exp(Expression *exp1, Node* marker, Expression *exp2);
 Expression* rule_Exp__Exp_OR_Exp(Expression *exp1, Node* marker, Expression *exp2);
 Expression* rule_Exp__Exp_RELOP_Exp(Expression *exp1, string relop, Expression *exp2);
 Node* marker__M();
 Node* marker__N();
+
+/*****************************************/
+/* Expression List Rules */
+/*****************************************/
+
+ExprList* rule_ExprList(ExprList *l, Expression *e);
 
 #endif /* SemanticActions_hpp */

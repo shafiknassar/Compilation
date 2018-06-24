@@ -487,11 +487,11 @@ static const yytype_uint8 yyrline[] =
 {
        0,    25,    25,    29,    30,    31,    34,    38,    42,    44,
       48,    51,    54,    56,    60,    62,    64,    68,    70,    74,
-      78,    80,    82,    84,    86,    88,    90,    92,    93,    95,
-      97,   100,   105,   103,   108,   111,   112,   113,   114,   117,
-     119,   123,   125,   129,   131,   133,   137,   139,   141,   143,
-     145,   147,   150,   152,   161,   163,   165,   167,   169,   171,
-     173,   177,   178
+      78,    80,    82,    84,    86,    88,    90,    92,    94,    96,
+      98,   101,   106,   104,   109,   113,   114,   115,   116,   119,
+     121,   125,   127,   131,   133,   135,   139,   141,   143,   145,
+     147,   149,   151,   153,   162,   164,   166,   168,   170,   172,
+     174,   178,   179
 };
 #endif
 
@@ -1579,161 +1579,166 @@ yyreduce:
 
   case 21:
 #line 81 "parser.ypp"
-    { rule_Statement__Type_ID_SC((Type*)(yyvsp[(1) - (3)]), (Variable*)(yyvsp[(2) - (3)])); ;}
+    { (yyval) = new Node(); rule_Statement__Type_ID_SC((Type*)(yyvsp[(1) - (3)]), (Variable*)(yyvsp[(2) - (3)])); ;}
     break;
 
   case 22:
 #line 83 "parser.ypp"
-    { rule_Statement__Type_ID_NUM_SC((Type*)(yyvsp[(1) - (6)]), (Variable*)(yyvsp[(2) - (6)]), (Expression*)(yyvsp[(4) - (6)])); ;}
+    { (yyval) = new Node(); rule_Statement__Type_ID_NUM_SC((Type*)(yyvsp[(1) - (6)]), (Variable*)(yyvsp[(2) - (6)]), (Expression*)(yyvsp[(4) - (6)])); ;}
     break;
 
   case 23:
 #line 85 "parser.ypp"
-    { rule_Statement__Type_ID_NUMB_SC((Type*)(yyvsp[(1) - (7)]), (Variable*)(yyvsp[(2) - (7)]), (Expression*)(yyvsp[(4) - (7)])); ;}
+    { (yyval) = new Node(); rule_Statement__Type_ID_NUMB_SC((Type*)(yyvsp[(1) - (7)]), (Variable*)(yyvsp[(2) - (7)]), (Expression*)(yyvsp[(4) - (7)])); ;}
     break;
 
   case 24:
 #line 87 "parser.ypp"
-    { rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (Expression*)(yyvsp[(4) - (5)])); ;}
+    { (yyval) = new Node(); rule_Statement__Type_ID_ASSIGN_Exp_SC((Type*)(yyvsp[(1) - (5)]), (Variable*)(yyvsp[(2) - (5)]), (Expression*)(yyvsp[(4) - (5)])); ;}
     break;
 
   case 25:
 #line 89 "parser.ypp"
-    { rule_Statement__ID_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (4)]), (Expression*)(yyvsp[(3) - (4)])); ;}
+    { (yyval) = new Node(); rule_Statement__ID_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (4)]), (Expression*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 26:
 #line 91 "parser.ypp"
-    { rule_Statement__ID_Exp_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (7)]), (Expression*)(yyvsp[(3) - (7)]), (Expression*)(yyvsp[(6) - (7)])); ;}
+    { (yyval) = new Node(); rule_Statement__ID_Exp_ASSIGN_Exp_SC((Variable*)(yyvsp[(1) - (7)]), (Expression*)(yyvsp[(3) - (7)]), (Expression*)(yyvsp[(6) - (7)])); ;}
+    break;
+
+  case 27:
+#line 93 "parser.ypp"
+    { (yyval) = (Node*)(yyvsp[(1) - (2)]); ;}
     break;
 
   case 28:
-#line 94 "parser.ypp"
-    { rule_Statement__RETURN_SC(); ;}
+#line 95 "parser.ypp"
+    { (yyval) = new Node(); rule_Statement__RETURN_SC(); ;}
     break;
 
   case 29:
-#line 96 "parser.ypp"
-    { rule_Statement__RETURN_Exp_SC((Expression*)(yyvsp[(2) - (3)])); ;}
+#line 97 "parser.ypp"
+    { (yyval) = new Node(); rule_Statement__RETURN_Exp_SC((Expression*)(yyvsp[(2) - (3)])); ;}
     break;
 
   case 30:
-#line 99 "parser.ypp"
+#line 100 "parser.ypp"
     { (yyval) = rule_Statement__IF_Statement((Expression*)(yyvsp[(1) - (7)]), (yyvsp[(4) - (7)]), (yyvsp[(5) - (7)]), (yyvsp[(7) - (7)])); ;}
     break;
 
   case 31:
-#line 102 "parser.ypp"
+#line 103 "parser.ypp"
     { (yyval) = rule_Statement__IF_ELSE_Statement((Expression*)(yyvsp[(1) - (12)]), (yyvsp[(4) - (12)]), (yyvsp[(5) - (12)]), (yyvsp[(7) - (12)]), (yyvsp[(10) - (12)]), (yyvsp[(11) - (12)])); ;}
     break;
 
   case 32:
-#line 105 "parser.ypp"
+#line 106 "parser.ypp"
     { checkType((Expression*)(yyvsp[(4) - (5)])); ;}
     break;
 
   case 33:
-#line 107 "parser.ypp"
+#line 108 "parser.ypp"
     { (yyval) = rule_Statement__WHILE_Statement((Expression*)(yyvsp[(4) - (10)]), (yyvsp[(3) - (10)]), (yyvsp[(7) - (10)]), (yyvsp[(9) - (10)])); ;}
     break;
 
   case 34:
-#line 108 "parser.ypp"
+#line 110 "parser.ypp"
     { rule_Statement__BREAK_SC(); ;}
     break;
 
   case 35:
-#line 111 "parser.ypp"
+#line 113 "parser.ypp"
     { openScope(); ;}
     break;
 
   case 36:
-#line 112 "parser.ypp"
+#line 114 "parser.ypp"
     { closeScope(); ;}
     break;
 
   case 37:
-#line 113 "parser.ypp"
+#line 115 "parser.ypp"
     { openWhileScope(); ;}
     break;
 
   case 38:
-#line 114 "parser.ypp"
+#line 116 "parser.ypp"
     { closeWhileScope(); ;}
     break;
 
   case 39:
-#line 118 "parser.ypp"
+#line 120 "parser.ypp"
     { (yyval) = rule_Call__ID_ExpList((Variable*)(yyvsp[(1) - (4)]), (ExprList*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 40:
-#line 120 "parser.ypp"
+#line 122 "parser.ypp"
     { (yyval) = rule_Call__ID((Variable*)(yyvsp[(1) - (3)])); ;}
     break;
 
   case 41:
-#line 124 "parser.ypp"
-    { (yyval) = new ExprList(); ((ExprList*)(yyval))->v.push_back((Expression*)(yyvsp[(1) - (1)])); ;}
+#line 126 "parser.ypp"
+    { (yyval) = new ExprList(); rule_ExprList((ExprList*)(yyval), (Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 42:
-#line 126 "parser.ypp"
-    { (yyval) = (yyvsp[(3) - (3)]); ((ExprList*)(yyval))->v.push_back((Expression*)(yyvsp[(1) - (3)])); ;}
+#line 128 "parser.ypp"
+    { (yyval) = (yyvsp[(3) - (3)]); rule_ExprList((ExprList*)(yyval), (Expression*)(yyvsp[(1) - (3)])); ;}
     break;
 
   case 43:
-#line 130 "parser.ypp"
-    { (yyval)=(yyvsp[(1) - (1)]); ;}
-    break;
-
-  case 44:
 #line 132 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
-  case 45:
+  case 44:
 #line 134 "parser.ypp"
     { (yyval)=(yyvsp[(1) - (1)]); ;}
     break;
 
+  case 45:
+#line 136 "parser.ypp"
+    { (yyval)=(yyvsp[(1) - (1)]); ;}
+    break;
+
   case 46:
-#line 138 "parser.ypp"
+#line 140 "parser.ypp"
     { (yyval)=(yyvsp[(2) - (3)]); ;}
     break;
 
   case 47:
-#line 140 "parser.ypp"
+#line 142 "parser.ypp"
     { (yyval) = rule_Exp__ID_Exp((Variable*)(yyvsp[(1) - (4)]), (Expression*)(yyvsp[(3) - (4)])); ;}
     break;
 
   case 48:
-#line 142 "parser.ypp"
-    { (yyval) = rule_Exp__Exp_BINOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
-    break;
-
-  case 49:
 #line 144 "parser.ypp"
     { (yyval) = rule_Exp__Exp_BINOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
     break;
 
-  case 50:
+  case 49:
 #line 146 "parser.ypp"
+    { (yyval) = rule_Exp__Exp_BINOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 50:
+#line 148 "parser.ypp"
     { (yyval) = rule_Exp__ID((Variable*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 51:
-#line 149 "parser.ypp"
-    { (yyval) = (yyvsp[(1) - (1)]); ;}
+#line 150 "parser.ypp"
+    { (yyval) = rule_Exp__Call((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 52:
-#line 151 "parser.ypp"
+#line 152 "parser.ypp"
     { (yyval) = rule_Exp__NUM((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 53:
-#line 153 "parser.ypp"
+#line 154 "parser.ypp"
     {
                     if (atoi(((Expression*)(yyvsp[(1) - (2)]))->value.c_str()) > 255) {
                         output::errorByteTooLarge(yylineno, ((Expression*)(yyvsp[(1) - (2)]))->value);
@@ -1745,53 +1750,53 @@ yyreduce:
     break;
 
   case 54:
-#line 162 "parser.ypp"
+#line 163 "parser.ypp"
     { (yyval) = rule_Exp__STRING((Expression*)(yyvsp[(1) - (1)])); ;}
     break;
 
   case 55:
-#line 164 "parser.ypp"
+#line 165 "parser.ypp"
     { (yyval) = rule_Exp__TRUE(); ;}
     break;
 
   case 56:
-#line 166 "parser.ypp"
+#line 167 "parser.ypp"
     { (yyval) = rule_Exp__FALSE(); ;}
     break;
 
   case 57:
-#line 168 "parser.ypp"
+#line 169 "parser.ypp"
     { (yyval) = rule_Exp__NOT_Exp((Expression*)(yyvsp[(2) - (2)])); ;}
     break;
 
   case 58:
-#line 170 "parser.ypp"
+#line 171 "parser.ypp"
     { (yyval) = rule_Exp__Exp_AND_Exp((Expression*)(yyvsp[(1) - (4)]), (yyvsp[(3) - (4)]), (Expression*)(yyvsp[(4) - (4)])); ;}
     break;
 
   case 59:
-#line 172 "parser.ypp"
+#line 173 "parser.ypp"
     { (yyval) = rule_Exp__Exp_OR_Exp((Expression*)(yyvsp[(1) - (4)]), (yyvsp[(3) - (4)]), (Expression*)(yyvsp[(4) - (4)])); ;}
     break;
 
   case 60:
-#line 174 "parser.ypp"
+#line 175 "parser.ypp"
     { (yyval) = rule_Exp__Exp_RELOP_Exp((Expression*)(yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])->token, (Expression*)(yyvsp[(3) - (3)])); ;}
     break;
 
   case 61:
-#line 177 "parser.ypp"
+#line 178 "parser.ypp"
     { (yyval) = marker__M(); ;}
     break;
 
   case 62:
-#line 178 "parser.ypp"
+#line 179 "parser.ypp"
     { (yyval) = marker__N(); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 1795 "parser.tab.cpp"
+#line 1800 "parser.tab.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2005,7 +2010,7 @@ yyreturn:
 }
 
 
-#line 180 "parser.ypp"
+#line 181 "parser.ypp"
 
 
 void yyerror(const char*) { output::errorSyn(yylineno); }

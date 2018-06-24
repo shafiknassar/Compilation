@@ -81,6 +81,8 @@ public:
     
     void emitLoadConst(string regName, string val);
     
+    void emitBool(string regName, bool value);
+    
     void emitBeforCall(vector<string> usedRegs, string funcName,
                        vector<pair<string, int> > args);
     void emitAfterCall(vector<string> usedRegs, vector<pair<string, int> > args);
