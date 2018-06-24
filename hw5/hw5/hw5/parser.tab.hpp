@@ -42,72 +42,66 @@
      VOID = 258,
      INT = 259,
      BYTE = 260,
-     B = 261,
-     BOOL = 262,
-     MINUS = 263,
-     PLUS = 264,
-     DIV = 265,
-     MULT = 266,
-     AND = 267,
-     OR = 268,
-     NOT = 269,
-     TRUE = 270,
-     FALSE = 271,
+     BOOL = 261,
+     RETURN = 262,
+     IF = 263,
+     WHILE = 264,
+     BREAK = 265,
+     LPAREN = 266,
+     LBRACE = 267,
+     LBRACK = 268,
+     ASSIGN = 269,
+     RBRACE = 270,
+     SC = 271,
      NUM = 272,
-     STRING = 273,
-     RPAREN = 274,
-     LPAREN = 275,
-     RBRACE = 276,
-     LBRACE = 277,
-     RBRACK = 278,
-     LBRACK = 279,
-     IF = 280,
-     ELSE = 281,
-     WHILE = 282,
-     BREAK = 283,
-     RETURN = 284,
-     RELOP = 285,
-     BINOP = 286,
-     ASSIGN = 287,
-     ID = 288,
-     SC = 289,
-     COMMA = 290
+     B = 273,
+     FALSE = 274,
+     TRUE = 275,
+     STRING = 276,
+     ID = 277,
+     COMMA = 278,
+     AND = 279,
+     OR = 280,
+     RELOP = 281,
+     ADDSUB = 282,
+     MULDIV = 283,
+     NOT = 284,
+     RBRACK = 285,
+     RPAREN = 286,
+     ELSE = 287
    };
 #endif
 /* Tokens.  */
 #define VOID 258
 #define INT 259
 #define BYTE 260
-#define B 261
-#define BOOL 262
-#define MINUS 263
-#define PLUS 264
-#define DIV 265
-#define MULT 266
-#define AND 267
-#define OR 268
-#define NOT 269
-#define TRUE 270
-#define FALSE 271
+#define BOOL 261
+#define RETURN 262
+#define IF 263
+#define WHILE 264
+#define BREAK 265
+#define LPAREN 266
+#define LBRACE 267
+#define LBRACK 268
+#define ASSIGN 269
+#define RBRACE 270
+#define SC 271
 #define NUM 272
-#define STRING 273
-#define RPAREN 274
-#define LPAREN 275
-#define RBRACE 276
-#define LBRACE 277
-#define RBRACK 278
-#define LBRACK 279
-#define IF 280
-#define ELSE 281
-#define WHILE 282
-#define BREAK 283
-#define RETURN 284
-#define RELOP 285
-#define BINOP 286
-#define ASSIGN 287
-#define ID 288
-#define SC 289
-#define COMMA 290
+#define B 273
+#define FALSE 274
+#define TRUE 275
+#define STRING 276
+#define ID 277
+#define COMMA 278
+#define AND 279
+#define OR 280
+#define RELOP 281
+#define ADDSUB 282
+#define MULDIV 283
+#define NOT 284
+#define RBRACK 285
+#define RPAREN 286
+#define ELSE 287
 
 
 

@@ -42,7 +42,7 @@ void Table::insertArr(Variable *id, int offset, int size) {
     entryStack.push_back(tmp);
 }
 
-void Table::insertFunc(string name, Type *retType, vector<Variable*> &paramTypes) {
+void Table::insertFunc(string name, TypeId retType, vector<Variable*> &paramTypes) {
     FuncTableEntry *tmp = new FuncTableEntry();
     tmp->name       = name;
     tmp->type       = FUNC;

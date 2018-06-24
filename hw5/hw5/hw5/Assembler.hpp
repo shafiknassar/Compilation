@@ -20,6 +20,8 @@ using std::pair;
 /* defines */
 /***********************************/
 
+#define INC_SP "    addu $sp, $sp, 4"
+#define DEC_SP "    sub $sp, $sp, 4"
 #define JUMP      "    j "
 #define ADD_OP    "+"
 #define SUB_OP    "-"
@@ -86,8 +88,8 @@ public:
     void emitFunctionCall(vector<string> usedRegisters, string funcName,
                           vector<pair<string, int> > args);
     
-    void allocateLocalVar(int size);
-    void allocateLocalArr(int numOfElems, int elemSize);
+    void allocateLocalVar(string regName = "");
+    void allocateLocalArr(int numOfElems);
     
     void assignValToVar(int varOS, string regName);
     void assignValToArrElem(int arrOS, string arrSizeReg, string idxRegName, string trgRegName);
@@ -97,7 +99,7 @@ public:
      @description: generates code for binary/relational operation
      @returns none.
      */
-    int emitBinOp(string op, string trgPlace, string src1Place, string src2Place);
+    int emitBinOp(string op, string trgPlace, string src1Place, string src2Place, bool needMask);
     /*
      note: relational operation is trnaslated to a conditional jump.
      the target of the jump need to be backpatched.

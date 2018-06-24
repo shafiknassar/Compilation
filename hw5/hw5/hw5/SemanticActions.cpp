@@ -44,12 +44,11 @@ bool isMainDef = false;
 
 void openScope()
 {
-    Type *tmp = tableStack.back().retType;
+    TypeId retTypetmp = tableStack.back().retType;
     bool isWhileTmp = tableStack.back().isWhile;
     tableStack.push_back(*new Table());
-    tableStack.back().isFunc  = false;
     tableStack.back().isWhile = isWhileTmp;
-    tableStack.back().retType = tmp;
+    tableStack.back().retType = retTypetmp;
     offsetStack.push_back(offsetStack.back());
 }
 
@@ -61,12 +60,11 @@ void closeScope()
     offsetStack.pop_back();
 }
 
-Table& openFuncScope(string funcName, Type *retType)
+Table& openFuncScope(Type *retType)
 {
     tableStack.push_back(*new Table());
-    tableStack.back().retType = retType;
+    tableStack.back().retType = retType->type;
     tableStack.back().isFunc  = true;
-    tableStack.back().isWhile = false;
     offsetStack.push_back(offsetStack.back());
     
     return tableStack.back();
@@ -103,7 +101,7 @@ void closeWhileScope() { closeScope(); }
 void rule_Program__end() {
     FuncTableEntry *mainEntry = funcLookup(tableStack, new Variable("main"));
     if (!mainEntry ||
-        mainEntry->retType->type != M_VOID || mainEntry->paramTypes.size() != 0) {
+        mainEntry->retType != M_VOID || mainEntry->paramTypes.size() != 0) {
         output::errorMainMissing();
         exit(0);
     }
@@ -114,17 +112,14 @@ void rule_Program__end() {
 void rule_init() {
     //MARK: DONE
     tableStack.push_back(*new Table());
-    tableStack.back().isFunc  = false;
-    tableStack.back().isWhile = false;
     offsetStack.push_back(0);
-    regsPool = MipsRegisters();
     
     vector<Variable*> *args = new vector<Variable*>();
     args->push_back(new Variable(M_STRING));
-    tableStack[0].insertFunc("print", new Type(M_VOID, 0), *args);
+    tableStack[0].insertFunc("print", M_VOID, *args);
     args->clear();
     args->push_back(new Variable(M_INT));
-    tableStack[0].insertFunc("printi", new Type(M_VOID, 0), *args);
+    tableStack[0].insertFunc("printi", M_VOID, *args);
     
     ass.emitProgramInit();
 }
@@ -132,8 +127,9 @@ void rule_init() {
 void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
 {
     //MARK: DONE
-    if (!(retType->type == M_INT || retType->type == M_BYTE
-          || retType->type == M_BOOL || retType->type == M_VOID))
+    TypeId return_type = retType->type;
+    if (!(return_type == M_INT || return_type == M_BYTE
+          || return_type == M_BOOL || return_type == M_VOID))
     {
         output::errorMismatch(yylineno);
         exit(0);
@@ -145,10 +141,11 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
     }
     
     /* Declare function in scope (global) */
-    tableStack.back().insertFunc(var->id, retType, args->idList);
+    tableStack.back().insertFunc(var->id, return_type, args->idList);
+    functionsStack.push_back(var->id);
     
     /* create function scope - openScope */
-    Table &currScope = openFuncScope(var->id, retType);
+    Table &currScope = openFuncScope(retType);
     
     vector<int> argOffsets;
     calculateArgOffsets(*args, argOffsets);
@@ -159,8 +156,6 @@ void rule_FuncHeader(Type *retType, Variable *var, FormList *args)
         }
         currScope.insert(args->idList[i], args->idList[i]->type, argOffsets[i]);
     }
-    
-    functionsStack.push_back(var->id);
     ass.emiFunctionHeader(var->id);
 }
 
@@ -252,8 +247,9 @@ void rule_Statement__Type_ID_SC(Type *type, Variable *var)
     }
     tableStack.back().insert(var, type->type, offsetStack.back());
     offsetStack.back() += type->size;
-    ass.allocateLocalVar(WORD_SIZE);
+    ass.allocateLocalVar();
 }
+
 void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
 {
     //MARK: DONE
@@ -277,7 +273,9 @@ void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num)
     type->size = arr_size;
     offsetStack.back() += type->size;
     
-    ass.allocateLocalArr(type->size, WORD_SIZE);
+    ass.allocateLocalArr(type->size);
+    regsPool.unbind(num->place);
+    
 }
 void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num)
 {
@@ -308,8 +306,8 @@ void rule_Statement__Type_ID_ASSIGN_Exp_SC(Type* type, Variable *var, Expression
     tableStack.back().insert(var, type->type, offsetStack.back());
     offsetStack.back() += type->size;
     /* if needed, value of id can be assigned here */
-    ass.allocateLocalVar(WORD_SIZE);
-    ass.assignValToVar(offsetStack.back()*WORD_SIZE, exp->place);
+    ass.allocateLocalVar(exp->place);
+    regsPool.unbind(exp->place);
 }
 
 void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
@@ -349,6 +347,7 @@ void rule_Statement__ID_ASSIGN_Exp_SC(Variable *var, Expression *exp)
     } else {
         ass.assignValToVar(entry->offset*WORD_SIZE, exp->place);
     }
+    regsPool.unbind(exp->place);
 }
 
 void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expression *rval)
@@ -376,7 +375,7 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
 void rule_Statement__RETURN_SC()
 {
     //MARK: DONE
-    if (tableStack.back().retType->type != M_VOID)
+    if (tableStack.back().retType != M_VOID)
     {
         output::errorMismatch(yylineno);
         exit(0);
@@ -389,9 +388,9 @@ void rule_Statement__RETURN_SC()
 void rule_Statement__RETURN_Exp_SC(Expression *exp)
 {
     //MARK: DONE
-    if (tableStack.back().retType->type == M_INT && exp->type == M_BYTE)
+    if (tableStack.back().retType == M_INT && exp->type == M_BYTE)
         return;
-    TypeId func_ret_type = tableStack.back().retType->type;
+    TypeId func_ret_type = tableStack.back().retType;
     if (func_ret_type == M_VOID ||
        (func_ret_type != exp->type && func_ret_type != exp->size))
     {
@@ -530,7 +529,7 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
         output::errorPrototypeMismatch(yylineno, var->id, *strs);
         exit(0);
     }
-    Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
+    Expression* exp = new Expression(funcData->retType);
     vector<int> usedRegistersIndices;
     vector<string> usedRegisters = regsPool.getUsedRegisters();
     vector<pair<string, int> > argsPlaces = getPlacesFromList(expList->v);
@@ -540,7 +539,6 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
     for (int i = 0; i < argsPlaces.size(); i++) {
         regsPool.unbind(string(argsPlaces[i].first));
     }
-    
     exp->place = FUNC_RES_REG;
     
     return exp;
@@ -560,7 +558,7 @@ Expression* rule_Call__ID(Variable *var) {
         exit(0);
     }
     
-    Expression* exp = new Expression(funcData->retType->type, funcData->retType->size);
+    Expression* exp = new Expression(funcData->retType);
     vector<string> usedRegisters = regsPool.getUsedRegisters();
     vector<pair<string, int> > empty;
     regsPool.unbindAll(usedRegisters);
@@ -594,7 +592,7 @@ Expression* rule_Exp__ID(Variable *var)
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
     regsPool.bind(regName);
     res->place = regName;
-    ass.emitLoadVar(entry->offset*WORD_SIZE, regName, isArrType(entry->type));
+    ass.emitLoadVar(-1*entry->offset*WORD_SIZE, regName, isArrType(entry->type));
     return res;
 }
 
@@ -647,12 +645,12 @@ Expression* rule_Exp__Exp_BINOP_Exp(Expression *exp1, string binop, Expression *
         exp_type = M_INT;
     
     Expression* exp = new Expression(exp_type);
+    bool need_mask = (exp_type == M_BYTE);
     exp->place = exp1->place;
     regsPool.unbind(exp1->place);
     regsPool.bind(exp->place);
-    ass.emitBinOp(binop, exp->place, exp1->place, exp2->place);
+    ass.emitBinOp(binop, exp->place, exp1->place, exp2->place, need_mask);
     regsPool.unbind(exp2->place);
-    
     delete exp1;
     delete exp2;
     

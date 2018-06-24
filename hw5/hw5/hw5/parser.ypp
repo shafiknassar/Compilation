@@ -4,47 +4,22 @@
     //#define YYERROR_VERBOSE 1
     //#define YYDEBUG 1
 %}
-/* Type tokens */
-%token VOID // special case: can be a return type, but not a variable declaration
-%token INT
-%token BYTE
-%token B
-%token BOOL
-/* Binary Arithmetic Operations */
-%left PLUS MINUS
-%left MULT DIV
-/* Logical Operations */
+
+%token VOID INT BYTE BOOL RETURN IF WHILE BREAK LPAREN LBRACE LBRACK ASSIGN
+%nonassoc SC RBRACE
+%nonassoc NUM
+%nonassoc B
+%nonassoc ID STRING TRUE FALSE
+%nonassoc COMMA
+
 %left AND
 %left OR
-%left NOT
-/* Values */
-%token TRUE
-%token FALSE
-%token NUM
-%token STRING
-/* Brackets and Parenthesis */
-%left LPAREN RPAREN
-%left LBRACE RBRACE
-%left LBRACK RBRACK
-/* Control Flow */
-%token IF
-%nonassoc ELSE
-%token WHILE
-%token BREAK
-%token RETURN
-/* Relational Operators */
-/* keep them separated inorder to
- give different precedence to every op */
-%nonassoc RELOP
-%left BINOP
-/* Assigment */
-%right ASSIGN
-/* ID */
-%token ID
-/* Separators */
-%token SC
-%token COMMA
-
+%left RELOP
+%left ADDSUB
+%left MULDIV
+%right NOT
+%right RPAREN RBRACK
+%right ELSE
 %%
 
 Program      : mInit Funcs { rule_Program__end();}
@@ -69,11 +44,13 @@ RetType      : Type
              | VOID
                 { $$=$1; }
 ;
+
 Formals      : FormalsList
                 { $$ = $1;}
              | /*epsilon*/
                 { $$ = new FormList(); /*empty list*/}
 ;
+
 FormalsList  : FormalDecl
                 { $$ = new FormList(); ((FormList*)$$)->add((Variable*)$1); }
              | FormalDecl COMMA FormalsList
@@ -96,6 +73,7 @@ Statements   : Statement
 
 IfHeader     : IF LPAREN Exp
                 { $$ = $3; checkType((Expression*)$3); }
+;
 
 Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
                 { rule_Statements($3, $4); $$ = $3;}
@@ -160,7 +138,9 @@ Exp          : LPAREN Exp RPAREN
                 { $$=$2; }
              | ID LBRACK Exp RBRACK
                 { $$ = rule_Exp__ID_Exp((Variable*)$1, (Expression*)$3); }
-             | Exp BINOP Exp
+             | Exp ADDSUB Exp
+                { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, $2->token, (Expression*)$3); }
+             | Exp MULDIV Exp
                 { $$ = rule_Exp__Exp_BINOP_Exp((Expression*)$1, $2->token, (Expression*)$3); }
              | ID
                 { $$ = rule_Exp__ID((Variable*)$1); }

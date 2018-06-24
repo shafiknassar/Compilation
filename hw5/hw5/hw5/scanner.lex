@@ -31,7 +31,8 @@ break                               {return BREAK;}
 \]                                  {return RBRACK;}
 =                                   {return ASSIGN;}
 (\=\=|\!\=|\<|\>|\<\=|\>\=)         {yylval = new Node(yytext); return RELOP;}
-[\+\-\*\/]                          {yylval = new Node(yytext); return BINOP;}
+[\*\/]                              {yylval = new Node(yytext); return MULDIV;}
+[\+\-]                              {yylval = new Node(yytext); return ADDSUB;}
 [a-zA-Z][a-zA-Z0-9]*                {yylval = (Node*) new Variable(yytext); return ID;}
 0|[1-9][0-9]*                       {yylval = (Node*) new Expression(M_INT, yytext); return NUM;}
 \"([^\n\r\"\\]|\\[rnt"\\])+\"       {yylval = (Node*) new Expression(M_STRING, yytext); return STRING;}
