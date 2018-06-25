@@ -9,6 +9,8 @@
 #include "Assembler.hpp"
 #include "includes.h"
 
+#define COMMENT(str)  emitCode(string("# ") + str)
+
 int Assembler::emitCode(string code) {
     return codeBuff.emit(code);
 }
@@ -36,6 +38,7 @@ string Assembler::getNextInst() {
 }
 
 void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
+    COMMENT(__FUNCTION__);
     stringstream ssVarOs;
     ssVarOs << varOS;
     if (isArr) { /* reference semantics */
@@ -48,6 +51,7 @@ void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
 }
 
 void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
+    COMMENT(__FUNCTION__);
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
     codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
     stringstream ssArrOs;
@@ -56,10 +60,12 @@ void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName)
 }
 
 void Assembler::emitLoadConst(string regName, string val) {
+    COMMENT(__FUNCTION__);
     codeBuff.emit("    li " + regName + ", " + val);
 }
 
 void Assembler::emitBool(string regName, bool value) {
+    COMMENT(__FUNCTION__);
     string val = "0";
     if (value) val = "1";
     codeBuff.emit("    li " + regName + ", " + val);
@@ -67,6 +73,7 @@ void Assembler::emitBool(string regName, bool value) {
 }
 
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place, bool needMask) {
+    COMMENT(__FUNCTION__);
     string mipsOp;
     int res = -1;
     if (op == ADD_OP) {
@@ -89,6 +96,7 @@ int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string sr
 
 
 int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
+    COMMENT(__FUNCTION__);
     map<string, string> trans;
     string arr[6][2] =
     {
@@ -104,6 +112,7 @@ int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
 };
 
 void Assembler::emitFunctionReturn(string funcName, string resRegName) {
+    COMMENT(__FUNCTION__);
     if (resRegName != "") {
         codeBuff.emit("    move $v0, " + resRegName);
     }
@@ -119,6 +128,7 @@ void Assembler::emitFunctionReturn(string funcName, string resRegName) {
 }
 
 void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //save used registers
     for (int i = 0; i < usedRegs.size(); i++) {
         string regName = usedRegs[i];
@@ -166,6 +176,7 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
 }
 
 void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //clean args from stack
     for (int i = 0; i < args.size(); i++) {
         int size = args[i].second;
@@ -196,6 +207,7 @@ void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> 
 
 void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
                                  vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //save used registers, $ra and push args to stack
     emitBeforCall(usedRegs, funcName, args);
     
@@ -208,6 +220,7 @@ void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
 }
 
 void Assembler::allocateLocalVar(string regName) {
+    COMMENT(__FUNCTION__);
     codeBuff.emit(DEC_SP);
     if (regName == "") {
         codeBuff.emit("    sw $zero, ($sp)"); /* inits numerical values as 0, booleans as false */
@@ -217,12 +230,14 @@ void Assembler::allocateLocalVar(string regName) {
 }
 
 void Assembler::allocateLocalArr(int numOfElems) {
+    COMMENT(__FUNCTION__);
     for (int i = 0; i < numOfElems; ++i) {
         allocateLocalVar();
     }
 }
 
 void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size, string tmpReg) {
+    COMMENT(__FUNCTION__);
     for (int i = 0; i < size; i++) {
         // lw $tmp, i*4($src)
         // sw $tmp, trgOf+i*4($fp)
@@ -237,6 +252,7 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size, string t
 
 
 void Assembler::assignValToVar(int varOS, string regName) {
+    COMMENT(__FUNCTION__);
     stringstream ssVarOs;
     ssVarOs << varOS;
     codeBuff.emit("    sw " + regName + ", " + ssVarOs.str() + "($fp)");
@@ -245,6 +261,7 @@ void Assembler::assignValToVar(int varOS, string regName) {
 void Assembler::assignValToArrElem(int arrOS, string arrSizeReg,
                                    string idxRegName, string srcRegName)
 {
+    COMMENT(__FUNCTION__);
     codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "out_of_bounds_handler");
     codeBuff.emit("    blt " + idxRegName + ", 0, " + "out_of_bounds_handler");
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
