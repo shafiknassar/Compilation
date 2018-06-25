@@ -11,6 +11,7 @@
 
 #include "bp.hpp"
 #include <stdio.h>
+#include "includes.h"
 
 using std::string;
 using std::vector;
@@ -34,12 +35,17 @@ class Assembler {
 private:
     CodeBuffer &codeBuff;
     int stringDataCounter;
+    void incRegBy(string regName, int val);
     
 public:
     
+    MipsRegisters regAllocator;
+    
     Assembler() :
         codeBuff(CodeBuffer::instance()),
-        stringDataCounter(3) {}
+        stringDataCounter(3),
+        regAllocator()
+    {}
     /*
      @description: emits code to text section.
      @returns the location in code buffer.
@@ -83,7 +89,7 @@ public:
     
     void emitBool(string regName, bool value);
     
-    void emitBeforCall(vector<string> usedRegs, string funcName,
+    void emitBeforeCall(vector<string> usedRegs, string funcName,
                        vector<pair<string, int> > args);
     void emitAfterCall(vector<string> usedRegs, vector<pair<string, int> > args);
     void emitFunctionReturn(string funcName, string resRegName = "");
@@ -95,7 +101,7 @@ public:
     
     void assignValToVar(int varOS, string regName);
     void assignValToArrElem(int arrOS, string arrSizeReg, string idxRegName, string trgRegName);
-    void assignArrToArr(int srcOs, string trgOsReg, int size, string tmpReg);
+    void assignArrToArr(int srcOs, string trgOsReg, int size);
     
     /*
      @description: generates code for binary/relational operation
