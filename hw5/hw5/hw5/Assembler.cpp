@@ -232,8 +232,9 @@ void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
     //save used registers, $ra and push args to stack
     emitBeforeCall(usedRegs, funcName, args);
     
+    if (funcName != "main") funcName = "_"+funcName;
     //call func
-    codeBuff.emit("    jal " + funcName);
+    codeBuff.emit("    jal "+funcName);
     
     //restore used registers, $ra and pop args from stack
     emitAfterCall(usedRegs, args);
@@ -429,7 +430,7 @@ void Assembler::emitIndexOutOfBoundsHandler() {
 }
 
 void Assembler::emitPrinti() {
-    codeBuff.emit("printi:");
+    codeBuff.emit("_printi:");
     codeBuff.emit("    lw $a0,0($sp)");
     codeBuff.emit("    li $v0,1");
     codeBuff.emit("    syscall");
@@ -439,7 +440,7 @@ void Assembler::emitPrinti() {
 
 
 void Assembler::emitPrint() {
-    codeBuff.emit("print:");
+    codeBuff.emit("_print:");
     codeBuff.emit("    lw $a0,0($sp)");
     codeBuff.emit("    li $v0,4");
     codeBuff.emit("    syscall");
@@ -448,6 +449,7 @@ void Assembler::emitPrint() {
 }
 
 void Assembler::emiFunctionHeader(string funName) {
+    if (funName != "main") funName = "_"+funName;
     codeBuff.emit(funName + string(":"));
 //    codeBuff.emit(DEC_SP);
 //    codeBuff.emit("    move $fp, $sp");
