@@ -73,7 +73,7 @@ Node* rule_Statement__IF_ELSE_Statement(Expression *exp, Node* marker_m1,
                                        Node* marker_m2, Node* stat2);
 Node* rule_Statement__WHILE_Statement(Expression *exp, Node* marker1,
                                      Node* marker2, Node* stat);
-void rule_Statement__BREAK_SC();
+Node* rule_Statement__BREAK_SC();
 
 /*****************************************/
 /* Call Rules */

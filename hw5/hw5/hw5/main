@@ -1,9 +1,9 @@
-int foo(int x) {
-return x+1;
-}
-
-void main() {
-	int x = 1;
-	x = foo(x);
-	return;
+void main()
+{
+    int x = 1;
+    {
+	int y = 2;
+    }
+    int z = 3;
+    printi(z);
 }

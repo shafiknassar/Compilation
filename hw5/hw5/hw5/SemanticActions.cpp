@@ -533,13 +533,16 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
     return stat;
 }
 
-void rule_Statement__BREAK_SC()
+Node* rule_Statement__BREAK_SC()
 {
     //MARK: PROBABLY DONE
     if (!tableStack.back().isWhile) {
         output::errorUnexpectedBreak(yylineno);
         exit(0);
     }
+    Node* stat = new Node();
+    stat->breakList = ass.makelist(ass.emitCode(JUMP));
+    return stat;
 }
 
 /*****************************************/

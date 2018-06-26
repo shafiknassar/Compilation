@@ -107,7 +107,7 @@ Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
                M mOWhileScope Statement mCWhileScope
                 { $$ = rule_Statement__WHILE_Statement((Expression*)$4, $3, $7, $9); }
              | BREAK SC
-                { rule_Statement__BREAK_SC(); }
+                { $$ = rule_Statement__BREAK_SC(); }
 ;
 
 mOpenScope  : { openScope(); }  

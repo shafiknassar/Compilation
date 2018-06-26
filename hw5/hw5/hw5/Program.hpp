@@ -67,9 +67,10 @@ struct Node {
     TypeId type;
     int size;
     vector<int> nextList;
+    vector<int> breakList;
     virtual ~Node() {};
     
-    Node() : token(""), quad(""), size(1), nextList() {};
+    Node() : token(""), quad(""), size(1), nextList(), breakList() {};
     Node(string s) : token(s) {}
     Node(TypeId tId) : type(tId), size(typeSize(tId)) {};
     Node(TypeId tId, int sz) : type(tId), size(sz) {};
