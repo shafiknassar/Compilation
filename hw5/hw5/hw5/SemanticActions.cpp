@@ -542,7 +542,7 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
         exit(0);
     }
     Node* stat = new Node();
-    ass.bpatch(stat1->nextList, marker_m1->quad);
+    //ass.bpatch(stat1->nextList, marker_m1->quad);
     ass.bpatch(cond->trueList, marker_m2->quad);
     stat->nextList = ass.merge(cond->falseList, stat1->breakList);
     ass.emitCode(JUMP + marker_m1->quad);
