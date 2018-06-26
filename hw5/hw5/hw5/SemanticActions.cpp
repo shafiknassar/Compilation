@@ -291,10 +291,17 @@ Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *n
 /* Statement Rules */
 /*****************************************/
 
-void rule_Statements(Node* stat, Node* marker) {
+Node* rule_Statements(Node* stats, Node* marker, Node* stat) {
     //MARK: DONE
     //DBUG(__FUNCTION__ << __LINE__ << marker->quad)
+    ass.bpatch(stats->nextList, marker->quad);
+    stat->breakList = ass.merge(stats->breakList, stat->breakList);
+    return stat;
+}
+
+Node* rule_StatementScope(Node* stat, Node* marker) {
     ass.bpatch(stat->nextList, marker->quad);
+    return stat;
 }
 
 void rule_Statement__Type_ID_SC(Type *type, Variable *var)
@@ -535,7 +542,7 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
         exit(0);
     }
     Node* stat = new Node();
-    //ass.bpatch(stat1->nextList, marker_m1->quad);
+    ass.bpatch(stat1->nextList, marker_m1->quad);
     ass.bpatch(cond->trueList, marker_m2->quad);
     stat->nextList = ass.merge(cond->falseList, stat1->breakList);
     ass.emitCode(JUMP + marker_m1->quad);

@@ -56,7 +56,8 @@ Variable* rule_FormalDecl__Type_ID_NUMB(Type *type, Variable *var, Expression *n
 /* Statement Rules */
 /*****************************************/
 
-void rule_Statements(Node* stat, Node* marker);
+Node* rule_Statements(Node* stats, Node* marker, Node* stat);
+Node* rule_StatementScope(Node* stat, Node* marker);
 void rule_Statement__Type_ID_SC(Type *type, Variable *var);
 void rule_Statement__Type_ID_NUM_SC(Type *type, Variable *var, Expression *num);
 void rule_Statement__Type_ID_NUMB_SC(Type *type, Variable *var, Expression *num);

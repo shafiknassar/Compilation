@@ -1564,7 +1564,7 @@ yyreduce:
 
   case 18:
 #line 71 "parser.ypp"
-    { rule_Statements((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)])); (yyval) = (yyvsp[(3) - (3)]); ;}
+    { (yyval) = rule_Statements((yyvsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 19:
@@ -1574,7 +1574,7 @@ yyreduce:
 
   case 20:
 #line 79 "parser.ypp"
-    { rule_Statements((yyvsp[(3) - (6)]), (yyvsp[(4) - (6)])); (yyval) = (yyvsp[(3) - (6)]);;}
+    {  (yyval) = rule_StatementScope((yyvsp[(3) - (6)]), (yyvsp[(4) - (6)]));;}
     break;
 
   case 21:
@@ -1644,7 +1644,7 @@ yyreduce:
 
   case 34:
 #line 110 "parser.ypp"
-    { rule_Statement__BREAK_SC(); ;}
+    { (yyval) = rule_Statement__BREAK_SC(); ;}
     break;
 
   case 35:

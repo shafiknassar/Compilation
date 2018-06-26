@@ -68,7 +68,7 @@ FormalDecl   : Type ID
 Statements   : Statement
                 {$$ = $1;}
              | Statements M Statement
-                { rule_Statements($1, $2); $$ = $3; }
+                { $$ = rule_Statements($1, $2, $3); }
 ;
 
 IfHeader     : IF LPAREN Exp
@@ -76,7 +76,7 @@ IfHeader     : IF LPAREN Exp
 ;
 
 Statement    : LBRACE mOpenScope Statements M RBRACE mCloseScope
-                { rule_Statements($3, $4); $$ = $3;}
+                {  $$ = rule_StatementScope($3, $4);}
              | Type ID SC
                 { $$ = new Node(); rule_Statement__Type_ID_SC((Type*)$1, (Variable*)$2); }
              | Type ID LBRACK NUM RBRACK SC
