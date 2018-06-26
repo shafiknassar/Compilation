@@ -7,7 +7,8 @@
 //
 
 #include "Assembler.hpp"
-#include "includes.h"
+
+#define COMMENT(str)  emitCode(string("# ") + str)
 
 int Assembler::emitCode(string code) {
     return codeBuff.emit(code);
@@ -36,6 +37,7 @@ string Assembler::getNextInst() {
 }
 
 void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
+    COMMENT(__FUNCTION__);
     stringstream ssVarOs;
     ssVarOs << varOS;
     if (isArr) { /* reference semantics */
@@ -47,19 +49,24 @@ void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
     }
 }
 
-void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
+void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName, string szRegName) {
+    COMMENT(__FUNCTION__);
+    /* TODO: missing, check if index is out of bounds */
+    checkArrIndexBounds(szRegName, idxRegName);
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    sub " + idxRegName + ", $fp, " + idxRegName); /*MARK: arr done*/
     stringstream ssArrOs;
     ssArrOs << arrOS;
     codeBuff.emit("    lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
 }
 
 void Assembler::emitLoadConst(string regName, string val) {
+    COMMENT(__FUNCTION__);
     codeBuff.emit("    li " + regName + ", " + val);
 }
 
 void Assembler::emitBool(string regName, bool value) {
+    COMMENT(__FUNCTION__);
     string val = "0";
     if (value) val = "1";
     codeBuff.emit("    li " + regName + ", " + val);
@@ -67,6 +74,7 @@ void Assembler::emitBool(string regName, bool value) {
 }
 
 int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string src2Place, bool needMask) {
+    COMMENT(__FUNCTION__);
     string mipsOp;
     int res = -1;
     if (op == ADD_OP) {
@@ -89,6 +97,7 @@ int Assembler::emitBinOp(string op, string trgPlace, string src1Place, string sr
 
 
 int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
+    COMMENT(__FUNCTION__);
     map<string, string> trans;
     string arr[6][2] =
     {
@@ -104,6 +113,7 @@ int Assembler::emitRelOp(string op, string src1Place, string src2Place) {
 };
 
 void Assembler::emitFunctionReturn(string funcName, string resRegName) {
+    COMMENT(__FUNCTION__);
     if (resRegName != "") {
         codeBuff.emit("    move $v0, " + resRegName);
     }
@@ -118,7 +128,8 @@ void Assembler::emitFunctionReturn(string funcName, string resRegName) {
     codeBuff.emit(".end " + funcName + "\n");
 }
 
-void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<pair<string, int> > args) {
+void Assembler::emitBeforeCall(vector<string> usedRegs, string funcName, vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //save used registers
     for (int i = 0; i < usedRegs.size(); i++) {
         string regName = usedRegs[i];
@@ -150,15 +161,35 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
                 codeBuff.emit("    sw " + reg + ", 0($sp)");
             } else {
             //pass array by value!
-                for (int j = 0; j < size; j++) {
-                    stringstream ss;
-                    ss << j*WORD_SIZE;
-                    //DBUG(ss.str())
-                    codeBuff.emit("    lw $t0, " + ss.str() + "("+reg+")");
-                    codeBuff.emit(DEC_SP);
-                    codeBuff.emit("    sw $t0, 0($sp)");
-                    ss.str("");
-                }
+                /*
+                 li $i, num
+                 label_1:
+                 beq $i, 0, label_2
+                 lw $tmp, ($reg)
+                 DEC_SP
+                 sw $tmp, ($sp)
+                 addu $i, $i, -1
+                 addu $reg, $reg, 4
+                 j label_1
+                 label_2:
+                 */
+                string nReg = allocAvailableReg();
+                string tmpReg = allocAvailableReg();
+                stringstream ss;
+                ss << size;
+                emitCode("    li " + nReg + ", " + ss.str());
+                string loop_start = getNextInst();
+                int inst = emitCode("    beq " + nReg + ", 0, "); /* needs bp */
+                codeBuff.emit("    lw " + tmpReg + ", (" +reg+ ")");
+                codeBuff.emit(DEC_SP);
+                codeBuff.emit("    sw " + tmpReg + ", 0($sp)");
+                incRegBy(nReg, -1);
+                incRegBy(reg, (-1)*WORD_SIZE);
+                emitCode(JUMP + loop_start);
+                string loop_end = getNextInst();
+                bpatch(makelist(inst), loop_end);
+                freeReg(nReg);
+                freeReg(tmpReg);
             }
         }
     }
@@ -166,6 +197,7 @@ void Assembler::emitBeforCall(vector<string> usedRegs, string funcName, vector<p
 }
 
 void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //clean args from stack
     for (int i = 0; i < args.size(); i++) {
         int size = args[i].second;
@@ -196,8 +228,9 @@ void Assembler::emitAfterCall(vector<string> usedRegs, vector<pair<string, int> 
 
 void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
                                  vector<pair<string, int> > args) {
+    COMMENT(__FUNCTION__);
     //save used registers, $ra and push args to stack
-    emitBeforCall(usedRegs, funcName, args);
+    emitBeforeCall(usedRegs, funcName, args);
     
     //call func
     codeBuff.emit("    jal " + funcName);
@@ -208,6 +241,7 @@ void Assembler::emitFunctionCall(vector<string> usedRegs, string funcName,
 }
 
 void Assembler::allocateLocalVar(string regName) {
+    COMMENT(__FUNCTION__);
     codeBuff.emit(DEC_SP);
     if (regName == "") {
         codeBuff.emit("    sw $zero, ($sp)"); /* inits numerical values as 0, booleans as false */
@@ -217,38 +251,122 @@ void Assembler::allocateLocalVar(string regName) {
 }
 
 void Assembler::allocateLocalArr(int numOfElems) {
-    for (int i = 0; i < numOfElems; ++i) {
-        allocateLocalVar();
-    }
+    COMMENT(__FUNCTION__);
+    
+    /*
+     li $i, num
+     label_1:
+     beq $i, 0, label_2
+     DEC_SP
+     sw $zero, ($sp)
+     addu $i, $i, -1
+     j label_1
+     label_2:
+     */
+    
+    string nReg = allocAvailableReg();
+    if (nReg == not_found) { /* WTF DO WE DO?? */ }
+    stringstream ss;
+    ss << numOfElems;
+    emitCode("    li " + nReg + ", " + ss.str());
+    string loop_start = getNextInst();
+    int inst = emitCode("    beq " + nReg + ", 0, "); /* needs bp */
+    emitCode(DEC_SP);
+    emitCode("    sw $zero, ($sp)");
+    incRegBy(nReg, -1);
+    emitCode(JUMP + loop_start);
+    string loop_end = getNextInst();
+    bpatch(makelist(inst), loop_end);
+    freeReg(nReg);
 }
 
-void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size, string tmpReg) {
-    for (int i = 0; i < size; i++) {
-        // lw $tmp, i*4($src)
-        // sw $tmp, trgOf+i*4($fp)
-        stringstream ss;
-        ss << i*WORD_SIZE;
-        codeBuff.emit("    lw " + tmpReg + ", " + ss.str() + "("+srcAddrsReg+")");
-        ss.str(""); /* clear stream */
-        ss << i*WORD_SIZE + trgOs;
-        codeBuff.emit("    sw " + tmpReg + ", " + ss.str() + "($fp)");
-    }
+void Assembler::incRegBy(string regName, int val) {
+    stringstream ss;
+    ss << val;
+    emitCode("    addu " + regName + ", " + regName + ", " + ss.str());
+}
+
+string Assembler::allocAvailableReg() {
+    string reg = regAllocator.getEmptyRegister();
+    if (reg == not_found) { /* WTF DO WE DO?? */ }
+    regAllocator.bind(reg);
+    return reg;
+}
+
+void Assembler::freeReg(string reg) {
+    regAllocator.unbind(reg);
+}
+
+
+void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size) {
+    COMMENT(__FUNCTION__);
+    
+    /*
+     li $i, size
+     addu $trg, $fp, trgOs
+     label_1:
+     beq $i, 0, label_2
+     lw $tmp, ($src)
+     sw $tmp, ($trg)
+     addu $i, $i, -1
+     addu $src, $src, 4
+     addu $trg, $trg, 4
+     j label_1
+     label_2:
+     */
+    
+    string trgReg = allocAvailableReg();
+    string tmpReg = allocAvailableReg();
+    string nReg = allocAvailableReg();
+    
+    stringstream ss;
+    ss << size;
+    
+    emitCode("    li " + nReg + ", " + ss.str());
+    ss.str("");
+    ss << trgOs;
+    emitCode("    addu " + trgReg + ", $fp, " + ss.str());
+    
+    string loop_start = getNextInst();
+    int inst = emitCode("    beq " + nReg + ", 0, "); /* needs bp */
+    
+    emitCode("    lw " + tmpReg + ", (" + srcAddrsReg + ")");
+    emitCode("    sw " + tmpReg + ", (" + trgReg + ")");
+    incRegBy(trgReg, (-1)*WORD_SIZE);
+    incRegBy(srcAddrsReg, (-1)*WORD_SIZE); /* MARK: arr done */
+    incRegBy(nReg, -1);
+
+    emitCode(JUMP + loop_start);
+    
+    string loop_end = getNextInst();
+    bpatch(makelist(inst), loop_end);
+    
+    freeReg(trgReg);
+    freeReg(tmpReg);
+    freeReg(nReg);
 }
 
 
 void Assembler::assignValToVar(int varOS, string regName) {
+    COMMENT(__FUNCTION__);
     stringstream ssVarOs;
     ssVarOs << varOS;
     codeBuff.emit("    sw " + regName + ", " + ssVarOs.str() + "($fp)");
 }
 
+void Assembler::checkArrIndexBounds(string arrSizeReg,
+                         string idxRegName) {
+    codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "out_of_bounds_handler");
+    codeBuff.emit("    blt " + idxRegName + ", 0, " + "out_of_bounds_handler");
+}
+
 void Assembler::assignValToArrElem(int arrOS, string arrSizeReg,
                                    string idxRegName, string srcRegName)
 {
-    codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "out_of_bounds_handler");
-    codeBuff.emit("    blt " + idxRegName + ", 0, " + "out_of_bounds_handler");
+    COMMENT(__FUNCTION__);
+    checkArrIndexBounds(arrSizeReg, idxRegName);
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    sub " + idxRegName + ", $fp, " + idxRegName); /* MARK: arr done */
     stringstream ssArrOs;
     ssArrOs << arrOS;
     codeBuff.emit("    sw " + srcRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
@@ -345,4 +463,8 @@ void Assembler::emitProgramInit() {
     emitPrint();
     emitDivByZeroHandler();
     emitIndexOutOfBoundsHandler();
+}
+
+void Assembler::comment(string str) {
+    COMMENT(str);
 }
