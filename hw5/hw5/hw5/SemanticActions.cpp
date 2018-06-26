@@ -497,6 +497,7 @@ Node* rule_Statement__IF_Statement(Expression *cond, Node* marker_m, Node* stat1
 //    tmp = ass.merge(tmp, marker_n->nextList);
 //    DBUG(__FUNCTION__ << __LINE__ << " " <<next)
 //    ass.bpatch(tmp, next);
+    stat->breakList = stat1->breakList;
     regsPool.unbind(cond->place);
     delete cond;
     
@@ -520,6 +521,7 @@ Node* rule_Statement__IF_ELSE_Statement(Expression *cond, Node* marker_m1,
 //    string next = ass.getNextInst();
 //    DBUG(__FUNCTION__ << __LINE__ << " " <<next)
 //    ass.bpatch(stat->nextList, next);
+    stat->breakList = ass.merge(stat1->breakList, stat2->breakList);
     regsPool.unbind(cond->place);
     delete cond;
     return stat;
@@ -535,7 +537,7 @@ Node* rule_Statement__WHILE_Statement(Expression *cond, Node* marker_m1,
     Node* stat = new Node();
     //ass.bpatch(stat1->nextList, marker_m1->quad);
     ass.bpatch(cond->trueList, marker_m2->quad);
-    stat->nextList = cond->falseList;
+    stat->nextList = ass.merge(cond->falseList, stat1->breakList);
     ass.emitCode(JUMP + marker_m1->quad);
     regsPool.unbind(cond->place);
     delete cond;
