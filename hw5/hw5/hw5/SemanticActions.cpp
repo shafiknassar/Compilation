@@ -137,6 +137,7 @@ void openWhileScope()  { openScope(); tableStack.back().isWhile = true; }
 void closeWhileScope() { closeScope(); }
 
 void handleBoolExp(Expression* exp) {
+    if (exp->type != M_BOOL) return;
     string next = ass.getNextInst();
     //DBUG(__FUNCTION__ << __LINE__ << " " <<next)
     ass.bpatch(exp->trueList, next);
@@ -851,9 +852,7 @@ Node* marker__N() {
     return marker;
 }
 
-
 ExprList* rule_ExprList(ExprList *l, Expression *e) {
-    if (e->type == M_BOOL) handleBoolExp(e);
     l->v.push_back(e);
     return l;
 }

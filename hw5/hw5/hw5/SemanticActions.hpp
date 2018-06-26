@@ -36,6 +36,8 @@ void openWhileScope();
 
 void closeWhileScope();
 
+void handleBoolExp(Expression* exp);
+
 /*****************************************/
 /* Functions Rules */
 /*****************************************/

@@ -12,8 +12,8 @@
 %nonassoc ID STRING TRUE FALSE
 %nonassoc COMMA
 
-%left AND
 %left OR
+%left AND
 %left RELOP
 %left ADDSUB
 %left MULDIV
@@ -123,9 +123,9 @@ Call         : ID LPAREN ExpList RPAREN
 ;
 
 ExpList      : Exp
-                { $$ = new ExprList(); rule_ExprList((ExprList*)$$, (Expression*)$1); }
-             | Exp COMMA ExpList
-                { $$ = $3; rule_ExprList((ExprList*)$$, (Expression*)$1); }
+                { $$ = new ExprList(); handleBoolExp((Expression*)$1); rule_ExprList((ExprList*)$$, (Expression*)$1); }
+             | Exp { handleBoolExp((Expression*)$1); } COMMA ExpList
+                { $$ = $4; rule_ExprList((ExprList*)$$, (Expression*)$1); }
 ;
 
 Type         : INT

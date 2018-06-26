@@ -60,8 +60,8 @@
      STRING = 276,
      ID = 277,
      COMMA = 278,
-     AND = 279,
-     OR = 280,
+     OR = 279,
+     AND = 280,
      RELOP = 281,
      ADDSUB = 282,
      MULDIV = 283,
@@ -93,8 +93,8 @@
 #define STRING 276
 #define ID 277
 #define COMMA 278
-#define AND 279
-#define OR 280
+#define OR 279
+#define AND 280
 #define RELOP 281
 #define ADDSUB 282
 #define MULDIV 283
