@@ -36,6 +36,10 @@ private:
     CodeBuffer &codeBuff;
     int stringDataCounter;
     void incRegBy(string regName, int val);
+    string allocAvailableReg();
+    void freeReg(string reg);
+    void checkArrIndexBounds(string arrSizeReg,
+                             string idxRegName);
     
 public:
     
@@ -83,7 +87,7 @@ public:
     
     void emitLoadVar(int varOS, string regName, bool isArr);
     
-    void emitLoadArrElem(int arrOS, string idxRegName, string trgRegName);
+    void emitLoadArrElem(int arrOS, string idxRegName, string trgRegName, string szRegName);
     
     void emitLoadConst(string regName, string val);
     
@@ -126,6 +130,8 @@ public:
     
     //print the content of the code buffer to stdout including a .text header
     void printCodeBuffer();
+    
+    void comment(string str);
 };
 
 #endif /* Assembler_hpp */

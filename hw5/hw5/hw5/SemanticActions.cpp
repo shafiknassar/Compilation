@@ -427,14 +427,18 @@ void rule_Statement__ID_Exp_ASSIGN_Exp_SC(Variable *arr, Expression *exp, Expres
         output::errorMismatch(yylineno);
         exit(0);
     }
-    handleBoolExp(rval);
+    if (rval->type == M_BOOL) {
+        handleBoolExp(rval);
+    }
     int size = 0;
     string sizeReg = regsPool.getEmptyRegister();
     stringstream ss;
     if (isArrType(entry->type)) size = ((ArrTableEntry*)entry)->size;
     ss << size;
     ass.emitCode("    li " + sizeReg + ", " + ss.str());
-    ass.assignValToArrElem(entry->offset*WORD_SIZE, sizeReg, exp->place, rval->place);
+    ass.assignValToArrElem((-1)*entry->offset*WORD_SIZE, sizeReg, exp->place, rval->place);
+    regsPool.unbind(exp->place);
+    regsPool.unbind(rval->place);
 }
 
 void rule_Statement__RETURN_SC()
@@ -568,9 +572,9 @@ Expression* rule_Call__ID_ExpList(Variable *var, ExprList *expList)
     vector<int> usedRegistersIndices;
     vector<string> usedRegisters = regsPool.getUsedRegisters();
     vector<pair<string, int> > argsPlaces = getPlacesFromList(expList->v);
-    regsPool.unbindAll(usedRegisters);
+    //regsPool.unbindAll(usedRegisters);
     ass.emitFunctionCall(usedRegisters, funcData->name, argsPlaces);
-    regsPool.bindAll(usedRegisters);
+    //regsPool.bindAll(usedRegisters);
     for (int i = 0; i < argsPlaces.size(); i++) {
         regsPool.unbind(string(argsPlaces[i].first));
     }
@@ -654,7 +658,15 @@ Expression* rule_Exp__ID_Exp(Variable *var, Expression *exp)
     if (regName == not_found) { /* TODO: WTF DO WE DO? */ }
     regsPool.bind(regName);
     res->place = regName;
-    ass.emitLoadArrElem(entry->offset*WORD_SIZE, exp->place, regName);
+    
+    int size = 0;
+    string sizeReg = regsPool.getEmptyRegister();
+    stringstream ss;
+    size = ((ArrTableEntry*)entry)->size;
+    ss << size;
+    ass.emitCode("    li " + sizeReg + ", " + ss.str());
+    
+    ass.emitLoadArrElem(-1*entry->offset*WORD_SIZE, exp->place, regName, sizeReg);
     regsPool.unbind(exp->place);
     delete exp;
     

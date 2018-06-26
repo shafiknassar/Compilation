@@ -1,9 +1,23 @@
-int foo(int x) {
-return x+1;
+void foo(int x[10]) {
+	printi(x[0]);
+	print("\n");
+	printi(x[1]);
+	print("\n");
+	printi(x[2]);
+	print("\n");
+	printi(x[3]);
+	print("\n");
+	printi(x[4]);
+	print("\n end foo \n");
 }
 
+
 void main() {
-	int x = 1;
-	x = foo(x);
-	return;
+	int x[10];
+	foo(x);
+	x[1]=17;
+	x[2]=2;
+	x[3]=3;
+	x[4]=4;
+	foo(x);
 }

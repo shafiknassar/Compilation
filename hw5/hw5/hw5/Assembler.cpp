@@ -49,11 +49,12 @@ void Assembler::emitLoadVar(int varOS, string regName, bool isArr) {
     }
 }
 
-void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName) {
+void Assembler::emitLoadArrElem(int arrOS, string idxRegName, string trgRegName, string szRegName) {
     COMMENT(__FUNCTION__);
     /* TODO: missing, check if index is out of bounds */
+    checkArrIndexBounds(szRegName, idxRegName);
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    sub " + idxRegName + ", $fp, " + idxRegName); /*MARK: arr done*/
     stringstream ssArrOs;
     ssArrOs << arrOS;
     codeBuff.emit("    lw " + trgRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
@@ -172,10 +173,8 @@ void Assembler::emitBeforeCall(vector<string> usedRegs, string funcName, vector<
                  j label_1
                  label_2:
                  */
-                string nReg = regAllocator.getEmptyRegister();
-                if (nReg == not_found) { /* WTF DO WE DO?? */ }
-                string tmpReg = regAllocator.getEmptyRegister();
-                if (tmpReg == not_found) { /* WTF DO WE DO?? */ }
+                string nReg = allocAvailableReg();
+                string tmpReg = allocAvailableReg();
                 stringstream ss;
                 ss << size;
                 emitCode("    li " + nReg + ", " + ss.str());
@@ -185,10 +184,12 @@ void Assembler::emitBeforeCall(vector<string> usedRegs, string funcName, vector<
                 codeBuff.emit(DEC_SP);
                 codeBuff.emit("    sw " + tmpReg + ", 0($sp)");
                 incRegBy(nReg, -1);
-                incRegBy(reg, WORD_SIZE);
+                incRegBy(reg, (-1)*WORD_SIZE);
                 emitCode(JUMP + loop_start);
                 string loop_end = getNextInst();
                 bpatch(makelist(inst), loop_end);
+                freeReg(nReg);
+                freeReg(tmpReg);
             }
         }
     }
@@ -263,7 +264,7 @@ void Assembler::allocateLocalArr(int numOfElems) {
      label_2:
      */
     
-    string nReg = regAllocator.getEmptyRegister();
+    string nReg = allocAvailableReg();
     if (nReg == not_found) { /* WTF DO WE DO?? */ }
     stringstream ss;
     ss << numOfElems;
@@ -276,13 +277,24 @@ void Assembler::allocateLocalArr(int numOfElems) {
     emitCode(JUMP + loop_start);
     string loop_end = getNextInst();
     bpatch(makelist(inst), loop_end);
-    
+    freeReg(nReg);
 }
 
 void Assembler::incRegBy(string regName, int val) {
     stringstream ss;
     ss << val;
     emitCode("    addu " + regName + ", " + regName + ", " + ss.str());
+}
+
+string Assembler::allocAvailableReg() {
+    string reg = regAllocator.getEmptyRegister();
+    if (reg == not_found) { /* WTF DO WE DO?? */ }
+    regAllocator.bind(reg);
+    return reg;
+}
+
+void Assembler::freeReg(string reg) {
+    regAllocator.unbind(reg);
 }
 
 
@@ -303,12 +315,9 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size) {
      label_2:
      */
     
-    string trgReg = regAllocator.getEmptyRegister();
-    if (trgReg == not_found) { /* WTF DO WE DO?? */ }
-    string tmpReg = regAllocator.getEmptyRegister();
-    if (tmpReg == not_found) { /* WTF DO WE DO?? */ }
-    string nReg = regAllocator.getEmptyRegister();
-    if (nReg == not_found) { /* WTF DO WE DO?? */ }
+    string trgReg = allocAvailableReg();
+    string tmpReg = allocAvailableReg();
+    string nReg = allocAvailableReg();
     
     stringstream ss;
     ss << size;
@@ -323,8 +332,8 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size) {
     
     emitCode("    lw " + tmpReg + ", (" + srcAddrsReg + ")");
     emitCode("    sw " + tmpReg + ", (" + trgReg + ")");
-    incRegBy(trgReg, WORD_SIZE);
-    incRegBy(srcAddrsReg, WORD_SIZE);
+    incRegBy(trgReg, (-1)*WORD_SIZE);
+    incRegBy(srcAddrsReg, (-1)*WORD_SIZE); /* MARK: arr done */
     incRegBy(nReg, -1);
 
     emitCode(JUMP + loop_start);
@@ -332,6 +341,9 @@ void Assembler::assignArrToArr(int trgOs, string srcAddrsReg, int size) {
     string loop_end = getNextInst();
     bpatch(makelist(inst), loop_end);
     
+    freeReg(trgReg);
+    freeReg(tmpReg);
+    freeReg(nReg);
 }
 
 
@@ -342,14 +354,19 @@ void Assembler::assignValToVar(int varOS, string regName) {
     codeBuff.emit("    sw " + regName + ", " + ssVarOs.str() + "($fp)");
 }
 
+void Assembler::checkArrIndexBounds(string arrSizeReg,
+                         string idxRegName) {
+    codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "out_of_bounds_handler");
+    codeBuff.emit("    blt " + idxRegName + ", 0, " + "out_of_bounds_handler");
+}
+
 void Assembler::assignValToArrElem(int arrOS, string arrSizeReg,
                                    string idxRegName, string srcRegName)
 {
     COMMENT(__FUNCTION__);
-    codeBuff.emit("    bge " + idxRegName + ", " + arrSizeReg + ", " + "out_of_bounds_handler");
-    codeBuff.emit("    blt " + idxRegName + ", 0, " + "out_of_bounds_handler");
+    checkArrIndexBounds(arrSizeReg, idxRegName);
     codeBuff.emit("    sll " + idxRegName + ", " + idxRegName + ", 2"); /* multiply by 4 */
-    codeBuff.emit("    add " + idxRegName + ", " + idxRegName + ", $fp");
+    codeBuff.emit("    sub " + idxRegName + ", $fp, " + idxRegName); /* MARK: arr done */
     stringstream ssArrOs;
     ssArrOs << arrOS;
     codeBuff.emit("    sw " + srcRegName + ", " + ssArrOs.str() + "("+idxRegName+")");
@@ -446,4 +463,8 @@ void Assembler::emitProgramInit() {
     emitPrint();
     emitDivByZeroHandler();
     emitIndexOutOfBoundsHandler();
+}
+
+void Assembler::comment(string str) {
+    COMMENT(str);
 }
